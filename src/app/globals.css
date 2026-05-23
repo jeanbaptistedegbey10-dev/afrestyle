@@ -1,0 +1,123 @@
+/* src/app/globals.css */
+
+/* En Tailwind v4 : on importe tailwind ainsi */
+@import "tailwindcss";
+
+/* Toute la config se fait ici avec @theme */
+@theme {
+  /* Couleurs AfroStyle */
+  --color-ink: #0f172a;
+  --color-ink-2: #1e293b;
+  --color-ink-3: #334155;
+
+  --color-gold: #d4af37;
+  --color-gold-light: #e8c84a;
+  --color-gold-dark: #a8871c;
+
+  --color-sand: #f5f0e8;
+  --color-sand-2: #ede8dc;
+  --color-sand-3: #d4ccba;
+
+  --color-cream: #fdfaf4;
+
+  /* Fonts */
+  --font-serif: var(--font-playfair), Georgia, serif;
+  --font-sans: var(--font-dm-sans), system-ui, sans-serif;
+
+  /* Animations */
+  --animate-fade-in: fadeIn 0.4s ease-in-out;
+  --animate-slide-up: slideUp 0.3s ease-out;
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/* Styles globaux de base */
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: #0f172a;
+    color: #f5f0e8;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #1e293b;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #d4af37;
+    border-radius: 3px;
+  }
+}
+
+/* Composants réutilisables */
+@layer components {
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: #d4af37;
+    color: #0f172a;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.75rem 2rem;
+    border-radius: 2px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-primary:hover {
+    background-color: #e8c84a;
+    transform: translateY(-1px);
+  }
+
+  .btn-outline {
+    display: inline-flex;
+    align-items: center;
+    background-color: transparent;
+    color: #f5f0e8;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.75rem 2rem;
+    border-radius: 2px;
+    border: 1px solid rgba(245, 240, 232, 0.3);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-outline:hover {
+    border-color: #d4af37;
+    color: #d4af37;
+  }
+}
