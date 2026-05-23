@@ -26,6 +26,7 @@ export type ShopifyProduct = {
   };
   tags: string[]; // ["wax", "femme", "benin", "designer-adaeze"]
   vendor: string; // Nom du créateur
+  availableForSale: boolean; // <-- AJOUTÉ ICI pour corriger l'erreur de build
 };
 
 export type ShopifyMoney = {
