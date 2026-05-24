@@ -53,6 +53,9 @@ function normalizeCart(rawCart: {
 /**
  * Crée un nouveau panier Shopify avec une première ligne
  */
+// src/lib/shopify/cart.ts
+// Dans la fonction createCart, ajoute le paramètre redirectUrl
+
 export async function createCart(
   variantId: string,
   quantity: number = 1
@@ -67,14 +70,23 @@ export async function createCart(
     variables: {
       lines: [{ merchandiseId: variantId, quantity }],
     },
-    cache: "no-store", // Mutations = jamais mis en cache
+    cache: "no-store",
   });
 
   if (data.data.cartCreate.userErrors.length > 0) {
     throw new Error(data.data.cartCreate.userErrors[0].message);
   }
 
-  return normalizeCart(data.data.cartCreate.cart);
+  const cart = normalizeCart(data.data.cartCreate.cart);
+  
+  // Ajoute le paramètre de retour à l'URL checkout
+  // Shopify accepte ?return_to= pour rediriger après paiement
+  const returnUrl = encodeURIComponent(
+    `${process.env.NEXT_PUBLIC_SITE_URL}/order-confirmed`
+  );
+  cart.checkoutUrl = `${cart.checkoutUrl}&return_to=${returnUrl}`;
+  
+  return cart;
 }
 
 /**

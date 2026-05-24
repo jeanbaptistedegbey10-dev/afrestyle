@@ -6,9 +6,14 @@
 // Contrairement à une "query" qui lit seulement
 
 // Crée un nouveau panier Shopify
+// src/lib/shopify/queries/cart.ts
+// Modifie CREATE_CART_MUTATION pour ajouter buyerIdentity
+
 export const CREATE_CART_MUTATION = `
   mutation CreateCart($lines: [CartLineInput!]) {
-    cartCreate(input: { lines: $lines }) {
+    cartCreate(input: { 
+      lines: $lines
+    }) {
       cart {
         id
         checkoutUrl
@@ -23,16 +28,8 @@ export const CREATE_CART_MUTATION = `
                   id
                   title
                   price { amount currencyCode }
-                  product {
-                    title
-                    handle
-                  }
-                  image {
-                    url
-                    altText
-                    width
-                    height
-                  }
+                  product { title handle }
+                  image { url altText width height }
                 }
               }
             }
@@ -44,10 +41,7 @@ export const CREATE_CART_MUTATION = `
           totalTaxAmount { amount currencyCode }
         }
       }
-      userErrors {
-        field
-        message
-      }
+      userErrors { field message }
     }
   }
 `;
