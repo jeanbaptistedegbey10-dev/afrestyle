@@ -4,22 +4,19 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { ShoppingBag, Heart, User, Search, Menu, X } from "lucide-react";
-import { useCartStore } from "@/lib/store/cart.store";
+import { useCart } from "@/hooks/useCart";
 import { cn } from "@/lib/utils";
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { totalItems, openCart } = useCartStore();
+  const { totalItems, openCart } = useCart(); // totalItems est un nombre
 
   // Détecte le scroll pour changer le style de la navbar
-  // Pattern classique "sticky navbar with scroll detection"
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-    // Le return = cleanup function. Évite les memory leaks.
-    // En entretien: "Je nettoie toujours les event listeners dans le cleanup d'useEffect"
   }, []);
 
   const navLinks = [
@@ -95,17 +92,17 @@ export default function Navbar() {
               <User size={15} />
             </Link>
 
-            {/* Panier — Client Component nécessaire pour le count */}
+            {/* Panier — Corrigé en utilisant totalItems comme valeur */}
             <button
               onClick={openCart}
-              aria-label={`Panier — ${totalItems()} articles`}
+              aria-label={`Panier — ${totalItems} articles`}
               className="flex items-center gap-2 bg-gold text-ink text-xs font-medium tracking-wide uppercase px-4 py-2 rounded-sm hover:bg-gold-light transition-colors duration-200"
             >
               <ShoppingBag size={14} />
               <span className="hidden sm:inline">Panier</span>
-              {totalItems() > 0 && (
+              {totalItems > 0 && (
                 <span className="bg-ink text-gold text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
-                  {totalItems()}
+                  {totalItems}
                 </span>
               )}
             </button>
@@ -121,8 +118,8 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Menu mobile */}
-        {isMobileMenuOpen && (
+          {/* Menu mobile */}
+          {isMobileMenuOpen && (
           <div className="md:hidden border-t border-gold/10 bg-ink-2 animate-fade-in">
             <ul className="flex flex-col px-6 py-4 gap-4">
               {navLinks.map((link) => (

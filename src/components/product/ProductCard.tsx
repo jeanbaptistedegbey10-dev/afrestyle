@@ -5,9 +5,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { Heart, ShoppingBag } from "lucide-react";
-import { useCartStore } from "@/lib/store/cart.store";
+import { useCart } from "@/hooks/useCart";
 import { cn, capitalize } from "@/lib/utils";
 import type { Product } from "@/lib/shopify/types";
+
 
 type ProductCardProps = {
   product: Product;
@@ -17,34 +18,20 @@ export default function ProductCard({ product }: ProductCardProps) {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
-  const { addItem } = useCartStore();
+  const { addItem } = useCart();
 
   const mainImage = product.images[0];
   // Deuxième image pour l'effet hover (swap d'image)
   const hoverImage = product.images[1] ?? product.images[0];
 
   async function handleQuickAdd(e: React.MouseEvent) {
-    e.preventDefault(); // Empêche la navigation vers le produit
-    if (!product.variants[0]) return;
-
-    setIsAdding(true);
-    const variant = product.variants[0];
-
-    addItem({
-      variantId: variant.id,
-      productHandle: product.handle,
-      title: product.title,
-      variantTitle: variant.title,
-      price: variant.price.amount,
-      currencyCode: variant.price.currencyCode,
-      image: mainImage?.url ?? null,
-      quantity: 1,
-    });
-
-    // Feedback visuel 1 seconde
-    await new Promise((r) => setTimeout(r, 1000));
-    setIsAdding(false);
-  }
+  e.preventDefault();
+  if (!product.variants[0]) return;
+  setIsAdding(true);
+  await addItem(product.variants[0].id, 1);
+  await new Promise((r) => setTimeout(r, 1000));
+  setIsAdding(false);
+}
 
   return (
     <Link

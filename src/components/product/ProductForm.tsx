@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { useCartStore } from "@/lib/store/cart.store";
+import { useCart } from "@/hooks/useCart";
 import { Heart, ShoppingBag } from "lucide-react";
 import type { Product } from "@/lib/shopify/types";
 
@@ -12,30 +12,19 @@ export default function ProductForm({ product }: { product: Product }) {
   );
   const [isAdding, setIsAdding] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
-  const { addItem } = useCartStore();
+  const { addItem, isLoading } = useCart();
 
   const selectedVariant = product.variants.find(
     (v) => v.id === selectedVariantId,
   );
 
   async function handleAddToCart() {
-    if (!selectedVariant) return;
-    setIsAdding(true);
-
-    addItem({
-      variantId: selectedVariant.id,
-      productHandle: product.handle,
-      title: product.title,
-      variantTitle: selectedVariant.title,
-      price: selectedVariant.price.amount,
-      currencyCode: selectedVariant.price.currencyCode,
-      image: product.images[0]?.url ?? null,
-      quantity: 1,
-    });
-
-    await new Promise((r) => setTimeout(r, 1200));
-    setIsAdding(false);
-  }
+  if (!selectedVariant) return;
+  setIsAdding(true);
+  await addItem(selectedVariant.id, 1);
+  await new Promise((r) => setTimeout(r, 1200));
+  setIsAdding(false);
+}
 
   // Grouper les options (Taille, Couleur)
   const optionNames = [
