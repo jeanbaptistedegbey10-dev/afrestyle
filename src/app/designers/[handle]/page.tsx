@@ -1,7 +1,7 @@
 // src/app/designers/[handle]/page.tsx
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import type { Metadata } from "next";
 
 const DESIGNERS_DATA = {
