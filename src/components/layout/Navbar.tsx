@@ -6,6 +6,8 @@ import { useState, useEffect } from "react";
 import { ShoppingBag, Heart, User, Search, Menu, X } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { cn } from "@/lib/utils";
+import { getCurrentCustomer } from "@/lib/actions/auth.actions";
+import UserIcon from "./UserIcon";
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -84,13 +86,7 @@ export default function Navbar() {
             </Link>
 
             {/* Account */}
-            <Link
-              href="/account"
-              aria-label="Mon compte"
-              className="hidden md:flex w-9 h-9 items-center justify-center rounded-full border border-gold/25 text-sand-3 hover:border-gold hover:text-gold transition-all duration-200"
-            >
-              <User size={15} />
-            </Link>
+            <UserIcon />
 
             {/* Panier — Corrigé en utilisant totalItems comme valeur */}
             <button
