@@ -1,9 +1,11 @@
-// src/app/layout.tsx — ajoute CartDrawer
+// src/app/layout.tsx
+// Le layout est un Server Component — il peut appeler getUserIcon
 import type { Metadata } from "next";
 import { Playfair_Display, DM_Sans } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 import Navbar from "@/components/layout/Navbar";
 import CartDrawer from "@/components/cart/CartDrawer";
+import { getCurrentCustomer } from "@/lib/actions/auth.actions";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -23,15 +25,17 @@ export const metadata: Metadata = {
     default: "AfroStyle — Mode Africaine Contemporaine",
     template: "%s | AfroStyle",
   },
-  description:
-    "La première destination premium pour la mode africaine contemporaine.",
+  description: "La première destination premium pour la mode africaine contemporaine.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Fetch côté serveur dans le layout — pas de boucle
+  const customer = await getCurrentCustomer();
+
   return (
     <html lang="fr" className={`${playfair.variable} ${dmSans.variable}`}>
       <body
@@ -40,8 +44,8 @@ export default function RootLayout({
       >
         <Navbar />
         <main>{children}</main>
-        {/* Cart Drawer global — disponible sur toutes les pages */}
         <CartDrawer />
+        {/* Toaster pour les notifications */}
         <Toaster
           position="bottom-right"
           toastOptions={{
