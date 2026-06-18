@@ -8,29 +8,26 @@ import ProductCard from "@/components/product/ProductCard";
 import type { Product } from "@/lib/shopify/types";
 
 const CATEGORIES = [
-  { label: "Tout voir",     filter: null },
-  { label: "Femme",        filter: "?style=femme" },
-  { label: "Homme",        filter: "?style=homme" },
-  { label: "Accessoires",  filter: "?style=accessoire" },
-  { label: "Wax",          filter: "?tissu=wax" },
-  { label: "Kente",        filter: "?tissu=kente" },
-  { label: "Bogolan",      filter: "?tissu=bogolan" },
-  { label: "Streetwear",   filter: "?style=streetwear" },
-  { label: "Traditionnel", filter: "?style=traditionnel" },
+  { label: "Tout voir",     url: "/collections" },
+  { label: "Femme",        url: "/collections?genre=femme" },
+  { label: "Homme",        url: "/collections?genre=homme" },
+  { label: "Accessoires",  url: "/collections?genre=accessoire" },
+  { label: "Wax",          url: "/collections?tissu=wax" },
+  { label: "Kente",        url: "/collections?tissu=kente" },
+  { label: "Bogolan",      url: "/collections?tissu=bogolan" },
+  { label: "Streetwear",   url: "/collections?style=streetwear" },
+  { label: "Traditionnel", url: "/collections?style=traditionnel" },
 ];
 
 export default function ProductsSection({ products }: { products: Product[] }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const router = useRouter();
 
-  function handleCategoryClick(index: number, filter: string | null) {
-    setActiveIndex(index);
-    if (filter === null) {
-      router.push("/collections");
-    } else {
-      router.push(`/collections${filter}`);
-    }
-  }
+// Dans le JSX, remplace le onClick par :
+function handleCategoryClick(index: number, url: string) {
+  setActiveIndex(index);
+  router.push(url);
+}
 
   return (
     <section className="py-20 px-6" style={{ background: "#0F172A" }}>
@@ -64,7 +61,8 @@ export default function ProductsSection({ products }: { products: Product[] }) {
           {CATEGORIES.map((cat, i) => (
             <button
               key={cat.label}
-              onClick={() => handleCategoryClick(i, cat.filter)}
+              onClick={() => handleCategoryClick(i, cat.url)}
+
               className="flex-shrink-0 text-xs tracking-wider uppercase px-4 py-2 transition-all duration-200"
               style={{
                 borderRadius: "2px",

@@ -4,8 +4,12 @@ import { getProducts } from "@/lib/shopify/products";
 import ProductGrid from "@/components/product/ProductGrid";
 import CollectionFilters from "@/components/product/CollectionFilters";
 
+// src/app/collections/page.tsx
+// Ajoute genre dans searchParams et queryParts
+
 type SearchParams = {
   searchParams: Promise<{
+    genre?: string;   // ← nouveau
     pays?: string;
     tissu?: string;
     style?: string;
@@ -18,10 +22,11 @@ export default async function CollectionsPage({ searchParams }: SearchParams) {
   const params = await searchParams;
 
   const queryParts: string[] = [];
-  if (params.pays)  queryParts.push(`tag:pays-${params.pays}`);
-  if (params.tissu) queryParts.push(`tag:tissu-${params.tissu}`);
-  if (params.style) queryParts.push(`tag:style-${params.style}`);
-  if (params.q)     queryParts.push(params.q);
+  if (params.genre)  queryParts.push(`tag:${params.genre}`);      // ← nouveau
+  if (params.pays)   queryParts.push(`tag:pays-${params.pays}`);
+  if (params.tissu)  queryParts.push(`tag:tissu-${params.tissu}`);
+  if (params.style)  queryParts.push(`tag:style-${params.style}`);
+  if (params.q)      queryParts.push(params.q);
 
   const sortMap: Record<string, { sortKey: string; reverse: boolean }> = {
     "prix-asc":  { sortKey: "PRICE", reverse: false },
@@ -48,23 +53,26 @@ export default async function CollectionsPage({ searchParams }: SearchParams) {
           Notre sélection
         </p>
         <h1 className="font-serif text-5xl mb-4" style={{ color: "#FDFAF4" }}>
-          La Collection
+          {params.genre
+            ? params.genre.charAt(0).toUpperCase() + params.genre.slice(1)
+            : params.tissu
+            ? `Collection ${params.tissu.charAt(0).toUpperCase() + params.tissu.slice(1)}`
+            : params.pays
+            ? `Créateurs du ${params.pays.charAt(0).toUpperCase() + params.pays.slice(1)}`
+            : "La Collection"}
         </h1>
         <p className="text-sm max-w-md mx-auto" style={{ color: "#D4CCBA" }}>
-          {products.length} pièce{products.length > 1 ? "s" : ""} — Chaque création raconte une histoire
+          {products.length} pièce{products.length > 1 ? "s" : ""} —{" "}
+          {products.length === 0
+            ? "Aucun produit pour ces filtres"
+            : "Chaque création raconte une histoire"}
         </p>
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-10">
-        {/* Suspense obligatoire pour useSearchParams() dans un Client Component */}
-        <Suspense fallback={
-          <div style={{ color: "#D4CCBA", padding: "1rem" }}>
-            Chargement des filtres...
-          </div>
-        }>
+        <Suspense fallback={<div style={{ color: "#D4CCBA" }}>Chargement...</div>}>
           <CollectionFilters activeFilters={params} />
         </Suspense>
-
         <ProductGrid products={products} />
       </div>
     </div>

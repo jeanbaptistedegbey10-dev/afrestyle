@@ -4,35 +4,46 @@
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
 
+// src/components/product/CollectionFilters.tsx
+// Ajoute la section Genre et change les URLs
+
 const FILTERS = {
+  genre: [
+    { label: "Femme",       value: "femme" },
+    { label: "Homme",       value: "homme" },
+    { label: "Accessoires", value: "accessoire" },
+  ],
   pays: [
-    { label: "Bénin", value: "benin" },
-    { label: "Nigeria", value: "nigeria" },
-    { label: "Sénégal", value: "senegal" },
-    { label: "Ghana", value: "ghana" },
-    { label: "Mali", value: "mali" },
+    { label: "Bénin",         value: "benin" },
+    { label: "Nigeria",       value: "nigeria" },
+    { label: "Sénégal",       value: "senegal" },
+    { label: "Ghana",         value: "ghana" },
+    { label: "Mali",          value: "mali" },
     { label: "Côte d'Ivoire", value: "cote-divoire" },
   ],
   tissu: [
-    { label: "Wax", value: "wax" },
-    { label: "Kente", value: "kente" },
+    { label: "Wax",     value: "wax" },
+    { label: "Kente",   value: "kente" },
     { label: "Bogolan", value: "bogolan" },
-    { label: "Bazin", value: "bazin" },
+    { label: "Bazin",   value: "bazin" },
+    { label: "Soie",    value: "soie" },
   ],
   style: [
     { label: "Traditionnel", value: "traditionnel" },
-    { label: "Moderne", value: "moderne" },
-    { label: "Streetwear", value: "streetwear" },
+    { label: "Moderne",      value: "moderne" },
+    { label: "Streetwear",   value: "streetwear" },
+    { label: "Luxe",         value: "luxe" },
   ],
   sort: [
-    { label: "Récent", value: "recent" },
-    { label: "Populaire", value: "populaire" },
-    { label: "Prix croissant", value: "prix-asc" },
+    { label: "Récent",           value: "recent" },
+    { label: "Populaire",        value: "populaire" },
+    { label: "Prix croissant",   value: "prix-asc" },
     { label: "Prix décroissant", value: "prix-desc" },
   ],
 };
 
 type ActiveFilters = {
+  genre?: string;
   pays?: string;
   tissu?: string;
   style?: string;
@@ -48,38 +59,51 @@ export default function CollectionFilters({
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // Met à jour un filtre sans supprimer les autres
-  // Pattern URL-driven filters — important en entretien
   const updateFilter = useCallback(
     (key: string, value: string) => {
       const params = new URLSearchParams(searchParams.toString());
-
-      // Toggle : si déjà actif, on supprime ; sinon on ajoute
       if (params.get(key) === value) {
         params.delete(key);
       } else {
         params.set(key, value);
       }
-
       router.push(`${pathname}?${params.toString()}`);
     },
-    [pathname, router, searchParams],
+    [pathname, router, searchParams]
   );
 
   const clearAll = () => router.push(pathname);
-
   const hasFilters = Object.values(activeFilters).some(Boolean);
 
   return (
-    <div className="mb-8 space-y-4">
-      {/* Ligne de filtres scrollable */}
-      <div className="flex flex-wrap gap-6 items-start">
-        {/* Filtre Pays */}
-        <div>
-          <p
-            className="text-xs tracking-widest uppercase mb-2"
-            style={{ color: "#D4AF37" }}
+    <div className="mb-8 space-y-5">
+
+      {/* Ligne 1 : Genre */}
+      <div className="flex flex-wrap gap-2">
+        {FILTERS.genre.map((f) => (
+          <button
+            key={f.value}
+            onClick={() => updateFilter("genre", f.value)}
+            className="text-xs tracking-wider uppercase px-4 py-2 transition-all duration-200"
+            style={{
+              borderRadius: "2px",
+              border: "1px solid",
+              borderColor: activeFilters.genre === f.value ? "#D4AF37" : "rgba(212,175,55,0.2)",
+              background: activeFilters.genre === f.value ? "#D4AF37" : "transparent",
+              color: activeFilters.genre === f.value ? "#0F172A" : "#D4CCBA",
+            }}
           >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Ligne 2 : Pays + Tissu + Style + Sort */}
+      <div className="flex flex-wrap gap-6 items-start">
+
+        {/* Pays */}
+        <div>
+          <p className="text-xs tracking-widest uppercase mb-2" style={{ color: "#D4AF37" }}>
             Pays
           </p>
           <div className="flex flex-wrap gap-2">
@@ -87,20 +111,14 @@ export default function CollectionFilters({
               <button
                 key={f.value}
                 onClick={() => updateFilter("pays", f.value)}
-                className="text-xs tracking-wider uppercase px-3 py-1.5 rounded-sm border transition-all duration-200"
-                style={
-                  activeFilters.pays === f.value
-                    ? {
-                        background: "#D4AF37",
-                        color: "#0F172A",
-                        borderColor: "#D4AF37",
-                      }
-                    : {
-                        background: "transparent",
-                        color: "#D4CCBA",
-                        borderColor: "rgba(212,175,55,0.2)",
-                      }
-                }
+                className="text-xs tracking-wider uppercase px-3 py-1.5 transition-all duration-200"
+                style={{
+                  borderRadius: "2px",
+                  border: "1px solid",
+                  borderColor: activeFilters.pays === f.value ? "#D4AF37" : "rgba(212,175,55,0.2)",
+                  background: activeFilters.pays === f.value ? "#D4AF37" : "transparent",
+                  color: activeFilters.pays === f.value ? "#0F172A" : "#D4CCBA",
+                }}
               >
                 {f.label}
               </button>
@@ -108,12 +126,9 @@ export default function CollectionFilters({
           </div>
         </div>
 
-        {/* Filtre Tissu */}
+        {/* Tissu */}
         <div>
-          <p
-            className="text-xs tracking-widest uppercase mb-2"
-            style={{ color: "#D4AF37" }}
-          >
+          <p className="text-xs tracking-widest uppercase mb-2" style={{ color: "#D4AF37" }}>
             Tissu
           </p>
           <div className="flex flex-wrap gap-2">
@@ -121,20 +136,14 @@ export default function CollectionFilters({
               <button
                 key={f.value}
                 onClick={() => updateFilter("tissu", f.value)}
-                className="text-xs tracking-wider uppercase px-3 py-1.5 rounded-sm border transition-all duration-200"
-                style={
-                  activeFilters.tissu === f.value
-                    ? {
-                        background: "#D4AF37",
-                        color: "#0F172A",
-                        borderColor: "#D4AF37",
-                      }
-                    : {
-                        background: "transparent",
-                        color: "#D4CCBA",
-                        borderColor: "rgba(212,175,55,0.2)",
-                      }
-                }
+                className="text-xs tracking-wider uppercase px-3 py-1.5 transition-all duration-200"
+                style={{
+                  borderRadius: "2px",
+                  border: "1px solid",
+                  borderColor: activeFilters.tissu === f.value ? "#D4AF37" : "rgba(212,175,55,0.2)",
+                  background: activeFilters.tissu === f.value ? "#D4AF37" : "transparent",
+                  color: activeFilters.tissu === f.value ? "#0F172A" : "#D4CCBA",
+                }}
               >
                 {f.label}
               </button>
@@ -142,12 +151,9 @@ export default function CollectionFilters({
           </div>
         </div>
 
-        {/* Filtre Style */}
+        {/* Style */}
         <div>
-          <p
-            className="text-xs tracking-widest uppercase mb-2"
-            style={{ color: "#D4AF37" }}
-          >
+          <p className="text-xs tracking-widest uppercase mb-2" style={{ color: "#D4AF37" }}>
             Style
           </p>
           <div className="flex flex-wrap gap-2">
@@ -155,20 +161,14 @@ export default function CollectionFilters({
               <button
                 key={f.value}
                 onClick={() => updateFilter("style", f.value)}
-                className="text-xs tracking-wider uppercase px-3 py-1.5 rounded-sm border transition-all duration-200"
-                style={
-                  activeFilters.style === f.value
-                    ? {
-                        background: "#D4AF37",
-                        color: "#0F172A",
-                        borderColor: "#D4AF37",
-                      }
-                    : {
-                        background: "transparent",
-                        color: "#D4CCBA",
-                        borderColor: "rgba(212,175,55,0.2)",
-                      }
-                }
+                className="text-xs tracking-wider uppercase px-3 py-1.5 transition-all duration-200"
+                style={{
+                  borderRadius: "2px",
+                  border: "1px solid",
+                  borderColor: activeFilters.style === f.value ? "#D4AF37" : "rgba(212,175,55,0.2)",
+                  background: activeFilters.style === f.value ? "#D4AF37" : "transparent",
+                  color: activeFilters.style === f.value ? "#0F172A" : "#D4CCBA",
+                }}
               >
                 {f.label}
               </button>
@@ -176,22 +176,20 @@ export default function CollectionFilters({
           </div>
         </div>
 
-        {/* Tri */}
+        {/* Sort */}
         <div className="ml-auto">
-          <p
-            className="text-xs tracking-widest uppercase mb-2"
-            style={{ color: "#D4AF37" }}
-          >
+          <p className="text-xs tracking-widest uppercase mb-2" style={{ color: "#D4AF37" }}>
             Trier par
           </p>
           <select
             value={activeFilters.sort ?? "recent"}
             onChange={(e) => updateFilter("sort", e.target.value)}
-            className="text-xs tracking-wider uppercase px-3 py-1.5 rounded-sm border outline-none"
+            className="text-xs tracking-wider uppercase px-3 py-1.5 outline-none"
             style={{
               background: "#1E293B",
               color: "#F5F0E8",
-              borderColor: "rgba(212,175,55,0.2)",
+              border: "1px solid rgba(212,175,55,0.2)",
+              borderRadius: "2px",
             }}
           >
             {FILTERS.sort.map((f) => (
@@ -203,7 +201,7 @@ export default function CollectionFilters({
         </div>
       </div>
 
-      {/* Bouton reset filtres */}
+      {/* Reset */}
       {hasFilters && (
         <button
           onClick={clearAll}
