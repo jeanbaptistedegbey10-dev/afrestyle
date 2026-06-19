@@ -1,22 +1,30 @@
 // src/app/dashboard/page.tsx
-// Page protégée — accessible uniquement aux créateurs validés
-
 import { getCurrentDesigner } from "@/lib/actions/designer.actions";
 import { redirect } from "next/navigation";
-import { db } from "@/lib/db";
-import { getDesignerProducts } from "@/lib/shopify/products";
-import DashboardClient from "@/components/designer/DashboardClient";
+import { getProducts } from "@/lib/shopify/products";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Dashboard Créateur" };
 
 export default async function DashboardPage() {
   const designer = await getCurrentDesigner();
-  if (!designer) redirect("/dashboard/login");
-  if (designer.status !== "APPROVED") redirect("/dashboard/pending");
 
-  // Récupère les produits du créateur depuis Shopify
-  const shopifyData = await getDesignerProducts(designer.handle);
+  // Si le designer n'existe pas ou n'est pas approuvé, on redirige.
+  if (!designer) {
+    redirect("/designers/apply");
+  }
+
+  if (designer.status !== "APPROVED") {
+    redirect("/dashboard/pending");
+  }
+
+  // TypeScript comprend désormais que 'designer' est parfaitement défini et APPROVED
+  const designerData = designer;
+
+  const { products } = await getProducts({
+    first: 12,
+    query: `vendor:"${designerData.shopifyVendorName}"`,
+  });
 
   return (
     <div style={{ background: "#0F172A", minHeight: "100vh" }}>
@@ -26,27 +34,16 @@ export default async function DashboardPage() {
         className="py-8 px-6"
         style={{ background: "#1E293B", borderBottom: "0.5px solid rgba(212,175,55,0.1)" }}
       >
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <div className="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-4">
           <div>
             <p className="text-xs tracking-widest uppercase mb-1" style={{ color: "#D4AF37" }}>
               Dashboard créateur
             </p>
             <h1 className="font-serif text-3xl" style={{ color: "#FDFAF4" }}>
-              {designer.brandName}
+              {designerData.brandName}
             </h1>
           </div>
-          
-            href={`/designers/${designer.handle}`}
-            className="text-xs tracking-widest uppercase px-4 py-2 transition-colors"
-            style={{
-              border: "0.5px solid rgba(212,175,55,0.3)",
-              color: "#D4AF37",
-              borderRadius: "2px",
-            }}
-            target="_blank"
-          >
-            Voir ma page publique →
-          </a>
+          <PublicPageLink handle={designerData.handle} />
         </div>
       </div>
 
@@ -55,7 +52,7 @@ export default async function DashboardPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
           {[
-            { num: shopifyData?.products.edges.length ?? 0, label: "Produits" },
+            { num: products.length, label: "Produits" },
             { num: "–", label: "Commandes ce mois" },
             { num: "–", label: "Revenu total" },
             { num: "–", label: "Vues profil" },
@@ -85,23 +82,14 @@ export default async function DashboardPage() {
             <h2 className="font-serif text-2xl" style={{ color: "#FDFAF4" }}>
               Mes produits
             </h2>
-            
-              href={`https://${process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN}/admin`}
-              target="_blank"
-              className="text-xs tracking-widest uppercase px-4 py-2"
-              style={{
-                background: "#D4AF37",
-                color: "#0F172A",
-                borderRadius: "2px",
-              }}
-            >
-              + Ajouter un produit
-            </a>
+            <AddProductLink
+              domain={process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN ?? ""}
+            />
           </div>
 
-          {!shopifyData || shopifyData.products.edges.length === 0 ? (
+          {products.length === 0 ? (
             <div
-              className="text-center py-12"
+              className="text-center py-12 px-6"
               style={{
                 background: "#1E293B",
                 border: "0.5px solid rgba(212,175,55,0.1)",
@@ -112,43 +100,48 @@ export default async function DashboardPage() {
                 Aucun produit pour l'instant
               </p>
               <p className="text-sm mb-6" style={{ color: "#D4CCBA" }}>
-                Ajoute tes créations dans Shopify Admin avec{" "}
-                <strong style={{ color: "#D4AF37" }}>Vendor = "{designer.brandName}"</strong>
+                Ajoute tes créations dans Shopify Admin avec Vendor ={" "}
+                <code
+                  style={{
+                    background: "rgba(212,175,55,0.1)",
+                    color: "#D4AF37",
+                    padding: "0 4px",
+                    borderRadius: "2px",
+                  }}
+                >
+                  {designerData.brandName}
+                </code>
               </p>
-              
-                href={`https://${process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN}/admin/products/new`}
-                target="_blank"
-                className="btn-primary inline-flex"
-              >
-                Ajouter mon premier produit
-              </a>
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {shopifyData.products.edges.map(({ node: product }) => (
+              {products.map((product) => (
                 <div
                   key={product.id}
                   style={{
                     background: "#1E293B",
                     border: "0.5px solid rgba(212,175,55,0.1)",
                     borderRadius: "2px",
+                    overflow: "hidden",
                   }}
                 >
-                  {product.images.edges[0] && (
+                  {product.images[0] && (
                     <img
-                      src={product.images.edges[0].node.url}
+                      src={product.images[0].url}
                       alt={product.title}
-                      className="w-full object-cover"
-                      style={{ aspectRatio: "3/4" }}
+                      style={{
+                        width: "100%",
+                        aspectRatio: "3/4",
+                        objectFit: "cover",
+                      }}
                     />
                   )}
                   <div className="p-3">
-                    <p className="font-serif text-sm" style={{ color: "#FDFAF4" }}>
+                    <p className="font-serif text-sm mb-1" style={{ color: "#FDFAF4" }}>
                       {product.title}
                     </p>
-                    <p className="text-xs mt-1" style={{ color: "#D4AF37" }}>
-                      {product.priceRange.minVariantPrice.amount}{" "}
-                      {product.priceRange.minVariantPrice.currencyCode}
+                    <p className="text-xs" style={{ color: "#D4AF37" }}>
+                      {product.priceFormatted}
                     </p>
                   </div>
                 </div>
@@ -157,7 +150,7 @@ export default async function DashboardPage() {
           )}
         </div>
 
-        {/* Info importante */}
+        {/* Guide */}
         <div
           className="p-6"
           style={{
@@ -172,15 +165,18 @@ export default async function DashboardPage() {
           <ol className="space-y-2 text-sm" style={{ color: "#D4CCBA" }}>
             <li>1. Va sur Shopify Admin → Products → Add product</li>
             <li>
-              2. Dans le champ <strong style={{ color: "#F5F0E8" }}>Vendor</strong>, mets exactement :{" "}
+              2. Dans le champ{" "}
+              <strong style={{ color: "#F5F0E8" }}>Vendor</strong>, mets
+              exactement :{" "}
               <code
                 style={{
                   background: "rgba(212,175,55,0.1)",
                   color: "#D4AF37",
                   padding: "0 4px",
+                  borderRadius: "2px",
                 }}
               >
-                {designer.brandName}
+                {designerData.brandName}
               </code>
             </li>
             <li>3. Ajoute tes tags : pays-XX, tissu-XX, style-XX, femme/homme</li>
@@ -190,5 +186,44 @@ export default async function DashboardPage() {
 
       </div>
     </div>
+  );
+}
+
+// CORRECTION : Restauration des balises d'ouverture <a> manquantes
+function PublicPageLink({ handle }: { handle: string }) {
+  return (
+    <a
+      href={`/designers/${handle}`}
+      target="_blank"
+      rel="noreferrer"
+      className="text-xs tracking-widest uppercase px-4 py-2"
+      style={{
+        border: "0.5px solid rgba(212,175,55,0.3)",
+        color: "#D4AF37",
+        borderRadius: "2px",
+        textDecoration: "none",
+      }}
+    >
+      Voir ma page publique →
+    </a>
+  );
+}
+
+function AddProductLink({ domain }: { domain: string }) {
+  return (
+    <a
+      href={`https://${domain}/admin/products/new`}
+      target="_blank"
+      rel="noreferrer"
+      className="text-xs tracking-widest uppercase px-4 py-2"
+      style={{
+        background: "#D4AF37",
+        color: "#0F172A",
+        borderRadius: "2px",
+        textDecoration: "none",
+      }}
+    >
+      + Ajouter un produit
+    </a>
   );
 }
