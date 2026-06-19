@@ -1,0 +1,80 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+}
+
+enum DesignerStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+model Designer {
+  id                String               @id @default(cuid())
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  firstName         String
+  lastName          String
+  email             String               @unique
+  phone             String?
+  bio               String
+  story             String
+  quote             String?
+  country           String
+  city              String?
+  brandName         String
+  handle            String               @unique
+  specialty         String
+  since             Int
+  avatarUrl         String?
+  coverUrl          String?
+  portfolioUrls     String[]
+  shopifyVendorName String               @unique
+  status            DesignerStatus       @default(PENDING)
+  rejectionReason   String?
+  stripeAccountId   String?
+  products          DesignerProduct[]
+  applications      DesignerApplication[]
+
+  @@index([handle])
+  @@index([status])
+}
+
+model DesignerProduct {
+  id               String   @id @default(cuid())
+  createdAt        DateTime @default(now())
+  shopifyProductId String   @unique
+  designerId       String
+  designer         Designer @relation(fields: [designerId], references: [id])
+
+  @@index([designerId])
+}
+
+model DesignerApplication {
+  id           String    @id @default(cuid())
+  createdAt    DateTime  @default(now())
+  designerId   String
+  designer     Designer  @relation(fields: [designerId], references: [id])
+  portfolioUrl String?
+  instagramUrl String?
+  websiteUrl   String?
+  motivation   String
+  reviewedAt   DateTime?
+  reviewedBy   String?
+  notes        String?
+}
+
+model DesignerSession {
+  id         String   @id @default(cuid())
+  createdAt  DateTime @default(now())
+  expiresAt  DateTime
+  designerId String
+  token      String   @unique
+
+  @@index([token])
+}
