@@ -5,8 +5,33 @@ import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import crypto from "crypto";
 
 const ADMIN_COOKIE = "admin_token";
+
+/**
+ * Vérifie si la requête vient d'un admin authentifié
+ * Utilise timingSafeEqual pour prévenir les timing attacks
+ */
+async function assertAdmin() {
+  const cookieStore = await cookies();
+  const adminToken = cookieStore.get(ADMIN_COOKIE)?.value;
+  const validToken = process.env.ADMIN_SECRET_TOKEN;
+
+  if (!adminToken || !validToken) {
+    redirect("/admin/login");
+  }
+
+  // timingSafeEqual évite les attaques par timing (comparaison en temps constant)
+  const a = Buffer.from(adminToken);
+  const b = Buffer.from(validToken);
+  const isValid =
+    a.length === b.length && crypto.timingSafeEqual(a, b);
+
+  if (!isValid) {
+    redirect("/admin/login");
+  }
+}
 
 /**
  * Login admin — vérifie le mot de passe secret
@@ -18,17 +43,26 @@ export async function adminLoginAction(formData: FormData) {
     return { success: false, error: "Mot de passe requis" };
   }
 
-  // Compare avec le token secret stocké dans les env variables
-  // En production, utilise bcrypt pour hasher le mot de passe
   const validToken = process.env.ADMIN_SECRET_TOKEN;
 
   if (!validToken) {
     return { success: false, error: "Configuration admin manquante" };
   }
 
-  if (password !== validToken) {
-    // Délai artificiel pour éviter les attaques par force brute
-    await new Promise((r) => setTimeout(r, 1000));
+  // Délai artificiel pour ralentir les attaques par force brute
+  await new Promise((r) => setTimeout(r, 600));
+
+  // Comparaison sécurisée en temps constant
+  let isValid = false;
+  try {
+    const a = Buffer.from(password.padEnd(validToken.length));
+    const b = Buffer.from(validToken);
+    isValid = a.length === b.length && crypto.timingSafeEqual(a, b);
+  } catch {
+    isValid = false;
+  }
+
+  if (!isValid) {
     return { success: false, error: "Mot de passe incorrect" };
   }
 
@@ -36,10 +70,10 @@ export async function adminLoginAction(formData: FormData) {
   const cookieStore = await cookies();
   cookieStore.set(ADMIN_COOKIE, validToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure:   process.env.NODE_ENV === "production",
     sameSite: "lax",
-    maxAge: 60 * 60 * 8, // 8 heures
-    path: "/",
+    maxAge:   60 * 60 * 8, // 8 heures
+    path:     "/",
   });
 
   return { success: true, error: null };
@@ -55,9 +89,11 @@ export async function adminLogoutAction() {
 }
 
 /**
- * Valide un créateur
+ * Valide un créateur — requiert d'être admin
  */
 export async function approveDesigner(formData: FormData) {
+  await assertAdmin();
+
   const designerId = formData.get("designerId") as string;
   if (!designerId) return;
 
@@ -68,7 +104,7 @@ export async function approveDesigner(formData: FormData) {
       applications: {
         updateMany: {
           where: { designerId },
-          data: { reviewedAt: new Date() },
+          data:  { reviewedAt: new Date() },
         },
       },
     },
@@ -78,18 +114,41 @@ export async function approveDesigner(formData: FormData) {
 }
 
 /**
- * Refuse un créateur
+ * Refuse un créateur — requiert d'être admin
  */
 export async function rejectDesigner(formData: FormData) {
+  await assertAdmin();
+
   const designerId = formData.get("designerId") as string;
-  const reason = formData.get("reason") as string;
+  const reason     = formData.get("reason")     as string;
   if (!designerId) return;
 
   await db.designer.update({
     where: { id: designerId },
     data: {
-      status: "REJECTED",
+      status:          "REJECTED",
       rejectionReason: reason || "Ne correspond pas aux critères actuels",
+    },
+  });
+
+  revalidatePath("/admin/designers");
+}
+
+/**
+ * Suspend un créateur — requiert d'être admin
+ */
+export async function suspendDesigner(formData: FormData) {
+  await assertAdmin();
+
+  const designerId = formData.get("designerId") as string;
+  const reason     = formData.get("reason")     as string;
+  if (!designerId) return;
+
+  await db.designer.update({
+    where: { id: designerId },
+    data: {
+      status:          "SUSPENDED",
+      rejectionReason: reason || null,
     },
   });
 

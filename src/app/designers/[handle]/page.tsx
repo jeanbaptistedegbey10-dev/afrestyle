@@ -29,11 +29,8 @@ export default async function DesignerPage({
 
   if (!designer) notFound();
 
-  // Récupère les produits depuis Shopify par vendor name
-  const { products } = await getProducts({
-    first: 12,
-    query: `vendor:"${designer.shopifyVendorName}"`,
-  });
+  // Récupère les produits depuis Shopify par vendor name (via sa collection designer-{handle})
+  const { products } = await getDesignerProducts(designer.handle);
 
   return (
     <div style={{ background: "#0F172A", minHeight: "100vh" }}>

@@ -38,11 +38,17 @@ model Designer {
   status            DesignerStatus       @default(PENDING)
   rejectionReason   String?
   stripeAccountId   String?
+
+  // Authentification créateur (mot de passe hashé avec bcrypt)
+  passwordHash      String?
+
   products          DesignerProduct[]
   applications      DesignerApplication[]
+  sessions          DesignerSession[]
 
   @@index([handle])
   @@index([status])
+  @@index([email])
 }
 
 model DesignerProduct {
@@ -74,7 +80,9 @@ model DesignerSession {
   createdAt  DateTime @default(now())
   expiresAt  DateTime
   designerId String
+  designer   Designer @relation(fields: [designerId], references: [id], onDelete: Cascade)
   token      String   @unique
 
   @@index([token])
+  @@index([designerId])
 }

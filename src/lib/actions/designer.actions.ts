@@ -5,6 +5,14 @@ import { db } from "@/lib/db";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import crypto from "crypto";
+import bcrypt from "bcryptjs";
+
+const DESIGNER_SESSION_COOKIE = "designer_session";
+const SESSION_DURATION_DAYS = 7;
+
+// ─────────────────────────────────────────────────────────────────────
+//  APPLICATION
+// ─────────────────────────────────────────────────────────────────────
 
 /**
  * Soumet une candidature créateur
@@ -23,9 +31,14 @@ export async function submitApplication(formData: FormData) {
   const instagramUrl = formData.get("instagramUrl") as string;
   const websiteUrl   = formData.get("websiteUrl") as string;
   const portfolioUrl = formData.get("portfolioUrl") as string;
+  const password     = formData.get("password") as string;
 
   if (!firstName || !lastName || !email || !brandName || !country || !bio) {
     return { success: false, error: "Tous les champs obligatoires doivent être remplis" };
+  }
+
+  if (!password || password.length < 8) {
+    return { success: false, error: "Le mot de passe doit contenir au moins 8 caractères" };
   }
 
   try {
@@ -48,35 +61,36 @@ export async function submitApplication(formData: FormData) {
       handle = `${baseHandle}-${counter++}`;
     }
 
+    // Hash du mot de passe
+    const passwordHash = await bcrypt.hash(password, 12);
+
     // Crée le créateur en statut PENDING
-    const designer = await db.designer.create({
+    await db.designer.create({
       data: {
         firstName,
         lastName,
         email,
-        phone: phone || null,
+        phone:             phone || null,
         brandName,
         handle,
         country,
-        specialty,
-        since,
+        specialty:         specialty || "Mode",
+        since:             isNaN(since) ? new Date().getFullYear() : since,
         bio,
-        story: bio, // On utilisera la version longue plus tard
-        shopifyVendorName: brandName, // Convention: même nom dans Shopify
-        status: "PENDING",
+        story:             bio,
+        shopifyVendorName: brandName,
+        status:            "PENDING",
+        passwordHash,
         applications: {
           create: {
             motivation,
             instagramUrl: instagramUrl || null,
-            websiteUrl: websiteUrl || null,
+            websiteUrl:   websiteUrl   || null,
             portfolioUrl: portfolioUrl || null,
           },
         },
       },
     });
-
-    // TODO: envoyer un email de confirmation (Resend)
-    // await sendConfirmationEmail(designer.email, designer.firstName);
 
     return { success: true, error: null };
   } catch (error) {
@@ -85,32 +99,104 @@ export async function submitApplication(formData: FormData) {
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────
+//  AUTHENTIFICATION
+// ─────────────────────────────────────────────────────────────────────
+
 /**
- * Connecte un créateur (auth séparée de l'auth client)
+ * Connecte un créateur avec email + mot de passe
  */
 export async function loginDesigner(formData: FormData) {
   const email    = formData.get("email") as string;
   const password = formData.get("password") as string;
 
-  // TODO: implémenter l'authentification créateur
-  // Pour l'instant, on utilise un système de magic link par email
+  if (!email || !password) {
+    return { success: false, error: "Email et mot de passe requis" };
+  }
 
-  return { success: false, error: "Non implémenté" };
+  try {
+    const designer = await db.designer.findUnique({ where: { email } });
+
+    if (!designer || !designer.passwordHash) {
+      // Délai pour éviter le timing attack (ne pas révéler si l'email existe)
+      await new Promise((r) => setTimeout(r, 600));
+      return { success: false, error: "Email ou mot de passe incorrect" };
+    }
+
+    const valid = await bcrypt.compare(password, designer.passwordHash);
+    if (!valid) {
+      return { success: false, error: "Email ou mot de passe incorrect" };
+    }
+
+    // Crée une session
+    const token = crypto.randomBytes(48).toString("hex");
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + SESSION_DURATION_DAYS);
+
+    await db.designerSession.create({
+      data: { token, designerId: designer.id, expiresAt },
+    });
+
+    // Stocke le token dans un cookie httpOnly sécurisé
+    const cookieStore = await cookies();
+    cookieStore.set(DESIGNER_SESSION_COOKIE, token, {
+      httpOnly: true,
+      secure:   process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      expires:  expiresAt,
+      path:     "/",
+    });
+
+    return { success: true, error: null, status: designer.status };
+  } catch (error) {
+    console.error("loginDesigner error:", error);
+    return { success: false, error: "Erreur serveur — réessaie plus tard" };
+  }
 }
 
 /**
- * Récupère le profil du créateur connecté
+ * Déconnecte le créateur
+ */
+export async function logoutDesigner() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(DESIGNER_SESSION_COOKIE)?.value;
+
+  if (token) {
+    // Supprime la session en base
+    try {
+      await db.designerSession.delete({ where: { token } });
+    } catch {
+      // Session déjà expirée ou inexistante — pas critique
+    }
+    cookieStore.delete(DESIGNER_SESSION_COOKIE);
+  }
+
+  redirect("/designers/apply");
+}
+
+/**
+ * Récupère le profil du créateur connecté (depuis Server Component)
  */
 export async function getCurrentDesigner() {
   const cookieStore = await cookies();
-  const token = cookieStore.get("designer_session")?.value;
+  const token = cookieStore.get(DESIGNER_SESSION_COOKIE)?.value;
   if (!token) return null;
 
   const session = await db.designerSession.findUnique({
     where: { token },
-    include: { designer: true },  // Note: relation à ajouter au schéma
+    include: { designer: true },
   });
 
-  if (!session || session.expiresAt < new Date()) return null;
+  // Session expirée
+  if (!session || session.expiresAt < new Date()) {
+    if (session) {
+      // Nettoyage en base
+      try {
+        await db.designerSession.delete({ where: { token } });
+      } catch { /* ignore */ }
+    }
+    return null;
+  }
+
   return session.designer;
 }

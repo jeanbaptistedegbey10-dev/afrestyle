@@ -1,5 +1,5 @@
 // src/app/dashboard/page.tsx
-import { getCurrentDesigner } from "@/lib/actions/designer.actions";
+import { getCurrentDesigner, logoutDesigner } from "@/lib/actions/designer.actions";
 import { redirect } from "next/navigation";
 import { getProducts } from "@/lib/shopify/products";
 import type { Metadata } from "next";
@@ -43,7 +43,22 @@ export default async function DashboardPage() {
               {designerData.brandName}
             </h1>
           </div>
-          <PublicPageLink handle={designerData.handle} />
+          <div className="flex items-center gap-3">
+            <PublicPageLink handle={designerData.handle} />
+            <form action={logoutDesigner}>
+              <button
+                type="submit"
+                className="text-xs tracking-widest uppercase px-4 py-2 transition-colors"
+                style={{
+                  border: "0.5px solid rgba(212,175,55,0.2)",
+                  color: "#D4CCBA",
+                  borderRadius: "2px",
+                }}
+              >
+                Se déconnecter
+              </button>
+            </form>
+          </div>
         </div>
       </div>
 

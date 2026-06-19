@@ -135,5 +135,12 @@ export async function getDesignerProducts(designerHandle: string) {
     tags: [`designer-${designerHandle}`],
   });
 
-  return data.data.collection;
+  const collection = data.data.collection;
+  if (!collection) {
+    return { products: [] };
+  }
+
+  return {
+    products: collection.products.edges.map((e) => normalizeProduct(e.node)),
+  };
 }

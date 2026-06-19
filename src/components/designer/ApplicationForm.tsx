@@ -149,6 +149,23 @@ export default function ApplicationForm() {
         </div>
       </fieldset>
 
+      {/* Mot de passe espace créateur */}
+      <fieldset>
+        <legend
+          className="text-xs tracking-widest uppercase mb-4 block"
+          style={{ color: "#D4AF37" }}
+        >
+          Ton espace créateur
+        </legend>
+        <div className="space-y-4">
+          <p className="text-xs" style={{ color: "#D4CCBA" }}>
+            Crée un mot de passe pour accéder à ton tableau de bord une fois ta candidature validée.
+          </p>
+          <Field name="password" label="Mot de passe (8 caractères min)" type="password" placeholder="••••••••••••" required />
+          <Field name="passwordConfirm" label="Confirmer le mot de passe" type="password" placeholder="••••••••••••" required />
+        </div>
+      </fieldset>
+
       {/* CGU */}
       <label className="flex items-start gap-3 cursor-pointer">
         <input type="checkbox" name="terms" required className="mt-1" />
