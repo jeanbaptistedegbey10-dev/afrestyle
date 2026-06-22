@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { Playfair_Display, DM_Sans } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
 import CartDrawer from "@/components/cart/CartDrawer";
 import { getCurrentCustomer } from "@/lib/actions/auth.actions";
 import "./globals.css";
@@ -44,6 +45,7 @@ export default async function RootLayout({
       >
         <Navbar />
         <main>{children}</main>
+        <Footer />
         <CartDrawer />
         {/* Toaster pour les notifications */}
         <Toaster

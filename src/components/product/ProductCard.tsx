@@ -52,9 +52,20 @@ export default function ProductCard({ product }: ProductCardProps) {
             className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
-          // Placeholder si pas d'image
-          <div className="w-full h-full flex items-center justify-center">
-            <ShoppingBag className="text-gold/20" size={48} />
+          // Placeholder SVG généré dynamiquement
+          <div className="w-full h-full flex items-center justify-center" style={{
+            background: `linear-gradient(135deg, #2d1535 0%, #0d2218 100%)`
+          }}>
+            <div className="text-center">
+              <div className="w-24 h-24 rounded-full border-2 border-gold/20 flex items-center justify-center mx-auto mb-3">
+                <span className="text-gold font-serif text-2xl font-bold">
+                  {product.title.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase().slice(0,2)}
+                </span>
+              </div>
+              <p className="text-sand-3 text-xs tracking-widest uppercase px-4 line-clamp-2">
+                {product.title}
+              </p>
+            </div>
           </div>
         )}
 

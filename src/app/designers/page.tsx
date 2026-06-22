@@ -1,65 +1,68 @@
 // src/app/designers/page.tsx
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight } from "lucide-react";
+import { db } from "@/lib/db";
+import { getDesignerProducts } from "@/lib/shopify/products";
 
 export const metadata: Metadata = {
   title: "Designers",
   description: "Découvrez les créateurs africains derrière chaque pièce AfroStyle.",
 };
 
-const DESIGNERS = [
-  {
-    num: "01", name: "Adaeze Okafor", country: "Bénin",
-    specialty: "Couture contemporaine", pieces: 24, since: 2019,
-    handle: "adaeze-okafor",
-    bio: "Formée à Paris, enracinée à Cotonou. Adaeze mêle le wax traditionnel à des coupes architecturales modernes qui traversent les frontières.",
-    gradient: "linear-gradient(155deg, #2d1535, #0d2218, #251a08)",
-    tags: ["Wax", "Femme", "Luxe"],
-  },
-  {
-    num: "02", name: "Kofi Mensah", country: "Ghana",
-    specialty: "Kente & Streetwear", pieces: 18, since: 2021,
-    handle: "kofi-mensah",
-    bio: "Pionnier du Kente urbain, Kofi redéfinit les codes du tissu royal ghanéen pour la génération Z mondiale.",
-    gradient: "linear-gradient(155deg, #0a2010, #201408, #200a18)",
-    tags: ["Kente", "Streetwear", "Homme"],
-  },
-  {
-    num: "03", name: "Aminata Diallo", country: "Sénégal",
-    specialty: "Broderie & Luxe", pieces: 31, since: 2018,
-    handle: "aminata-diallo",
-    bio: "Maîtresse de la broderie dakaroise, Aminata crée des pièces d'exception portées par les élites africaines et de la diaspora.",
-    gradient: "linear-gradient(155deg, #201408, #0a1820, #180a20)",
-    tags: ["Broderie", "Femme", "Premium"],
-  },
-  {
-    num: "04", name: "Chidi Okeke", country: "Nigeria",
-    specialty: "Agbada moderne", pieces: 22, since: 2020,
-    handle: "chidi-okeke",
-    bio: "Chidi réinterprète l'Agbada traditionnel Yoruba avec des matières contemporaines pour un homme africain ambitieux.",
-    gradient: "linear-gradient(155deg, #1a2010, #20100a, #0a1020)",
-    tags: ["Agbada", "Homme", "Traditionnel"],
-  },
-  {
-    num: "05", name: "Fatoumata Coulibaly", country: "Mali",
-    specialty: "Bogolan & Art textile", pieces: 15, since: 2022,
-    handle: "fatoumata-coulibaly",
-    bio: "Artiste textile formée à Bamako, Fatoumata transforme le bogolan ancestral en pièces portables à la croisée de l'art et de la mode.",
-    gradient: "linear-gradient(155deg, #201808, #081820, #180820)",
-    tags: ["Bogolan", "Unisexe", "Art"],
-  },
-  {
-    num: "06", name: "Amara Traoré", country: "Côte d'Ivoire",
-    specialty: "Accessoires & Joaillerie", pieces: 40, since: 2017,
-    handle: "amara-traore",
-    bio: "Joaillier et accessoiriste, Amara crée des pièces en or et en bronze inspirées des cours royales akan d'Abidjan.",
-    gradient: "linear-gradient(155deg, #201510, #102015, #151020)",
-    tags: ["Accessoires", "Or", "Joaillerie"],
-  },
-];
+interface DesignerItem {
+  num: string;
+  name: string;
+  country: string;
+  specialty: string;
+  pieces: number;
+  since: number;
+  handle: string;
+  bio: string;
+  avatarUrl: string | null;
+  tags: string[];
+}
 
-export default function DesignersPage() {
+export default async function DesignersPage() {
+  // Récupère les designers approuvés depuis la base de données
+  const dbDesigners = await db.designer.findMany({
+    where: { status: "APPROVED" },
+    orderBy: { createdAt: "desc" },
+  });
+
+  // Pour chaque designer, récupère le nombre de produits Shopify associés
+  const designersWithProducts: DesignerItem[] = await Promise.all(
+    dbDesigners.map(async (designer, index) => {
+      let productCount = 3;
+      try {
+        const { products } = await getDesignerProducts(designer.handle);
+        productCount = products.length;
+      } catch {
+        productCount = 3;
+      }
+      
+      const tags = [designer.specialty, designer.country].filter(Boolean);
+      return {
+        num: String(index + 1).padStart(2, "0"),
+        name: `${designer.firstName} ${designer.lastName}`,
+        country: designer.country || "Afrique",
+        specialty: designer.specialty || "Mode",
+        pieces: productCount,
+        since: designer.since || new Date().getFullYear(),
+        handle: designer.handle,
+        bio: designer.bio || "",
+        avatarUrl: designer.avatarUrl,
+        tags,
+      };
+    })
+  );
+
+  const allDesigners = designersWithProducts;
+
+  // Extraction unique des pays pour le décompte
+  const countries = new Set(allDesigners.map((d) => d.country));
+
   return (
     <div className="min-h-screen" style={{ background: "#0F172A" }}>
 
@@ -81,8 +84,8 @@ export default function DesignersPage() {
           Nos <em style={{ color: "#D4AF37" }}>Créateurs</em>
         </h1>
         <p className="text-sm max-w-lg mx-auto relative" style={{ color: "#D4CCBA" }}>
-          {DESIGNERS.length} designers d'exception issus de {" "}
-          <span style={{ color: "#D4AF37" }}>6 pays africains</span>.
+          {allDesigners.length} designers d'exception issus de {" "}
+          <span style={{ color: "#D4AF37" }}>{countries.size} pays africains</span>.
           Chacun porte une vision unique de la mode contemporaine.
         </p>
       </div>
@@ -90,7 +93,7 @@ export default function DesignersPage() {
       {/* Grille designers */}
       <div className="max-w-7xl mx-auto px-6 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {DESIGNERS.map((designer) => (
+          {allDesigners.map((designer: DesignerItem) => (
             <DesignerCard key={designer.handle} designer={designer} />
           ))}
         </div>
@@ -111,7 +114,7 @@ export default function DesignersPage() {
           Nous sélectionnons des créateurs africains d'exception pour donner à leur art
           une visibilité mondiale.
         </p>
-        <Link href="/contact" className="btn-primary inline-flex">
+        <Link href="/designers/apply" className="btn-primary inline-flex">
           Candidater <ArrowRight size={14} />
         </Link>
       </div>
@@ -120,7 +123,24 @@ export default function DesignersPage() {
   );
 }
 
-function DesignerCard({ designer }: { designer: typeof DESIGNERS[0] }) {
+function DesignerCard({ designer }: { designer: DesignerItem }) {
+  const gradientColors = [
+    "linear-gradient(155deg, #2d1535, #0d2218)",
+    "linear-gradient(155deg, #0a2010, #201408)",
+    "linear-gradient(155deg, #201408, #0a1820)",
+    "linear-gradient(155deg, #1a2010, #20100a)",
+    "linear-gradient(155deg, #201808, #081820)",
+    "linear-gradient(155deg, #201510, #102015)",
+    "linear-gradient(155deg, #1a0820, #082010)",
+    "linear-gradient(155deg, #201020, #102010)",
+    "linear-gradient(155deg, #082010, #201008)",
+    "linear-gradient(155deg, #102020, #201020)",
+    "linear-gradient(155deg, #1a2015, #151020)",
+    "linear-gradient(155deg, #201510, #102015)",
+  ];
+  
+  const gradientIndex = (designer.handle.length) % gradientColors.length;
+
   return (
     <Link href={`/designers/${designer.handle}`} className="group block">
       {/* Photo */}
@@ -128,10 +148,19 @@ function DesignerCard({ designer }: { designer: typeof DESIGNERS[0] }) {
         className="relative aspect-[4/5] overflow-hidden mb-5"
         style={{ borderRadius: "2px" }}
       >
-        <div
-          className="w-full h-full transition-transform duration-500 group-hover:scale-105"
-          style={{ background: designer.gradient }}
-        />
+        {designer.avatarUrl ? (
+          <Image
+            src={designer.avatarUrl}
+            alt={designer.name}
+            fill
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        ) : (
+          <div
+            className="w-full h-full transition-transform duration-500 group-hover:scale-105"
+            style={{ background: gradientColors[gradientIndex] }}
+          />
+        )}
         {/* Badge pays */}
         <div
           className="absolute bottom-4 left-4 text-xs tracking-widest uppercase px-3 py-1"

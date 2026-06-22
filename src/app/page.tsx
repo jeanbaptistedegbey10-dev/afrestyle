@@ -5,7 +5,6 @@ import ProductsSection from "@/components/home/ProductsSection";
 import DesignersSection from "@/components/home/DesignersSection";
 import StorySection from "@/components/home/StorySection";
 import NewsletterSection from "@/components/home/NewsletterSection";
-import FooterSection from "@/components/layout/Footer";
 
 export default async function HomePage() {
   const { products } = await getProducts({ first: 4 });
@@ -17,7 +16,6 @@ export default async function HomePage() {
       <DesignersSection />
       <StorySection />
       <NewsletterSection />
-      <FooterSection />
     </>
   );
 }

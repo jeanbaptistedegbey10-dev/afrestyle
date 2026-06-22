@@ -118,29 +118,99 @@ export async function getProductByHandle(handle: string) {
 }
 
 /**
- * Récupère les produits d'un créateur (via collection Shopify)
+ * Récupère les produits d'un créateur (via le vendor Shopify)
+ * On cherche d'abord dans la DB les produits associés, puis on récupère les infos Shopify
  */
 export async function getDesignerProducts(designerHandle: string) {
-  const data = await shopifyFetch<{
-    collection: {
-      id: string;
-      title: string;
-      description: string;
-      image: { url: string; altText: string | null } | null;
-      products: { edges: { node: ShopifyProduct }[] };
-    } | null;
-  }>({
-    query: GET_COLLECTION_PRODUCTS_QUERY,
-    variables: { handle: `designer-${designerHandle}`, first: 20 },
-    tags: [`designer-${designerHandle}`],
+  // Récupère d'abord le designer pour avoir son shopifyVendorName
+  const { db } = await import("@/lib/db");
+  const designer = await db.designer.findUnique({
+    where: { handle: designerHandle, status: "APPROVED" },
+    include: {
+      products: { select: { shopifyProductId: true } },
+    },
   });
 
-  const collection = data.data.collection;
-  if (!collection) {
-    return { products: [] };
+  if (!designer) return { products: [] };
+
+  // Si on a des IDs en DB, on les récupère un par un
+  const shopifyIds = designer.products.map(p => p.shopifyProductId);
+  
+  if (shopifyIds.length === 0) {
+    // Fallback: cherche par vendor via la query
+    return getDesignerProductsByVendor(designer.shopifyVendorName);
   }
 
+  // Récupère les produits par leurs IDs
+  const query = `
+    query GetProductsByIds($ids: [ID!]!) {
+      nodes(ids: $ids) {
+        ... on Product {
+          id
+          handle
+          title
+          description
+          descriptionHtml
+          vendor
+          tags
+          availableForSale
+          priceRange {
+            minVariantPrice { amount currencyCode }
+          }
+          images(first: 6) {
+            edges {
+              node { url altText width height }
+            }
+          }
+          variants(first: 20) {
+            edges {
+              node {
+                id title availableForSale
+                price { amount currencyCode }
+                compareAtPrice { amount currencyCode }
+                selectedOptions { name value }
+              }
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  try {
+    const data = await shopifyFetch<{ nodes: (ShopifyProduct | null)[] }>({
+      query,
+      variables: { ids: shopifyIds },
+      tags: [`designer-${designerHandle}`],
+      cache: "no-store",
+    });
+    
+    const products = data.data.nodes
+      .filter((p): p is ShopifyProduct => p !== null)
+      .map(normalizeProduct);
+    
+    return { products };
+  } catch {
+    // Fallback
+    return getDesignerProductsByVendor(designer.shopifyVendorName);
+  }
+}
+
+/**
+ * Cherche les produits Shopify par nom du vendeur (vendor)
+ */
+export async function getDesignerProductsByVendor(vendor: string) {
+  const data = await shopifyFetch<{
+    products: {
+      edges: { node: ShopifyProduct }[];
+    };
+  }>({
+    query: GET_PRODUCTS_QUERY,
+    variables: { first: 20, query: `vendor:"${vendor}"` },
+    tags: [`vendor-${vendor}`],
+  });
+
   return {
-    products: collection.products.edges.map((e) => normalizeProduct(e.node)),
+    products: data.data.products.edges.map((e) => normalizeProduct(e.node)),
   };
 }

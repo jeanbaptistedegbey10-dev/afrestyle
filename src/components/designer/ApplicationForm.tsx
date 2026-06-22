@@ -1,9 +1,9 @@
 // src/components/designer/ApplicationForm.tsx
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef } from "react";
 import { submitApplication } from "@/lib/actions/designer.actions";
-import { Loader2, CheckCircle } from "lucide-react";
+import { Loader2, CheckCircle, Upload, X } from "lucide-react";
 
 const COUNTRIES = [
   "Bénin", "Nigeria", "Sénégal", "Ghana", "Mali",
@@ -27,9 +27,69 @@ export default function ApplicationForm() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  function handleSubmit(formData: FormData) {
+  async function handleAvatarUpload(file: File) {
+    // Validation côté client
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/avif"];
+    if (!allowedTypes.includes(file.type)) {
+      setError("Format non accepté. Utilise JPG, PNG, WebP ou AVIF.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Image trop grande. Maximum 5 MB.");
+      return;
+    }
+
+    // Preview locale
+    const reader = new FileReader();
+    reader.onload = (e) => setAvatarPreview(e.target?.result as string);
+    reader.readAsDataURL(file);
+    setAvatarFile(file);
     setError(null);
+  }
+
+  function handleRemoveAvatar() {
+    setAvatarPreview(null);
+    setAvatarFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  async function handleSubmit(formData: FormData) {
+    setError(null);
+
+    // Upload l'avatar d'abord si un fichier est sélectionné
+    if (avatarFile) {
+      setUploading(true);
+      try {
+        const uploadFormData = new FormData();
+        uploadFormData.append("avatar", avatarFile);
+
+        const res = await fetch("/api/upload/avatar", {
+          method: "POST",
+          body: uploadFormData,
+        });
+
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          setError(data.error ?? "Erreur lors de l'upload de la photo");
+          setUploading(false);
+          return;
+        }
+
+        // Ajoute l'URL de l'avatar au formData
+        formData.append("avatarUrl", data.avatarUrl);
+      } catch {
+        setError("Erreur lors de l'upload de la photo");
+        setUploading(false);
+        return;
+      }
+      setUploading(false);
+    }
+
     startTransition(async () => {
       const result = await submitApplication(formData);
       if (result.success) {
@@ -79,6 +139,68 @@ export default function ApplicationForm() {
         <div className="space-y-4">
           <Field name="email" label="Email professionnel" type="email" placeholder="adaeze@example.com" required />
           <Field name="phone" label="Téléphone (WhatsApp)" placeholder="+229 XX XX XX XX" />
+        </div>
+
+        {/* Avatar / Photo */}
+        <div className="mt-6">
+          <label className="block text-xs tracking-widest uppercase mb-2" style={{ color: "#D4AF37" }}>
+            Photo de profil
+          </label>
+          <p className="text-xs mb-3" style={{ color: "#D4CCBA" }}>
+            Ajoute une photo professionnelle (JPG, PNG, WebP — max 5 Mo)
+          </p>
+
+          {avatarPreview ? (
+            <div className="relative inline-block">
+              <img
+                src={avatarPreview}
+                alt="Aperçu"
+                className="w-28 h-28 object-cover rounded-full"
+                style={{
+                  border: "2px solid rgba(212,175,55,0.3)",
+                }}
+              />
+              <button
+                type="button"
+                onClick={handleRemoveAvatar}
+                className="absolute -top-2 -right-2 p-1 rounded-full"
+                style={{
+                  background: "#DC2626",
+                  color: "#FFF",
+                }}
+              >
+                <X size={14} />
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center gap-3 px-6 py-4 transition-colors"
+              style={{
+                border: "1px dashed rgba(212,175,55,0.3)",
+                borderRadius: "2px",
+                color: "#D4CCBA",
+                background: "rgba(212,175,55,0.03)",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#D4AF37"; e.currentTarget.style.background = "rgba(212,175,55,0.06)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(212,175,55,0.3)"; e.currentTarget.style.background = "rgba(212,175,55,0.03)"; }}
+            >
+              <Upload size={20} style={{ color: "#D4AF37" }} />
+              <span className="text-sm">Choisir une photo</span>
+            </button>
+          )}
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/avif"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleAvatarUpload(file);
+            }}
+          />
         </div>
       </fieldset>
 
@@ -192,15 +314,17 @@ export default function ApplicationForm() {
 
       <button
         type="submit"
-        disabled={isPending}
+        disabled={isPending || uploading}
         className="w-full py-4 flex items-center justify-center gap-2 text-sm font-medium tracking-widest uppercase"
         style={{
-          background: isPending ? "#A8871C" : "#D4AF37",
+          background: isPending || uploading ? "#A8871C" : "#D4AF37",
           color: "#0F172A",
           borderRadius: "2px",
         }}
       >
-        {isPending ? (
+        {uploading ? (
+          <><Loader2 size={16} className="animate-spin" /> Upload de la photo...</>
+        ) : isPending ? (
           <><Loader2 size={16} className="animate-spin" /> Envoi en cours...</>
         ) : (
           "Envoyer ma candidature →"

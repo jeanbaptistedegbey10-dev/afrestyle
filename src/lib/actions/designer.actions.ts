@@ -31,7 +31,9 @@ export async function submitApplication(formData: FormData) {
   const instagramUrl = formData.get("instagramUrl") as string;
   const websiteUrl   = formData.get("websiteUrl") as string;
   const portfolioUrl = formData.get("portfolioUrl") as string;
-  const password     = formData.get("password") as string;
+  const password         = formData.get("password") as string;
+  const passwordConfirm  = formData.get("passwordConfirm") as string;
+  const avatarUrl        = formData.get("avatarUrl") as string;
 
   if (!firstName || !lastName || !email || !brandName || !country || !bio) {
     return { success: false, error: "Tous les champs obligatoires doivent être remplis" };
@@ -39,6 +41,10 @@ export async function submitApplication(formData: FormData) {
 
   if (!password || password.length < 8) {
     return { success: false, error: "Le mot de passe doit contenir au moins 8 caractères" };
+  }
+
+  if (password !== passwordConfirm) {
+    return { success: false, error: "Les mots de passe ne correspondent pas" };
   }
 
   try {
@@ -78,6 +84,7 @@ export async function submitApplication(formData: FormData) {
         since:             isNaN(since) ? new Date().getFullYear() : since,
         bio,
         story:             bio,
+        avatarUrl:         avatarUrl || null,
         shopifyVendorName: brandName,
         status:            "PENDING",
         passwordHash,
