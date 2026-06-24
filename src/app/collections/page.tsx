@@ -1,15 +1,12 @@
-// src/app/collections/page.tsx — wrap CollectionFilters dans Suspense
+// src/app/collections/page.tsx — Affiche TOUS les produits + pagination
 import { Suspense } from "react";
 import { getProducts } from "@/lib/shopify/products";
 import ProductGrid from "@/components/product/ProductGrid";
 import CollectionFilters from "@/components/product/CollectionFilters";
 
-// src/app/collections/page.tsx
-// Ajoute genre dans searchParams et queryParts
-
 type SearchParams = {
   searchParams: Promise<{
-    genre?: string;   // ← nouveau
+    genre?: string;
     pays?: string;
     tissu?: string;
     style?: string;
@@ -22,7 +19,7 @@ export default async function CollectionsPage({ searchParams }: SearchParams) {
   const params = await searchParams;
 
   const queryParts: string[] = [];
-  if (params.genre)  queryParts.push(`tag:${params.genre}`);      // ← nouveau
+  if (params.genre)  queryParts.push(`tag:${params.genre}`);
   if (params.pays)   queryParts.push(`tag:pays-${params.pays}`);
   if (params.tissu)  queryParts.push(`tag:tissu-${params.tissu}`);
   if (params.style)  queryParts.push(`tag:style-${params.style}`);
@@ -36,8 +33,9 @@ export default async function CollectionsPage({ searchParams }: SearchParams) {
   };
   const sort = sortMap[params.sort ?? "recent"] ?? sortMap["recent"];
 
-  const { products } = await getProducts({
-    first: 12,
+  // Augmente le nombre de produits de 12 à 50
+  const { products, pageInfo } = await getProducts({
+    first: 50,
     query: queryParts.join(" ") || undefined,
     sortKey: sort.sortKey,
     reverse: sort.reverse,
@@ -74,6 +72,19 @@ export default async function CollectionsPage({ searchParams }: SearchParams) {
           <CollectionFilters activeFilters={params} />
         </Suspense>
         <ProductGrid products={products} />
+        
+        {/* Bouton Voir plus si pagination disponible */}
+        {pageInfo.hasNextPage && (
+          <div className="text-center mt-12">
+            <a
+              href={`/collections?q=${params.q || ""}&genre=${params.genre || ""}&pays=${params.pays || ""}&tissu=${params.tissu || ""}&style=${params.style || ""}&sort=${params.sort || "recent"}`}
+              className="inline-block px-8 py-3 text-xs tracking-widest uppercase transition-all duration-200"
+              style={{ background: "#D4AF37", color: "#0F172A" }}
+            >
+              Voir plus de produits →
+            </a>
+          </div>
+        )}
       </div>
     </div>
   );

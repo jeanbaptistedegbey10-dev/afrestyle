@@ -1,4 +1,4 @@
-// src/app/designers/page.tsx
+// src/app/designers/page.tsx — avec filtre par pays
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
@@ -24,7 +24,14 @@ interface DesignerItem {
   tags: string[];
 }
 
-export default async function DesignersPage() {
+export default async function DesignersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ pays?: string }>;
+}) {
+  const params = await searchParams;
+  const selectedCountry = params.pays || null;
+
   // Récupère les designers approuvés depuis la base de données
   const dbDesigners = await db.designer.findMany({
     where: { status: "APPROVED" },
@@ -34,14 +41,14 @@ export default async function DesignersPage() {
   // Pour chaque designer, récupère le nombre de produits Shopify associés
   const designersWithProducts: DesignerItem[] = await Promise.all(
     dbDesigners.map(async (designer, index) => {
-      let productCount = 3;
+      let productCount = 0;
       try {
         const { products } = await getDesignerProducts(designer.handle);
         productCount = products.length;
       } catch {
-        productCount = 3;
+        productCount = 0;
       }
-      
+
       const tags = [designer.specialty, designer.country].filter(Boolean);
       return {
         num: String(index + 1).padStart(2, "0"),
@@ -58,10 +65,13 @@ export default async function DesignersPage() {
     })
   );
 
-  const allDesigners = designersWithProducts;
+  // Filtre par pays
+  const filteredDesigners = selectedCountry
+    ? designersWithProducts.filter((d) => d.country === selectedCountry)
+    : designersWithProducts;
 
-  // Extraction unique des pays pour le décompte
-  const countries = new Set(allDesigners.map((d) => d.country));
+  // Liste unique des pays pour le filtre
+  const allCountries = [...new Set(designersWithProducts.map((d) => d.country))];
 
   return (
     <div className="min-h-screen" style={{ background: "#0F172A" }}>
@@ -84,19 +94,66 @@ export default async function DesignersPage() {
           Nos <em style={{ color: "#D4AF37" }}>Créateurs</em>
         </h1>
         <p className="text-sm max-w-lg mx-auto relative" style={{ color: "#D4CCBA" }}>
-          {allDesigners.length} designers d'exception issus de {" "}
-          <span style={{ color: "#D4AF37" }}>{countries.size} pays africains</span>.
-          Chacun porte une vision unique de la mode contemporaine.
+          {filteredDesigners.length} designer{filteredDesigners.length > 1 ? "s" : ""} d&#39;exception
+          {selectedCountry ? ` du ${selectedCountry}` : ` issus de ${allCountries.length} pays africains`}.
         </p>
       </div>
 
-      {/* Grille designers */}
-      <div className="max-w-7xl mx-auto px-6 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {allDesigners.map((designer: DesignerItem) => (
-            <DesignerCard key={designer.handle} designer={designer} />
+      {/* Filtre par pays */}
+      <div className="max-w-7xl mx-auto px-6 pt-10 pb-2">
+        <div className="flex flex-wrap gap-3 items-center">
+          <span className="text-xs tracking-widest uppercase mr-2" style={{ color: "#D4AF37" }}>
+            Filtre :
+          </span>
+          <Link
+            href="/designers"
+            className={`px-4 py-2 text-xs tracking-wider uppercase transition-all ${
+              !selectedCountry ? "bg-gold text-ink font-medium" : "text-sand-3 border border-gold/20"
+            }`}
+            style={{
+              background: !selectedCountry ? "#D4AF37" : "transparent",
+              color: !selectedCountry ? "#0F172A" : "#D4CCBA",
+              borderRadius: "2px",
+            }}
+          >
+            Tous
+          </Link>
+          {allCountries.map((country) => (
+            <Link
+              key={country}
+              href={`/designers?pays=${country}`}
+              className="px-4 py-2 text-xs tracking-wider uppercase transition-all"
+              style={{
+                background: selectedCountry === country ? "#D4AF37" : "transparent",
+                color: selectedCountry === country ? "#0F172A" : "#D4CCBA",
+                border: "0.5px solid rgba(212,175,55,0.2)",
+                borderRadius: "2px",
+              }}
+            >
+              {country}
+            </Link>
           ))}
         </div>
+      </div>
+
+      {/* Grille designers */}
+      <div className="max-w-7xl mx-auto px-6 py-10">
+        {filteredDesigners.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-sm" style={{ color: "#D4CCBA" }}>
+              Aucun designer trouvé pour ce pays.
+            </p>
+            <Link href="/designers" className="text-xs tracking-widest uppercase mt-4 inline-block" style={{ color: "#D4AF37" }}>
+              ← Voir tous les designers
+            </Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredDesigners.map((designer: DesignerItem) => (
+              <DesignerCard key={designer.handle} designer={designer} />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* CTA devenir créateur */}
@@ -111,11 +168,10 @@ export default async function DesignersPage() {
           Rejoins la famille AfroStyle
         </h2>
         <p className="text-sm mb-8 max-w-md mx-auto" style={{ color: "#D4CCBA" }}>
-          Nous sélectionnons des créateurs africains d'exception pour donner à leur art
-          une visibilité mondiale.
+          Nous sélectionnons des créateurs africains d'exception pour donner à leur art une visibilité mondiale.
         </p>
-        <Link href="/designers/apply" className="btn-primary inline-flex">
-          Candidater <ArrowRight size={14} />
+        <Link href="/designers/apply" className="inline-block px-8 py-3 text-xs tracking-widest uppercase bg-gold text-ink font-medium transition-all duration-200 hover:bg-gold-light">
+          Candidater <ArrowRight size={14} style={{ display: "inline", marginLeft: "4px" }} />
         </Link>
       </div>
 
@@ -138,16 +194,12 @@ function DesignerCard({ designer }: { designer: DesignerItem }) {
     "linear-gradient(155deg, #1a2015, #151020)",
     "linear-gradient(155deg, #201510, #102015)",
   ];
-  
+
   const gradientIndex = (designer.handle.length) % gradientColors.length;
 
   return (
     <Link href={`/designers/${designer.handle}`} className="group block">
-      {/* Photo */}
-      <div
-        className="relative aspect-[4/5] overflow-hidden mb-5"
-        style={{ borderRadius: "2px" }}
-      >
+      <div className="relative aspect-[4/5] overflow-hidden mb-5" style={{ borderRadius: "2px" }}>
         {designer.avatarUrl ? (
           <Image
             src={designer.avatarUrl}
@@ -156,35 +208,20 @@ function DesignerCard({ designer }: { designer: DesignerItem }) {
             className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
-          <div
-            className="w-full h-full transition-transform duration-500 group-hover:scale-105"
-            style={{ background: gradientColors[gradientIndex] }}
-          />
+          <div className="w-full h-full transition-transform duration-500 group-hover:scale-105" style={{ background: gradientColors[gradientIndex] }} />
         )}
-        {/* Badge pays */}
-        <div
-          className="absolute bottom-4 left-4 text-xs tracking-widest uppercase px-3 py-1"
-          style={{ background: "rgba(15,23,42,0.85)", color: "#D4AF37" }}
-        >
+        <div className="absolute bottom-4 left-4 text-xs tracking-widest uppercase px-3 py-1" style={{ background: "rgba(15,23,42,0.85)", color: "#D4AF37" }}>
           {designer.country}
         </div>
-        {/* Flèche hover */}
-        <div
-          className="absolute top-4 right-4 w-9 h-9 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300"
-          style={{ background: "#D4AF37" }}
-        >
+        <div className="absolute top-4 right-4 w-9 h-9 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300" style={{ background: "#D4AF37" }}>
           <ArrowRight size={14} color="#0F172A" />
         </div>
       </div>
 
-      {/* Infos */}
       <p className="text-xs tracking-wider mb-1" style={{ color: "#D4CCBA" }}>
         {designer.num} — Designer
       </p>
-      <h3
-        className="font-serif text-xl mb-1 transition-colors duration-200"
-        style={{ color: "#FDFAF4" }}
-      >
+      <h3 className="font-serif text-xl mb-1 transition-colors duration-200" style={{ color: "#FDFAF4" }}>
         {designer.name}
       </h3>
       <p className="text-xs tracking-widest uppercase mb-3" style={{ color: "#D4AF37" }}>
@@ -194,25 +231,16 @@ function DesignerCard({ designer }: { designer: DesignerItem }) {
         {designer.bio}
       </p>
 
-      {/* Tags */}
       <div className="flex flex-wrap gap-2 mb-3">
         {designer.tags.map((tag) => (
-          <span
-            key={tag}
-            className="text-xs px-2 py-1"
-            style={{ border: "0.5px solid rgba(212,175,55,0.2)", color: "#D4CCBA", borderRadius: "2px" }}
-          >
+          <span key={tag} className="text-xs px-2 py-1" style={{ border: "0.5px solid rgba(212,175,55,0.2)", color: "#D4CCBA", borderRadius: "2px" }}>
             {tag}
           </span>
         ))}
       </div>
 
-      <p
-        className="text-xs pt-3"
-        style={{ color: "#D4CCBA", borderTop: "0.5px solid rgba(212,175,55,0.1)" }}
-      >
-        <span style={{ color: "#D4AF37", fontWeight: 500 }}>{designer.pieces} pièces</span>
-        {" "}disponibles · Depuis {designer.since}
+      <p className="text-xs pt-3" style={{ color: "#D4CCBA", borderTop: "0.5px solid rgba(212,175,55,0.1)" }}>
+        <span style={{ color: "#D4AF37", fontWeight: 500 }}>{designer.pieces} pièces</span> disponibles · Depuis {designer.since}
       </p>
     </Link>
   );
