@@ -263,8 +263,8 @@ export default async function AdminDesignersPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {pending.map((designer) => (
-              <DesignerCard key={designer.id} designer={designer as unknown as DesignerWithApplications} />
+            {pending.map((designer: DesignerWithApplications) => (
+              <DesignerCard key={designer.id} designer={designer} />
             ))}
           </div>
         )}
