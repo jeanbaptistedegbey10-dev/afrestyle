@@ -128,3 +128,41 @@ export const CUSTOMER_UPDATE_MUTATION = `
     }
   }
 `;
+
+// Demande de réinitialisation de mot de passe
+export const CUSTOMER_RECOVER_MUTATION = `
+  mutation CustomerRecover($email: String!) {
+    customerRecover(email: $email) {
+      customerUserErrors {
+        code
+        field
+        message
+      }
+    }
+  }
+`;
+
+// Réinitialisation du mot de passe avec token
+export const CUSTOMER_RESET_MUTATION = `
+  mutation CustomerReset(
+    $resetToken: String!
+    $password: String!
+    $passwordConfirmation: String!
+  ) {
+    customerReset(
+      resetToken: $resetToken
+      password: $password
+      passwordConfirmation: $passwordConfirmation
+    ) {
+      customerAccessToken {
+        accessToken
+        expiresAt
+      }
+      customerUserErrors {
+        code
+        field
+        message
+      }
+    }
+  }
+`;
