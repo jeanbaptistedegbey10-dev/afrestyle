@@ -139,6 +139,17 @@ function DesignerCard({ designer }: { designer: DesignerWithApplications }) {
   );
 }
 
+type DesignerBasic = {
+  id: string;
+  brandName: string;
+  firstName: string;
+  lastName: string;
+  country: string;
+  email: string;
+  handle: string;
+  rejectionReason?: string | null;
+};
+
 export default async function AdminDesignersPage() {
   const pending = await db.designer.findMany({
     where: { status: "PENDING" },
@@ -283,7 +294,7 @@ export default async function AdminDesignersPage() {
           <p style={{ color: "#D4CCBA" }}>Aucun créateur validé pour l'instant</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {approved.map((designer) => (
+            {approved.map((designer: DesignerBasic) => (
               <div
                 key={designer.id}
                 className="p-4"
@@ -342,7 +353,7 @@ export default async function AdminDesignersPage() {
             Candidatures refusées ({rejected.length})
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {rejected.map((designer) => (
+            {rejected.map((designer: DesignerBasic) => (
               <div
                 key={designer.id}
                 className="p-4"
