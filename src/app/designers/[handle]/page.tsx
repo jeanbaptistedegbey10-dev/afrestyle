@@ -12,7 +12,7 @@ export async function generateStaticParams() {
     where: { status: "APPROVED" },
     select: { handle: true },
   });
-  return designers.map((d) => ({ handle: d.handle }));
+  return designers.map((d: { handle: string }) => ({ handle: d.handle }));
 }
 
 export default async function DesignerPage({
