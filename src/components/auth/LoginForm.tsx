@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { loginAction } from "@/lib/actions/auth.actions";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
+import Link from "next/link";
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -107,6 +108,17 @@ export default function LoginForm() {
         </div>
       </div>
 
+      {/* Mot de passe oublié */}
+      <div className="text-right">
+        <Link
+          href="/account/forgot-password"
+          className="text-xs tracking-widest uppercase"
+          style={{ color: "#D4CCBA" }}
+        >
+          Mot de passe oublié ?
+        </Link>
+      </div>
+
       {/* Erreur */}
       {error && (
         <div
@@ -142,4 +154,5 @@ export default function LoginForm() {
 
     </form>
   );
+
 }

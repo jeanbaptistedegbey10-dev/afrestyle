@@ -12,6 +12,7 @@ import {
   loginCustomer,
   logoutCustomer,
   getCustomer,
+  recoverPassword,
 } from "@/lib/shopify/customer";
 
 // Nom du cookie qui stocke le token
@@ -144,4 +145,30 @@ export async function getCurrentCustomer() {
 export async function getCustomerToken() {
   const cookieStore = await cookies();
   return cookieStore.get(CUSTOMER_TOKEN_COOKIE)?.value ?? null;
+}
+
+/**
+ * Mot de passe oublié - envoie un email de réinitialisation
+ */
+export async function forgotPasswordAction(formData: FormData) {
+  const email = formData.get("email") as string;
+
+  if (!email) {
+    return { success: false, error: "L'email est requis" };
+  }
+
+  try {
+    const { success, errors } = await recoverPassword(email);
+
+    if (!success) {
+      return {
+        success: false,
+        error: errors[0]?.message ?? "Erreur lors de l'envoi de l'email",
+      };
+    }
+
+    return { success: true, error: null };
+  } catch {
+    return { success: false, error: "Erreur serveur — réessaie plus tard" };
+  }
 }

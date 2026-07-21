@@ -6,6 +6,7 @@ import {
   CUSTOMER_ACCESS_TOKEN_DELETE,
   GET_CUSTOMER_QUERY,
   CUSTOMER_UPDATE_MUTATION,
+  CUSTOMER_RECOVER_MUTATION,
 } from "./queries/customer";
 
 export type ShopifyCustomer = {
@@ -213,6 +214,30 @@ export async function updateCustomer(
   const { customer, customerUserErrors } = data.data.customerUpdate;
   return {
     success: !!customer && customerUserErrors.length === 0,
+    errors: customerUserErrors,
+  };
+}
+
+/**
+ * Demande de réinitialisation de mot de passe
+ */
+export async function recoverPassword(email: string): Promise<{
+  success: boolean;
+  errors: CustomerUserError[];
+}> {
+  const data = await shopifyFetch<{
+    customerRecover: {
+      customerUserErrors: CustomerUserError[];
+    };
+  }>({
+    query: CUSTOMER_RECOVER_MUTATION,
+    variables: { email },
+    cache: "no-store",
+  });
+
+  const { customerUserErrors } = data.data.customerRecover;
+  return {
+    success: customerUserErrors.length === 0,
     errors: customerUserErrors,
   };
 }
