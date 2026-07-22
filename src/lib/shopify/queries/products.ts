@@ -129,3 +129,32 @@ export const GET_COLLECTION_PRODUCTS_QUERY = `
     }
   }
 `;
+
+// Crée un produit dans Shopify
+export const PRODUCT_CREATE_MUTATION = `
+  mutation ProductCreate($input: ProductInput!) {
+    productCreate(input: $input) {
+      product {
+        id
+        handle
+        title
+      }
+      userErrors {
+        field
+        message
+      }
+    }
+  }
+`;
+
+// Publie un produit (pour validation manuelle)
+export const PRODUCT_PUBLISH_MUTATION = `
+  mutation ProductPublish($id: ID!, $channel: String!) {
+    productPublish(id: $id, channel: $channel) {
+      userErrors {
+        field
+        message
+      }
+    }
+  }
+`;

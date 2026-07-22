@@ -39,6 +39,9 @@ model Designer {
   rejectionReason   String?
   stripeAccountId   String?
 
+  // Validation automatique des produits
+  autoPublish       Boolean   @default(false)
+
   // Authentification créateur (mot de passe hashé avec bcrypt)
   passwordHash      String?
 

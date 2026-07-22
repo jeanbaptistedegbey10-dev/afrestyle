@@ -7,6 +7,8 @@ import {
   GET_PRODUCTS_QUERY,
   GET_PRODUCT_BY_HANDLE_QUERY,
   GET_COLLECTION_PRODUCTS_QUERY,
+  PRODUCT_CREATE_MUTATION,
+  PRODUCT_PUBLISH_MUTATION,
 } from "./queries/products";
 import type { ShopifyProduct, Product } from "./types";
 
@@ -212,5 +214,95 @@ export async function getDesignerProductsByVendor(vendor: string) {
 
   return {
     products: data.data.products.edges.map((e) => normalizeProduct(e.node)),
+  };
+}
+
+/**
+ * Crée un produit dans Shopify
+ */
+export async function createProduct({
+  title,
+  description,
+  price,
+  images,
+  tags,
+  vendor,
+  status = "DRAFT",
+}: {
+  title: string;
+  description: string;
+  price: number;
+  images: string[];
+  tags: string[];
+  vendor: string;
+  status?: "ACTIVE" | "DRAFT";
+}): Promise<{
+  success: boolean;
+  productId: string | null;
+  error: string | null;
+}> {
+  const input: Record<string, unknown> = {
+    title,
+    descriptionHtml: description,
+    vendor,
+    tags,
+    productType: "Fashion",
+  };
+
+  // Ajoute les images si fournies
+  if (images.length > 0) {
+    input.images = images.map((url) => ({ src: url }));
+  }
+
+  // Crée la variante avec le prix
+  input.variants = [
+    {
+      price: price.toString(),
+    },
+  ];
+
+  // Note: Shopify ne permet pas de créer un produit avec status=ACTIVE directement
+  // Il faut créer en DRAFT puis publier via productPublish
+
+  const data = await shopifyFetch<{
+    productCreate: {
+      product: { id: string; handle: string } | null;
+      userErrors: { field: string[]; message: string }[];
+    };
+  }>({
+    query: PRODUCT_CREATE_MUTATION,
+    variables: { input },
+    cache: "no-store",
+  });
+
+  const { product, userErrors } = data.data.productCreate;
+
+  if (!product || userErrors.length > 0) {
+    return {
+      success: false,
+      productId: null,
+      error: userErrors[0]?.message ?? "Erreur lors de la création",
+    };
+  }
+
+  // Si status=ACTIVE, publie le produit sur le canal Online Store
+  if (status === "ACTIVE") {
+    const storeDomain = process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN;
+    if (storeDomain) {
+      await shopifyFetch({
+        query: PRODUCT_PUBLISH_MUTATION,
+        variables: {
+          id: product.id,
+          channel: `https://${storeDomain}/admin/api/2024-01/channels`,
+        },
+        cache: "no-store",
+      });
+    }
+  }
+
+  return {
+    success: true,
+    productId: product.id,
+    error: null,
   };
 }

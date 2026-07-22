@@ -207,3 +207,76 @@ export async function getCurrentDesigner() {
 
   return session.designer;
 }
+
+// ─────────────────────────────────────────────────────────────────────
+//  PRODUITS
+// ─────────────────────────────────────────────────────────────────────
+
+import { createProduct } from "@/lib/shopify/products";
+
+/**
+ * Crée un produit pour le créateur connecté
+ * Si autoPublish=true, le produit est publié automatiquement
+ * Sinon, il reste en brouillon pour validation manuelle
+ */
+export async function createProductAction(formData: FormData) {
+  const designer = await getCurrentDesigner();
+
+  if (!designer || designer.status !== "APPROVED") {
+    return { success: false, error: "Accès non autorisé" };
+  }
+
+  const title = formData.get("title") as string;
+  const description = formData.get("description") as string;
+  const price = formData.get("price") as string;
+  const imagesStr = formData.get("images") as string;
+  const tagsStr = formData.get("tags") as string;
+
+  if (!title || !description || !price) {
+    return { success: false, error: "Tous les champs sont requis" };
+  }
+
+  // Parse images et tags
+  const images = imagesStr
+    ? imagesStr.split(",").map((url) => url.trim()).filter(Boolean)
+    : [];
+  const tags = tagsStr
+    ? tagsStr.split(",").map((tag) => tag.trim()).filter(Boolean)
+    : [];
+
+  try {
+    // Crée le produit dans Shopify
+    const result = await createProduct({
+      title,
+      description,
+      price: parseFloat(price),
+      images,
+      tags,
+      vendor: designer.shopifyVendorName,
+      status: designer.autoPublish ? "ACTIVE" : "DRAFT",
+    });
+
+    if (!result.success) {
+      return { success: false, error: result.error || "Erreur lors de la création" };
+    }
+
+    // Associe le produit au designer
+    if (result.productId) {
+      await db.designerProduct.create({
+        data: {
+          shopifyProductId: result.productId,
+          designerId: designer.id,
+        },
+      });
+    }
+
+    return {
+      success: true,
+      error: null,
+      autoPublished: designer.autoPublish,
+    };
+  } catch (error) {
+    console.error("createProductAction error:", error);
+    return { success: false, error: "Erreur serveur — réessaie plus tard" };
+  }
+}

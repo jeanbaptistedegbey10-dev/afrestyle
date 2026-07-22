@@ -3,6 +3,7 @@ import { getCurrentDesigner, logoutDesigner } from "@/lib/actions/designer.actio
 import { redirect } from "next/navigation";
 import { getProducts } from "@/lib/shopify/products";
 import type { Metadata } from "next";
+import ProductForm from "@/components/designer/ProductForm";
 
 export const metadata: Metadata = { title: "Dashboard Créateur" };
 
@@ -165,6 +166,23 @@ export default async function DashboardPage() {
           )}
         </div>
 
+{/* Formulaire de création de produit */}
+        <div className="mb-10">
+          <h2 className="font-serif text-2xl mb-6" style={{ color: "#FDFAF4" }}>
+            Créer un nouveau produit
+          </h2>
+          <div
+            className="p-6"
+            style={{
+              background: "#1E293B",
+              border: "0.5px solid rgba(212,175,55,0.1)",
+              borderRadius: "2px",
+            }}
+          >
+            <ProductForm />
+          </div>
+        </div>
+
         {/* Guide */}
         <div
           className="p-6"
@@ -178,24 +196,18 @@ export default async function DashboardPage() {
             Comment ajouter tes produits ?
           </h3>
           <ol className="space-y-2 text-sm" style={{ color: "#D4CCBA" }}>
-            <li>1. Va sur Shopify Admin → Products → Add product</li>
+            <li>1. Utilise le formulaire ci-dessus pour créer un produit</li>
             <li>
-              2. Dans le champ{" "}
-              <strong style={{ color: "#F5F0E8" }}>Vendor</strong>, mets
-              exactement :{" "}
-              <code
-                style={{
-                  background: "rgba(212,175,55,0.1)",
-                  color: "#D4AF37",
-                  padding: "0 4px",
-                  borderRadius: "2px",
-                }}
-              >
-                {designerData.brandName}
-              </code>
+              2. Le produit sera{" "}
+              {designerData.autoPublish ? (
+                <span style={{ color: "#86efac" }}>publié automatiquement</span>
+              ) : (
+                <span style={{ color: "#fca5a5" }}>en attente de validation</span>
+              )}{" "}
+              selon tes paramètres
             </li>
             <li>3. Ajoute tes tags : pays-XX, tissu-XX, style-XX, femme/homme</li>
-            <li>4. Ton produit apparaît automatiquement sur ta page AfroStyle</li>
+            <li>4. Ton produit apparaît sur ta page AfroStyle après validation</li>
           </ol>
         </div>
 
