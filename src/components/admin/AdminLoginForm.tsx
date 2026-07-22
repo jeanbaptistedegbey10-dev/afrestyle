@@ -27,13 +27,41 @@ export default function AdminLoginForm() {
 
   return (
     <form action={handleSubmit} className="space-y-4">
+      {/* Identifiant */}
+      <div>
+        <label
+          htmlFor="username"
+          className="block text-xs tracking-widest uppercase mb-2"
+          style={{ color: "#D4AF37" }}
+        >
+          Identifiant
+        </label>
+        <input
+          id="username"
+          name="username"
+          type="text"
+          required
+          placeholder="admin"
+          className="w-full px-4 py-3 text-sm outline-none"
+          style={{
+            background: "#1E293B",
+            border: "0.5px solid rgba(212,175,55,0.2)",
+            color: "#F5F0E8",
+            borderRadius: "2px",
+          }}
+          onFocus={(e) => { e.target.style.borderColor = "#D4AF37"; }}
+          onBlur={(e) => { e.target.style.borderColor = "rgba(212,175,55,0.2)"; }}
+        />
+      </div>
+
+      {/* Mot de passe */}
       <div>
         <label
           htmlFor="password"
           className="block text-xs tracking-widest uppercase mb-2"
           style={{ color: "#D4AF37" }}
         >
-          Mot de passe admin
+          Mot de passe
         </label>
         <div className="relative">
           <input

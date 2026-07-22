@@ -34,18 +34,20 @@ async function assertAdmin() {
 }
 
 /**
- * Login admin — vérifie le mot de passe secret
+ * Login admin — vérifie identifiant + mot de passe
  */
 export async function adminLoginAction(formData: FormData) {
+  const username = formData.get("username") as string;
   const password = formData.get("password") as string;
 
-  if (!password) {
-    return { success: false, error: "Mot de passe requis" };
+  if (!username || !password) {
+    return { success: false, error: "Identifiant et mot de passe requis" };
   }
 
-  const validToken = process.env.ADMIN_SECRET_TOKEN;
+  const validUsername = process.env.ADMIN_USERNAME;
+  const validPassword = process.env.ADMIN_PASSWORD;
 
-  if (!validToken) {
+  if (!validUsername || !validPassword) {
     return { success: false, error: "Configuration admin manquante" };
   }
 
@@ -55,20 +57,26 @@ export async function adminLoginAction(formData: FormData) {
   // Comparaison sécurisée en temps constant
   let isValid = false;
   try {
-    const a = Buffer.from(password.padEnd(validToken.length));
-    const b = Buffer.from(validToken);
-    isValid = a.length === b.length && crypto.timingSafeEqual(a, b);
+    const a1 = Buffer.from(username.padEnd(validUsername.length));
+    const b1 = Buffer.from(validUsername);
+    const a2 = Buffer.from(password.padEnd(validPassword.length));
+    const b2 = Buffer.from(validPassword);
+    isValid =
+      a1.length === b1.length &&
+      crypto.timingSafeEqual(a1, b1) &&
+      a2.length === b2.length &&
+      crypto.timingSafeEqual(a2, b2);
   } catch {
     isValid = false;
   }
 
   if (!isValid) {
-    return { success: false, error: "Mot de passe incorrect" };
+    return { success: false, error: "Identifiant ou mot de passe incorrect" };
   }
 
   // Crée un cookie de session admin sécurisé
   const cookieStore = await cookies();
-  cookieStore.set(ADMIN_COOKIE, validToken, {
+  cookieStore.set(ADMIN_COOKIE, validPassword, {
     httpOnly: true,
     secure:   process.env.NODE_ENV === "production",
     sameSite: "lax",
