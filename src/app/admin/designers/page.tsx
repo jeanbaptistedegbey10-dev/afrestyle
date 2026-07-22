@@ -98,10 +98,19 @@ function DesignerCard({ designer }: { designer: DesignerWithApplications }) {
         )}
       </div>
 
-      {/* Actions admin */}
+{/* Actions admin */}
       <div className="flex flex-col gap-3 justify-center">
         <form action={approveDesigner}>
           <input type="hidden" name="designerId" value={designer.id} />
+          <label className="flex items-center gap-2 text-xs mb-2" style={{ color: "#D4CCBA" }}>
+            <input
+              type="checkbox"
+              name="autoPublish"
+              className="w-4 h-4"
+              style={{ accentColor: "#D4AF37" }}
+            />
+            Validation auto des produits
+          </label>
           <button
             type="submit"
             className="w-full py-3 text-sm font-medium tracking-widest uppercase"

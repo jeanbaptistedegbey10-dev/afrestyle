@@ -90,17 +90,20 @@ export async function adminLogoutAction() {
 
 /**
  * Valide un créateur — requiert d'être admin
+ * autoPublish: si true, les produits seront publiés automatiquement
  */
 export async function approveDesigner(formData: FormData) {
   await assertAdmin();
 
   const designerId = formData.get("designerId") as string;
+  const autoPublish = formData.get("autoPublish") === "on";
   if (!designerId) return;
 
   await db.designer.update({
     where: { id: designerId },
     data: {
       status: "APPROVED",
+      autoPublish,
       applications: {
         updateMany: {
           where: { designerId },
