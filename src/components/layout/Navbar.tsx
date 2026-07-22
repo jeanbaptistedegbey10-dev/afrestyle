@@ -20,12 +20,13 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const navLinks = [
-    { href: "/collections", label: "Shop" },
-    { href: "/designers", label: "Designers" },
-    { href: "/lookbook", label: "Lookbook" },
-    { href: "/about", label: "Notre Histoire" },
-  ];
+const navLinks = [
+  { href: "/collections", label: "Shop" },
+  { href: "/designers", label: "Designers" },
+  { href: "/lookbook", label: "Lookbook" },
+  { href: "/about", label: "Notre Histoire" },
+  { href: "/designers/apply", label: "Devenir créateur" },
+];
 
   return (
     <>
