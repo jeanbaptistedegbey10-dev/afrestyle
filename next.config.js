@@ -35,12 +35,10 @@ const nextConfig = {
     ],
     formats: ["image/avif", "image/webp"],
   },
-  // Active les React Server Components (activé par défaut dans Next.js 14)
-  experimental: {
-    serverActions: {
-      allowedOrigins: ["localhost:3000"],
-    },
-  },
+  // Server Actions : stables depuis Next 15 — pas de bloc `experimental` requis
+  // (l'ancien `serverActions.allowedOrigins` affichait une bannière
+  // « Experiments (use with caution) » au démarrage ; l'origine same-origin
+  // est le comportement par défaut et suffit en dev comme en production).
 };
 
 module.exports = nextConfig;
