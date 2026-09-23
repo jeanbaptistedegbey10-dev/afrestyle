@@ -1,9 +1,16 @@
 // src/app/products/[handle]/page.tsx
+// Phase 6 — ISR + JSON-LD Schema.org/Product + métadonnées haute couture.
 import { getProductByHandle, getProducts } from "@/lib/shopify/products";
+import { getSiteUrl } from "@/lib/seo";
+import ProductJsonLd from "@/components/seo/ProductJsonLd";
 import ProductImages from "@/components/product/ProductImages";
 import ProductForm from "@/components/product/ProductForm";
+import { FALLBACK_PRODUCT_IMAGE } from "@/lib/assets/images";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+
+/** ISR : régénère la fiche au plus toutes les 5 minutes (webhook = instantané). */
+export const revalidate = 300;
 
 // Génère les métadonnées dynamiquement depuis les données produit
 export async function generateMetadata({
@@ -12,14 +19,38 @@ export async function generateMetadata({
   params: Promise<{ handle: string }>;
 }): Promise<Metadata> {
   const { handle } = await params;
+  const siteUrl = getSiteUrl();
   const product = await getProductByHandle(handle);
   if (!product) return { title: "Produit introuvable" };
 
+  const url = `${siteUrl}/products/${handle}`;
+  const description =
+    product.description?.slice(0, 155) ||
+    `${product.title} — création AfroStyle par ${product.vendor}.`;
+
+  // Privilégie l'image produit, sinon fallback maison cohérent pour le partage.
+  const image =
+    product.images[0]?.url ||
+    (product.variants[0]?.image?.url ?? FALLBACK_PRODUCT_IMAGE);
+
   return {
-    title: product.title,
-    description: product.description.slice(0, 155),
+    title: `${product.title} — ${product.vendor}`,
+    description,
+    alternates: { canonical: url },
     openGraph: {
-      images: product.images[0] ? [{ url: product.images[0].url }] : [],
+      type: "website",
+      locale: "fr_FR",
+      siteName: "AfroStyle",
+      title: `${product.title} | AfroStyle — Haute Couture Africaine`,
+      description,
+      url,
+      images: image ? [{ url: image, alt: product.title }] : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${product.title} | AfroStyle`,
+      description,
+      images: image ? [image] : [],
     },
   };
 }
@@ -44,104 +75,96 @@ export default async function ProductPage({
   if (!product) notFound();
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-12">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-        {/* Galerie images */}
-        <ProductImages images={product.images} title={product.title} />
+    <>
+      <ProductJsonLd product={product} />
+      <div className="max-w-7xl mx-auto px-6 py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          {/* Galerie images */}
+          <ProductImages images={product.images} title={product.title} />
 
-        {/* Infos + Formulaire */}
-        <div className="flex flex-col gap-6">
-          {/* Breadcrumb */}
-          <nav
-            className="text-xs tracking-widest uppercase"
-            style={{ color: "#D4CCBA" }}
-          >
-            <span>Shop</span>
-            <span className="mx-2" style={{ color: "#D4AF37" }}>
-              ›
-            </span>
-            <span style={{ color: "#F5F0E8" }}>{product.title}</span>
-          </nav>
-
-          {/* Origine */}
-          <p
-            className="text-xs tracking-widest uppercase"
-            style={{ color: "#D4AF37" }}
-          >
-            {[product.country, product.fabric]
-              .filter(Boolean)
-              .map((s) => s!.charAt(0).toUpperCase() + s!.slice(1))
-              .join(" · ")}
-          </p>
-
-          {/* Titre */}
-          <h1
-            className="font-serif text-4xl leading-tight"
-            style={{ color: "#FDFAF4" }}
-          >
-            {product.title}
-          </h1>
-
-          {/* Créateur */}
-          <p className="text-sm" style={{ color: "#D4CCBA" }}>
-            par{" "}
-            <span
-              className="font-medium transition-colors"
-              style={{ color: "#D4AF37" }}
+          {/* Infos + Formulaire */}
+          <div className="flex flex-col gap-6">
+            {/* Breadcrumb */}
+            <nav
+              className="text-xs tracking-widest uppercase"
+              style={{ color: "#8A857A" }}
             >
-              {product.vendor}
-            </span>
-          </p>
-
-          {/* Prix */}
-          <div className="flex items-center gap-4">
-            <span
-              className="font-serif text-3xl font-bold"
-              style={{ color: "#FDFAF4" }}
-            >
-              {product.priceFormatted}
-            </span>
-            {product.compareAtPrice && (
-              <span
-                className="text-lg line-through"
-                style={{ color: "#D4CCBA" }}
-              >
-                {product.compareAtPrice}
+              <span>Shop</span>
+              <span className="mx-2" style={{ color: "#B8860B" }}>
+                ›
               </span>
-            )}
-          </div>
+              <span style={{ color: "#1A1A1A" }}>{product.title}</span>
+            </nav>
 
-          {/* Séparateur */}
-          <div style={{ height: "1px", background: "rgba(212,175,55,0.15)" }} />
-
-          {/* Formulaire variantes + ajout panier */}
-          <ProductForm product={product} />
-
-          {/* Description */}
-          <div style={{ height: "1px", background: "rgba(212,175,55,0.15)" }} />
-          <div>
-            <h3
-              className="text-xs tracking-widest uppercase mb-3"
-              style={{ color: "#D4AF37" }}
+            {/* Origine */}
+            <p
+              className="text-xs tracking-widest uppercase"
+              style={{ color: "#B8860B" }}
             >
-              Description
-            </h3>
-            <p className="text-sm leading-relaxed" style={{ color: "#D4CCBA" }}>
-              {product.description}
+              {[product.country, product.fabric]
+                .filter(Boolean)
+                .map((s) => s!.charAt(0).toUpperCase() + s!.slice(1))
+                .join(" · ")}
             </p>
-          </div>
 
-          {/* Infos livraison */}
-          <div
-            className="rounded-sm p-4 text-sm space-y-2"
-            style={{ background: "#1E293B", color: "#D4CCBA" }}
-          >
-            <p>🚚 Livraison internationale 7-14 jours</p>
-            <p>↩️ Retours gratuits sous 30 jours</p>
-            <p>🔒 Paiement 100% sécurisé</p>
+            {/* Titre */}
+            <h1
+              className="font-serif text-4xl leading-tight"
+              style={{ color: "#1A1A1A" }}
+            >
+              {product.title}
+            </h1>
+
+            {/* Créateur */}
+            <p className="text-sm" style={{ color: "#4A4A44" }}>
+              par{" "}
+              <span
+                className="font-medium transition-colors"
+                style={{ color: "#B8860B" }}
+              >
+                {product.vendor}
+              </span>
+            </p>
+
+            {/* Prix affiché dynamiquement par ProductForm (variante exacte).
+                Pas de prix statique ici pour éviter tout double affichage. */}
+
+            {/* Séparateur */}
+            <div style={{ height: "1px", background: "rgba(0,0,0,0.08)" }} />
+
+            {/* Formulaire variantes + ajout panier (remonté par produit) */}
+            <ProductForm key={product.id} product={product} />
+
+            {/* Description */}
+            <div style={{ height: "1px", background: "rgba(0,0,0,0.08)" }} />
+            <div>
+              <h3
+                className="text-xs tracking-widest uppercase mb-3"
+                style={{ color: "#B8860B" }}
+              >
+                Description
+              </h3>
+              <p className="text-sm leading-relaxed" style={{ color: "#4A4A44" }}>
+                {product.description}
+              </p>
+            </div>
+
+            {/* Infos livraison */}
+            <div
+              className="rounded-sm p-4 text-sm space-y-2"
+              style={{
+                background: "#FFFFFF",
+                border: "1px solid rgba(0,0,0,0.06)",
+                color: "#4A4A44",
+              }}
+            >
+              <p>🚚 Livraison internationale 7-14 jours</p>
+              <p>↩️ Retours gratuits sous 30 jours</p>
+              <p>🔒 Paiement 100% sécurisé</p>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

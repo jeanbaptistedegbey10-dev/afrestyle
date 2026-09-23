@@ -1,5 +1,5 @@
 // src/lib/shopify/cart.ts
-import { shopifyFetch } from "./client";
+import { storefrontFetch } from "./storefrontClient";
 import {
   CREATE_CART_MUTATION,
   ADD_CART_LINES_MUTATION,
@@ -60,7 +60,7 @@ export async function createCart(
   variantId: string,
   quantity: number = 1
 ): Promise<ShopifyCart> {
-  const data = await shopifyFetch<{
+  const data = await storefrontFetch<{
     cartCreate: {
       cart: Parameters<typeof normalizeCart>[0];
       userErrors: { field: string; message: string }[];
@@ -97,7 +97,7 @@ export async function addToCart(
   variantId: string,
   quantity: number = 1
 ): Promise<ShopifyCart> {
-  const data = await shopifyFetch<{
+  const data = await storefrontFetch<{
     cartLinesAdd: {
       cart: Parameters<typeof normalizeCart>[0];
       userErrors: { field: string; message: string }[];
@@ -126,7 +126,7 @@ export async function updateCartLine(
   lineId: string,
   quantity: number
 ): Promise<ShopifyCart> {
-  const data = await shopifyFetch<{
+  const data = await storefrontFetch<{
     cartLinesUpdate: {
       cart: Parameters<typeof normalizeCart>[0];
       userErrors: { field: string; message: string }[];
@@ -150,7 +150,7 @@ export async function removeCartLine(
   cartId: string,
   lineId: string
 ): Promise<ShopifyCart> {
-  const data = await shopifyFetch<{
+  const data = await storefrontFetch<{
     cartLinesRemove: {
       cart: Parameters<typeof normalizeCart>[0];
       userErrors: { field: string; message: string }[];
@@ -169,7 +169,7 @@ export async function removeCartLine(
  * Utile pour resynchroniser après un rechargement
  */
 export async function getCart(cartId: string): Promise<ShopifyCart | null> {
-  const data = await shopifyFetch<{
+  const data = await storefrontFetch<{
     cart: Parameters<typeof normalizeCart>[0] | null;
   }>({
     query: GET_CART_QUERY,

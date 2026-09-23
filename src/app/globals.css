@@ -3,22 +3,92 @@
 /* En Tailwind v4 : on importe tailwind ainsi */
 @import "tailwindcss";
 
-/* Toute la config se fait ici avec @theme */
-@theme {
-  /* Couleurs AfroStyle */
-  --color-ink: #0f172a;
-  --color-ink-2: #1e293b;
-  --color-ink-3: #334155;
+/* ═══════════════════════════════════════════════════════════════════
+   PALETTE DYNAMIQUE (DOUBLE THÈME ÉLÉGANT) — variables runtime
+   MODE CLAIR  : Ivory & Gold Luxe   |  MODE SOMBRE : Obsidian & Champagne
+   Ces variables changent selon la classe `.dark` posée par next-themes.
+   ═══════════════════════════════════════════════════════════════════ */
+:root {
+  --bg: #ffffff;                            /* Blanc pur */
+  --bg-2: #fafafa;                          /* fond alterné / sections */
+  --surface: #f8f8f8;                       /* cartes & formulaires */
+  --surface-2: #f2f2f2;                     /* surface secondaire */
+  --text: #0d0d0d;                          /* Noir profond */
+  --text-2: #555555;                        /* texte secondaire */
+  --text-3: #8a8a8a;                        /* texte tertiaire / meta */
+  --line: #e5e5e5;                          /* bordures */
+  --gold: #c5a059;                          /* Or champagne */
+  --gold-light: #d4b878;
+  --gold-dark: #a37f3e;
+  --gold-soft: rgba(197, 160, 89, 0.14);
+  --nav-bg: rgba(255, 255, 255, 0.95);      /* navbar translucide */
+  --scrollbar-track: #f2f2f2;
+  --toast-surface: #ffffff;
+}
 
-  --color-gold: #d4af37;
-  --color-gold-light: #e8c84a;
-  --color-gold-dark: #a8871c;
+/* Bande d'impact Newsletter — palette sombre fixe, indépendante du thème */
+:root,
+.dark {
+  --band: #0a0a0a;
+  --band-2: #141414;
+  --band-text: #f5f5f5;
+  --band-text-2: #a0a0a0;
+}
 
-  --color-sand: #f5f0e8;
-  --color-sand-2: #ede8dc;
-  --color-sand-3: #d4ccba;
+.dark {
+  --bg: #0a0a0a;                            /* Noir profond */
+  --bg-2: #0f0f0f;                          /* fond alterné / sections */
+  --surface: #141414;                       /* cartes — Obsidienne */
+  --surface-2: #1a1a1a;                     /* surface secondaire */
+  --text: #f5f5f5;                          /* Blanc cassé */
+  --text-2: #a0a0a0;                        /* texte secondaire */
+  --text-3: #707070;                        /* texte tertiaire / meta */
+  --line: #262626;                          /* bordures */
+  --gold: #d4af37;                          /* Or étincelant */
+  --gold-light: #e5c76b;
+  --gold-dark: #c5a059;
+  --gold-soft: rgba(212, 175, 55, 0.16);
+  --nav-bg: rgba(10, 10, 10, 0.92);
+  --scrollbar-track: #1a1a1a;
+  --toast-surface: #141414;
+}
 
-  --color-cream: #fdfaf4;
+/* Mapping Tailwind — `inline` émet directement var(--...) dans les
+   utilitaires générés, ce qui rend toutes les classes theme-aware. */
+@theme inline {
+  /* Tokens sémantiques (bg-bg, bg-surface, text-text, border-line…) */
+  --color-bg: var(--bg);
+  --color-bg-2: var(--bg-2);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-text: var(--text);
+  --color-text-2: var(--text-2);
+  --color-text-3: var(--text-3);
+  --color-line: var(--line);
+  --color-gold: var(--gold);
+  --color-gold-light: var(--gold-light);
+  --color-gold-dark: var(--gold-dark);
+  --color-gold-soft: var(--gold-soft);
+  --color-nav: var(--nav-bg);
+
+  /* Bande d'impact Newsletter — sombre dans LES DEUX modes (rupture visuelle) */
+  --color-band: var(--band);
+  --color-band-2: var(--band-2);
+  --color-band-text: var(--band-text);
+  --color-band-text-2: var(--band-text-2);
+
+  /* Rétro-compatibilité : les tokens legacy pointent vers le thème actif */
+  --color-ivory: var(--bg);
+  --color-ivory-2: var(--bg-2);
+  --color-card: var(--surface);
+  --color-ink: var(--text);
+  --color-ink-2: var(--text-2);
+  --color-ink-3: var(--text-3);
+
+  --color-sand: var(--surface-2);
+  --color-sand-2: var(--surface-2);
+  --color-sand-3: var(--text-3);
+  --color-cream: var(--bg-2);
 
   /* Fonts */
   --font-serif: var(--font-playfair), Georgia, serif;
@@ -60,18 +130,24 @@
   }
 
   body {
-    background-color: #0f172a;
-    color: #f5f0e8;
+    background-color: var(--bg);
+    color: var(--text);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  ::placeholder {
+    color: var(--text-3);
+    opacity: 1;
   }
 
   ::-webkit-scrollbar {
     width: 6px;
   }
   ::-webkit-scrollbar-track {
-    background: #1e293b;
+    background: var(--scrollbar-track);
   }
   ::-webkit-scrollbar-thumb {
-    background: #d4af37;
+    background: var(--gold);
     border-radius: 3px;
   }
 }
@@ -82,8 +158,8 @@
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    background-color: #d4af37;
-    color: #0f172a;
+    background-color: var(--text);
+    color: var(--bg);
     font-size: 0.75rem;
     font-weight: 500;
     letter-spacing: 0.1em;
@@ -96,7 +172,8 @@
   }
 
   .btn-primary:hover {
-    background-color: #e8c84a;
+    background-color: var(--gold);
+    color: #ffffff;
     transform: translateY(-1px);
   }
 
@@ -104,20 +181,33 @@
     display: inline-flex;
     align-items: center;
     background-color: transparent;
-    color: #f5f0e8;
+    color: var(--text);
     font-size: 0.75rem;
     font-weight: 500;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     padding: 0.75rem 2rem;
     border-radius: 2px;
-    border: 1px solid rgba(245, 240, 232, 0.3);
+    border: 1px solid var(--line);
     cursor: pointer;
     transition: all 0.2s;
   }
 
   .btn-outline:hover {
-    border-color: #d4af37;
-    color: #d4af37;
+    border-color: var(--gold);
+    color: var(--gold-dark);
+  }
+
+  /* Champs de formulaire (surface dédiée + bordure discrète) */
+  .field-light {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    color: var(--text);
+    border-radius: 2px;
+  }
+
+  .field-light:focus {
+    border-color: var(--gold);
+    outline: none;
   }
 }

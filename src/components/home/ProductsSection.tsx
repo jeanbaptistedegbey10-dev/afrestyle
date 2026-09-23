@@ -1,10 +1,11 @@
-// src/components/home/ProductsSection.tsx
+// src/components/home/ProductsSection.tsx — Éditorial Luxe, double thème
 "use client";
 
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import ProductCard from "@/components/product/ProductCard";
+import { FALLBACK_PRODUCT_IMAGE } from "@/lib/assets/images";
 import type { Product } from "@/lib/shopify/types";
 
 const CATEGORIES = [
@@ -19,81 +20,104 @@ const CATEGORIES = [
   { label: "Traditionnel", url: "/collections?style=traditionnel" },
 ];
 
-export default function ProductsSection({ products }: { products: Product[] }) {
+export default function ProductsSection({
+  products,
+  productVisuals,
+}: {
+  products: Product[];
+  productVisuals?: string[];
+}) {
   const [activeIndex, setActiveIndex] = useState(0);
   const router = useRouter();
+  const visuals = productVisuals ?? [];
 
-// Dans le JSX, remplace le onClick par :
-function handleCategoryClick(index: number, url: string) {
-  setActiveIndex(index);
-  router.push(url);
-}
+  function handleCategoryClick(index: number, url: string) {
+    setActiveIndex(index);
+    router.push(url);
+  }
 
   return (
-    <section className="py-20 px-6" style={{ background: "#0F172A" }}>
-      <div className="max-w-7xl mx-auto">
-
+    <section className="py-20 bg-bg">
+      {/* Conteneur standardisé */}
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
         {/* Header */}
-        <div className="flex items-end justify-between mb-10">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
           <div>
-            <p
-              className="text-xs tracking-widest uppercase mb-3 flex items-center gap-3"
-              style={{ color: "#D4AF37" }}
-            >
+            <p className="text-gold-dark dark:text-gold text-xs tracking-widest uppercase mb-3 flex items-center gap-3">
               Sélection du moment
-              <span style={{ height: 1, background: "rgba(212,175,55,0.2)", display: "inline-block", width: 60 }} />
+              <span className="h-px w-16 inline-block bg-gold/40" />
             </p>
-            <h2 className="font-serif text-4xl" style={{ color: "#FDFAF4" }}>
-              Pièces <em style={{ color: "#D4AF37" }}>phares</em>
+            <h2 className="font-serif text-3xl sm:text-4xl text-text">
+              Pièces <em className="text-gold-dark dark:text-gold">phares</em>
             </h2>
           </div>
           <Link
             href="/collections"
-            className="text-xs tracking-widest uppercase hidden md:block"
-            style={{ color: "#D4CCBA" }}
+            className="text-text-2 text-xs tracking-widest uppercase hidden sm:block hover:text-gold-dark dark:hover:text-gold transition-colors"
           >
             Voir tout →
           </Link>
         </div>
 
         {/* Pills cliquables */}
-        <div className="flex gap-2 overflow-x-auto pb-2 mb-10" style={{ scrollbarWidth: "none" }}>
+        <div
+          className="flex gap-2 overflow-x-auto pb-2 mb-10"
+          style={{ scrollbarWidth: "none" }}
+        >
           {CATEGORIES.map((cat, i) => (
             <button
               key={cat.label}
               onClick={() => handleCategoryClick(i, cat.url)}
-
-              className="flex-shrink-0 text-xs tracking-wider uppercase px-4 py-2 transition-all duration-200"
-              style={{
-                borderRadius: "2px",
-                border: "1px solid",
-                borderColor: activeIndex === i ? "#D4AF37" : "rgba(212,175,55,0.2)",
-                background: activeIndex === i ? "#D4AF37" : "transparent",
-                color: activeIndex === i ? "#0F172A" : "#D4CCBA",
-                cursor: "pointer",
-              }}
+              className={`flex-shrink-0 text-xs tracking-wider uppercase px-4 py-2 rounded-sm border transition-all duration-200 ${
+                activeIndex === i
+                  ? "bg-gold border-gold text-white"
+                  : "bg-surface border-line text-text-2 hover:border-gold hover:text-gold-dark dark:hover:text-gold"
+              }`}
             >
               {cat.label}
             </button>
           ))}
         </div>
 
-        {/* Grille produits */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        {/* Grille produits — responsive : 1 / 2 / 4 colonnes */}
+        {products.length > 0 ? (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {products.map((product, index) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  fallbackImage={
+                    // `||` : ignore aussi les chaînes vides du flux de visuels.
+                    visuals[index % visuals.length] || FALLBACK_PRODUCT_IMAGE
+                  }
+                />
+              ))}
+            </div>
 
-        <div className="text-center mt-12">
-          <Link
-            href="/collections"
-            className="btn-outline"
-            style={{ display: "inline-flex" }}
-          >
-            Voir toute la collection →
-          </Link>
-        </div>
+            <div className="text-center mt-12">
+              <Link href="/collections" className="btn-outline">
+                Voir toute la collection →
+              </Link>
+            </div>
+          </>
+        ) : (
+          <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-line bg-surface px-6 py-16 text-center">
+            <span className="flex h-12 w-12 items-center justify-center rounded-full border border-gold/40 text-lg text-gold-dark dark:text-gold">
+              ✦
+            </span>
+            <p className="font-serif text-xl text-text">
+              Aucune pièce pour le moment
+            </p>
+            <p className="max-w-sm text-sm text-text-2">
+              La sélection se révélera dès que nos créateurs publieront leurs
+              nouveautés.
+            </p>
+            <Link href="/collections" className="btn-outline mt-2">
+              Voir toutes les collections
+            </Link>
+          </div>
+        )}
       </div>
     </section>
   );

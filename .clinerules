@@ -1,0 +1,33 @@
+# Règles AfroStyle
+
+---
+### RULES UI/UX DESIGN & DESIGN SYSTEM - AFROSTYLE (LUXE & HAUT STANDING)
+
+- TYPOGRAPHIE & HIÉRARCHIE :
+  * Titres (H1, H2, H3) : Police Serif prestigieuse (ex: Cormorant Garamond / Playfair Display).
+  * Corps de texte : Sans-Serif ultra-lisible, espacement aéré, contraste toujours conforme WCAG AAA.
+  * Toujours maintenir une rupture visuelle entre les sections (ex: alternance de fonds ou bandes contrastées).
+
+- COMPOSANTS & CARTES PRODUITS (ProductCard) :
+  * Les cartes produits doivent TOUJOURS avoir du relief (fond dédié, border ultra-subtil, ombre douce au hover `transition-all duration-300`).
+  * Interdiction d'utiliser des blocs de couleur plate sans bordure ni ombre.
+  * Les boutons CTA principaux doivent être captivants (animation hover fluide, contraste fort avec le fond).
+
+- PALETTE DYNAMIQUE (DOUBLE THÈME ÉLÉGANT) :
+  * MODE CLAIR (Ivory & Gold Luxe) :
+    - Background principal : `#FAF8F5` (Ivoire doux)
+    - Cartes & Surfaces : `#FFFFFF` (Blanc pur)
+    - Texte principal : `#0F0F0F` (Ebony profond)
+    - Accents & Badges : `#C5A059` / `#B8860B` (Or champagne mat)
+    - Bordures : `rgba(0,0,0,0.07)`
+  * MODE SOMBRE (Obsidian & Champagne Gold) :
+    - Background principal : `#0D0D0D` (Obsidienne profonde)
+    - Cartes & Surfaces : `#161616` / `#1A1A1A` (Gris sombre texturé)
+    - Texte principal : `#F5F3EF` (Ivoire clair)
+    - Accents & Badges : `#D4AF37` / `#C5A059` (Or étincelant)
+    - Bordures : `rgba(255,255,255,0.08)`
+
+- THÈME (IMPLÉMENTATION) :
+  * Utiliser `next-themes` (`attribute="class"`) + variables CSS sémantiques (`--color-bg`, `--color-surface`, `--color-text`, etc.) définies dans `globals.css` via `@theme inline`.
+  * Utiliser les classes Tailwind sémantiques (`bg-bg`, `text-text`, `border-line`, ...) au lieu de couleurs hexadécimales codées en dur.
+  * Le `ThemeToggle` (Soleil/Lune, micro-animation) doit rester présent dans la `Navbar` sur tout le site.

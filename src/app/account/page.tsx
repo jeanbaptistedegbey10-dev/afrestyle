@@ -3,6 +3,8 @@ import { getCurrentCustomer } from "@/lib/actions/auth.actions";
 import { redirect } from "next/navigation";
 import { logoutAction } from "@/lib/actions/auth.actions";
 import { formatPrice } from "@/lib/utils";
+import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Mon compte" };
@@ -14,22 +16,22 @@ export default async function AccountPage() {
   if (!customer) redirect("/account/login");
 
   return (
-    <div style={{ background: "#0F172A", minHeight: "100vh" }}>
+    <div style={{ background: "#FAF8F5", minHeight: "100vh", color: "#1A1A1A" }}>
 
       {/* Header */}
       <div
         className="py-12 px-6"
-        style={{ borderBottom: "0.5px solid rgba(212,175,55,0.1)" }}
+        style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}
       >
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div>
-            <p className="text-xs tracking-widest uppercase mb-2" style={{ color: "#D4AF37" }}>
+            <p className="text-xs tracking-widest uppercase mb-2" style={{ color: "#B8860B" }}>
               Espace personnel
             </p>
-            <h1 className="font-serif text-4xl" style={{ color: "#FDFAF4" }}>
+            <h1 className="font-serif text-4xl" style={{ color: "#1A1A1A" }}>
               Bonjour, {customer.firstName} ✦
             </h1>
-            <p className="text-sm mt-1" style={{ color: "#D4CCBA" }}>
+            <p className="text-sm mt-1" style={{ color: "#8A857A" }}>
               {customer.email}
             </p>
           </div>
@@ -37,11 +39,12 @@ export default async function AccountPage() {
           <form action={logoutAction}>
             <button
               type="submit"
-              className="text-xs tracking-widest uppercase px-4 py-2 transition-colors"
+              className="text-xs tracking-widest uppercase px-4 py-2 transition-colors hover:border-[#C5A059] hover:text-[#B8860B]"
               style={{
-                border: "0.5px solid rgba(212,175,55,0.2)",
-                color: "#D4CCBA",
+                border: "1px solid rgba(0,0,0,0.08)",
+                color: "#4A4A44",
                 borderRadius: "2px",
+                background: "#FFFFFF",
               }}
             >
               Se déconnecter
@@ -63,15 +66,15 @@ export default async function AccountPage() {
               key={stat.label}
               className="p-6 text-center"
               style={{
-                background: "#1E293B",
-                border: "0.5px solid rgba(212,175,55,0.1)",
+                background: "#FFFFFF",
+                border: "1px solid rgba(0,0,0,0.06)",
                 borderRadius: "2px",
               }}
             >
-              <div className="font-serif text-4xl font-bold mb-1" style={{ color: "#D4AF37" }}>
+              <div className="font-serif text-4xl font-bold mb-1" style={{ color: "#B8860B" }}>
                 {stat.num}
               </div>
-              <div className="text-xs tracking-widest uppercase" style={{ color: "#D4CCBA" }}>
+              <div className="text-xs tracking-widest uppercase" style={{ color: "#4A4A44" }}>
                 {stat.label}
               </div>
             </div>
@@ -80,7 +83,7 @@ export default async function AccountPage() {
 
         {/* Commandes */}
         <div>
-          <h2 className="font-serif text-2xl mb-6" style={{ color: "#FDFAF4" }}>
+          <h2 className="font-serif text-2xl mb-6" style={{ color: "#1A1A1A" }}>
             Mes commandes
           </h2>
 
@@ -88,17 +91,17 @@ export default async function AccountPage() {
             <div
               className="text-center py-12"
               style={{
-                background: "#1E293B",
-                border: "0.5px solid rgba(212,175,55,0.1)",
+                background: "#FFFFFF",
+                border: "1px solid rgba(0,0,0,0.06)",
                 borderRadius: "2px",
               }}
             >
-              <p className="font-serif text-xl mb-4" style={{ color: "#FDFAF4" }}>
-                Aucune commande pour l'instant
+              <p className="font-serif text-xl mb-4" style={{ color: "#1A1A1A" }}>
+                Aucune commande pour l’instant
               </p>
-              <a href="/collections" className="btn-primary inline-flex">
+              <Link href="/collections" className="btn-primary inline-flex">
                 Découvrir la collection
-              </a>
+              </Link>
             </div>
           ) : (
             <div className="space-y-4">
@@ -107,24 +110,24 @@ export default async function AccountPage() {
                   key={order.id}
                   className="p-6"
                   style={{
-                    background: "#1E293B",
-                    border: "0.5px solid rgba(212,175,55,0.1)",
+                    background: "#FFFFFF",
+                    border: "1px solid rgba(0,0,0,0.06)",
                     borderRadius: "2px",
                   }}
                 >
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <p className="font-serif text-lg" style={{ color: "#FDFAF4" }}>
+                      <p className="font-serif text-lg" style={{ color: "#1A1A1A" }}>
                         Commande #{order.orderNumber}
                       </p>
-                      <p className="text-xs mt-1" style={{ color: "#D4CCBA" }}>
+                      <p className="text-xs mt-1" style={{ color: "#8A857A" }}>
                         {new Date(order.processedAt).toLocaleDateString("fr-FR", {
                           day: "numeric", month: "long", year: "numeric",
                         })}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-serif text-xl font-bold" style={{ color: "#D4AF37" }}>
+                      <p className="font-serif text-xl font-bold" style={{ color: "#B8860B" }}>
                         {formatPrice(
                           order.currentTotalPrice.amount,
                           order.currentTotalPrice.currencyCode
@@ -139,25 +142,27 @@ export default async function AccountPage() {
                     {order.lineItems.slice(0, 3).map((item, i) => (
                       <div key={i} className="flex items-center gap-3">
                         {item.variant?.image && (
-                          <img
+                          <Image
                             src={item.variant.image.url}
                             alt={item.variant.image.altText ?? item.title}
+                            width={40}
+                            height={48}
                             className="w-10 h-12 object-cover"
-                            style={{ borderRadius: "2px", background: "#0F172A" }}
+                            style={{ borderRadius: "2px", background: "#F0ECE4" }}
                           />
                         )}
                         <div>
-                          <p className="text-sm" style={{ color: "#F5F0E8" }}>
+                          <p className="text-sm" style={{ color: "#1A1A1A" }}>
                             {item.title}
                           </p>
-                          <p className="text-xs" style={{ color: "#D4CCBA" }}>
+                          <p className="text-xs" style={{ color: "#8A857A" }}>
                             Qté : {item.quantity}
                           </p>
                         </div>
                       </div>
                     ))}
                     {order.lineItems.length > 3 && (
-                      <p className="text-xs" style={{ color: "#D4CCBA" }}>
+                      <p className="text-xs" style={{ color: "#8A857A" }}>
                         +{order.lineItems.length - 3} autre(s) article(s)
                       </p>
                     )}
@@ -170,37 +175,37 @@ export default async function AccountPage() {
 
         {/* Adresse */}
         <div>
-          <h2 className="font-serif text-2xl mb-6" style={{ color: "#FDFAF4" }}>
+          <h2 className="font-serif text-2xl mb-6" style={{ color: "#1A1A1A" }}>
             Adresse de livraison
           </h2>
           {customer.defaultAddress ? (
             <div
               className="p-6"
               style={{
-                background: "#1E293B",
-                border: "0.5px solid rgba(212,175,55,0.1)",
+                background: "#FFFFFF",
+                border: "1px solid rgba(0,0,0,0.06)",
                 borderRadius: "2px",
               }}
             >
-              <p style={{ color: "#F5F0E8" }}>{customer.defaultAddress.address1}</p>
+              <p style={{ color: "#1A1A1A" }}>{customer.defaultAddress.address1}</p>
               {customer.defaultAddress.address2 && (
-                <p style={{ color: "#F5F0E8" }}>{customer.defaultAddress.address2}</p>
+                <p style={{ color: "#1A1A1A" }}>{customer.defaultAddress.address2}</p>
               )}
-              <p style={{ color: "#F5F0E8" }}>
+              <p style={{ color: "#1A1A1A" }}>
                 {customer.defaultAddress.zip} {customer.defaultAddress.city}
               </p>
-              <p style={{ color: "#D4CCBA" }}>{customer.defaultAddress.country}</p>
+              <p style={{ color: "#8A857A" }}>{customer.defaultAddress.country}</p>
             </div>
           ) : (
             <div
               className="p-6 text-center"
               style={{
-                background: "#1E293B",
-                border: "0.5px solid rgba(212,175,55,0.1)",
+                background: "#FFFFFF",
+                border: "1px solid rgba(0,0,0,0.06)",
                 borderRadius: "2px",
               }}
             >
-              <p style={{ color: "#D4CCBA" }}>Aucune adresse enregistrée</p>
+              <p style={{ color: "#8A857A" }}>Aucune adresse enregistrée</p>
             </div>
           )}
         </div>
@@ -212,12 +217,12 @@ export default async function AccountPage() {
 
 function StatusBadge({ status }: { status: string }) {
   const config: Record<string, { label: string; color: string; bg: string }> = {
-    FULFILLED:   { label: "Livré",      color: "#86efac", bg: "rgba(134,239,172,0.1)" },
-    UNFULFILLED: { label: "En cours",   color: "#D4AF37", bg: "rgba(212,175,55,0.1)" },
-    PARTIAL:     { label: "Partiel",    color: "#fdba74", bg: "rgba(253,186,116,0.1)" },
-    IN_TRANSIT:  { label: "En transit", color: "#93c5fd", bg: "rgba(147,197,253,0.1)" },
+    FULFILLED:   { label: "Livré",      color: "#15803d", bg: "rgba(34,197,94,0.08)" },
+    UNFULFILLED: { label: "En cours",   color: "#B8860B", bg: "rgba(197,160,89,0.12)" },
+    PARTIAL:     { label: "Partiel",    color: "#c2410c", bg: "rgba(253,186,116,0.12)" },
+    IN_TRANSIT:  { label: "En transit", color: "#1d4ed8", bg: "rgba(147,197,253,0.12)" },
   };
-  const { label, color, bg } = config[status] ?? { label: status, color: "#D4CCBA", bg: "rgba(212,175,55,0.05)" };
+  const { label, color, bg } = config[status] ?? { label: status, color: "#4A4A44", bg: "rgba(0,0,0,0.04)" };
 
   return (
     <span

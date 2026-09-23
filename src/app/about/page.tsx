@@ -25,28 +25,29 @@ const VALUES = [
 
 export default function AboutPage() {
   return (
-    <div style={{ background: "#0F172A", minHeight: "100vh" }}>
+    <div style={{ background: "#FAF8F5", minHeight: "100vh", color: "#1A1A1A" }}>
 
       {/* Hero */}
       <div
         className="relative py-32 px-6 text-center overflow-hidden"
-        style={{ borderBottom: "0.5px solid rgba(212,175,55,0.1)" }}
+        style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}
       >
         <div
-          className="absolute inset-0 opacity-5"
+          className="absolute inset-0"
           style={{
-            backgroundImage: `repeating-linear-gradient(135deg, #D4AF37 0px, #D4AF37 1px, transparent 1px, transparent 80px)`,
+            opacity: 0.08,
+            backgroundImage: `repeating-linear-gradient(135deg, #C5A059 0px, #C5A059 1px, transparent 1px, transparent 80px)`,
           }}
         />
-        <p className="text-xs tracking-widest uppercase mb-4 relative" style={{ color: "#D4AF37" }}>
+        <p className="text-xs tracking-widest uppercase mb-4 relative" style={{ color: "#B8860B" }}>
           Notre histoire
         </p>
-        <h1 className="font-serif text-5xl md:text-7xl mb-6 relative leading-tight" style={{ color: "#FDFAF4" }}>
-          L'Afrique mérite<br />
-          <em style={{ color: "#D4AF37" }}>une scène mondiale</em>
+        <h1 className="font-serif text-5xl md:text-7xl mb-6 relative leading-tight" style={{ color: "#1A1A1A" }}>
+          L’Afrique mérite<br />
+          <em style={{ color: "#B8860B" }}>une scène mondiale</em>
         </h1>
-        <p className="text-base max-w-xl mx-auto relative" style={{ color: "#D4CCBA" }}>
-          AfroStyle est né d'une conviction simple : les créateurs africains sont parmi
+        <p className="text-base max-w-xl mx-auto relative" style={{ color: "#4A4A44" }}>
+          AfroStyle est né d’une conviction simple : les créateurs africains sont parmi
           les plus talentueux du monde. Il leur manquait juste une vitrine à la hauteur
           de leur talent.
         </p>
@@ -55,16 +56,16 @@ export default function AboutPage() {
       {/* Mission */}
       <div
         className="py-20 px-6"
-        style={{ background: "#1E293B" }}
+        style={{ background: "#FFFFFF", borderBottom: "1px solid rgba(0,0,0,0.06)" }}
       >
         <div className="max-w-4xl mx-auto text-center">
-          <p className="text-xs tracking-widest uppercase mb-6" style={{ color: "#D4AF37" }}>
+          <p className="text-xs tracking-widest uppercase mb-6" style={{ color: "#B8860B" }}>
             Notre mission
           </p>
-          <blockquote className="font-serif text-3xl md:text-4xl leading-snug" style={{ color: "#FDFAF4" }}>
-            "Connecter les créateurs d'Afrique aux amateurs de mode authentique
+          <blockquote className="font-serif text-3xl md:text-4xl leading-snug" style={{ color: "#1A1A1A" }}>
+            « Connecter les créateurs d’Afrique aux amateurs de mode authentique
             partout sur la planète — et permettre à chaque artiste de vivre
-            dignement de son art."
+            dignement de son art. »
           </blockquote>
         </div>
       </div>
@@ -72,11 +73,11 @@ export default function AboutPage() {
       {/* Valeurs */}
       <div className="py-20 px-6">
         <div className="max-w-7xl mx-auto">
-          <p className="text-xs tracking-widest uppercase mb-4 text-center" style={{ color: "#D4AF37" }}>
+          <p className="text-xs tracking-widest uppercase mb-4 text-center" style={{ color: "#B8860B" }}>
             Ce en quoi nous croyons
           </p>
-          <h2 className="font-serif text-4xl mb-12 text-center" style={{ color: "#FDFAF4" }}>
-            Nos <em style={{ color: "#D4AF37" }}>valeurs</em>
+          <h2 className="font-serif text-4xl mb-12 text-center" style={{ color: "#1A1A1A" }}>
+            Nos <em style={{ color: "#B8860B" }}>valeurs</em>
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {VALUES.map((value) => (
@@ -84,17 +85,17 @@ export default function AboutPage() {
                 key={value.title}
                 className="p-8 rounded-sm"
                 style={{
-                  background: "#1E293B",
-                  border: "0.5px solid rgba(212,175,55,0.15)",
+                  background: "#FFFFFF",
+                  border: "1px solid rgba(0,0,0,0.06)",
                 }}
               >
-                <span className="text-2xl mb-4 block" style={{ color: "#D4AF37" }}>
+                <span className="text-2xl mb-4 block" style={{ color: "#B8860B" }}>
                   {value.icon}
                 </span>
-                <h3 className="font-serif text-xl mb-3" style={{ color: "#FDFAF4" }}>
+                <h3 className="font-serif text-xl mb-3" style={{ color: "#1A1A1A" }}>
                   {value.title}
                 </h3>
-                <p className="text-sm leading-relaxed" style={{ color: "#D4CCBA" }}>
+                <p className="text-sm leading-relaxed" style={{ color: "#4A4A44" }}>
                   {value.text}
                 </p>
               </div>
@@ -104,13 +105,13 @@ export default function AboutPage() {
       </div>
 
       {/* Timeline */}
-      <div className="py-20 px-6" style={{ background: "#1E293B" }}>
+      <div className="py-20 px-6" style={{ background: "#FFFFFF", borderTop: "1px solid rgba(0,0,0,0.06)" }}>
         <div className="max-w-3xl mx-auto">
-          <p className="text-xs tracking-widest uppercase mb-4" style={{ color: "#D4AF37" }}>
+          <p className="text-xs tracking-widest uppercase mb-4" style={{ color: "#B8860B" }}>
             Notre parcours
           </p>
-          <h2 className="font-serif text-4xl mb-12" style={{ color: "#FDFAF4" }}>
-            De l'idée à la <em style={{ color: "#D4AF37" }}>réalité</em>
+          <h2 className="font-serif text-4xl mb-12" style={{ color: "#1A1A1A" }}>
+            De l’idée à la <em style={{ color: "#B8860B" }}>réalité</em>
           </h2>
           <div className="space-y-0">
             {TIMELINE.map((event, i) => (
@@ -122,12 +123,12 @@ export default function AboutPage() {
                 <div className="flex flex-col items-center">
                   <div
                     className="w-3 h-3 rounded-full flex-shrink-0 mt-1"
-                    style={{ background: "#D4AF37" }}
+                    style={{ background: "#C5A059" }}
                   />
                   {i < TIMELINE.length - 1 && (
                     <div
                       className="w-px flex-1 my-2"
-                      style={{ background: "rgba(212,175,55,0.2)", minHeight: "3rem" }}
+                      style={{ background: "rgba(197,160,89,0.35)", minHeight: "3rem" }}
                     />
                   )}
                 </div>
@@ -135,14 +136,14 @@ export default function AboutPage() {
                 <div className="pb-10">
                   <span
                     className="text-xs tracking-widest uppercase font-medium"
-                    style={{ color: "#D4AF37" }}
+                    style={{ color: "#B8860B" }}
                   >
                     {event.year}
                   </span>
-                  <h3 className="font-serif text-xl mt-1 mb-2" style={{ color: "#FDFAF4" }}>
+                  <h3 className="font-serif text-xl mt-1 mb-2" style={{ color: "#1A1A1A" }}>
                     {event.title}
                   </h3>
-                  <p className="text-sm leading-relaxed" style={{ color: "#D4CCBA" }}>
+                  <p className="text-sm leading-relaxed" style={{ color: "#4A4A44" }}>
                     {event.text}
                   </p>
                 </div>
@@ -162,10 +163,10 @@ export default function AboutPage() {
             { num: "70%", label: "Reversé aux créateurs" },
           ].map((stat) => (
             <div key={stat.label}>
-              <div className="font-serif text-5xl font-bold mb-2" style={{ color: "#D4AF37" }}>
+              <div className="font-serif text-5xl font-bold mb-2" style={{ color: "#B8860B" }}>
                 {stat.num}
               </div>
-              <div className="text-xs tracking-widest uppercase" style={{ color: "#D4CCBA" }}>
+              <div className="text-xs tracking-widest uppercase" style={{ color: "#4A4A44" }}>
                 {stat.label}
               </div>
             </div>
@@ -176,12 +177,12 @@ export default function AboutPage() {
       {/* CTA */}
       <div
         className="py-20 px-6 text-center"
-        style={{ background: "#1E293B", borderTop: "0.5px solid rgba(212,175,55,0.1)" }}
+        style={{ background: "#FFFFFF", borderTop: "1px solid rgba(0,0,0,0.06)" }}
       >
-        <h2 className="font-serif text-4xl mb-4" style={{ color: "#FDFAF4" }}>
-          Rejoins l'aventure
+        <h2 className="font-serif text-4xl mb-4" style={{ color: "#1A1A1A" }}>
+          Rejoins l’aventure
         </h2>
-        <p className="text-sm mb-8 max-w-md mx-auto" style={{ color: "#D4CCBA" }}>
+        <p className="text-sm mb-8 max-w-md mx-auto" style={{ color: "#4A4A44" }}>
           Que tu sois créateur, client ou passionné de mode africaine —
           AfroStyle est ta maison.
         </p>
@@ -189,8 +190,8 @@ export default function AboutPage() {
           <Link href="/collections" className="btn-primary inline-flex">
             Explorer la collection <ArrowRight size={14} />
           </Link>
-          <Link href="/designers" className="btn-outline inline-flex">
-            Découvrir les créateurs
+          <Link href="/collections" className="btn-outline inline-flex">
+            Découvrir la collection
           </Link>
         </div>
       </div>

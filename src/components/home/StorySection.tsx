@@ -1,83 +1,76 @@
-// src/components/home/StorySection.tsx
+// src/components/home/StorySection.tsx — Section Histoire, 100 % thème dynamique
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight } from "lucide-react";
+import { IMAGES } from "@/constants/images";
+
+const STORY_STATS = [
+  { num: "100%", label: "Fait en Afrique" },
+  { num: "87", label: "Créateurs soutenus" },
+  { num: "14", label: "Pays représentés" },
+];
 
 export default function StorySection() {
   return (
-    <section
-      className="grid grid-cols-1 lg:grid-cols-2"
-      style={{ background: "#1E293B" }}
-    >
-      {/* Visuel gauche */}
-      <div
-        className="aspect-square lg:aspect-auto min-h-80 flex items-center justify-center"
-        style={{
-          background: "linear-gradient(160deg, #2a1040, #0a2010, #1a1000)",
-        }}
-      >
-        <p
-          className="text-xs tracking-widest uppercase opacity-20"
-          style={{ color: "#D4AF37" }}
-        >
-          Photo storytelling
-        </p>
-      </div>
+    <section className="border-y border-line bg-surface py-16 lg:py-24">
+      {/* Conteneur standardisé */}
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+        {/* Layout 2 colonnes équilibré sur desktop */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          {/* Visuel gauche — panneau arrondi, dégradé thématique */}
+          <div className="relative w-full aspect-[4/5] sm:aspect-[4/3] rounded-2xl overflow-hidden border border-line shadow-[0_16px_40px_rgba(0,0,0,0.06)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.4)]">
+            {/* Visuel gauche — photo storytelling (Unsplash HD) */}
+            <Image
+              src={IMAGES.story}
+              alt="Tenue complète en Pagne / Iro portée avec élégance — collection spéciale AfroStyle"
+              fill
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              className="object-cover"
+            />
+            {/* Voile subtil — cohérence dorée + relief de la carte */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+          </div>
 
-      {/* Texte droite */}
-      <div className="flex flex-col justify-center gap-6 px-8 md:px-16 py-16">
-        <p
-          className="text-xs tracking-widest uppercase"
-          style={{ color: "#D4AF37" }}
-        >
-          Notre mission
-        </p>
+          {/* Texte droite */}
+          <div className="flex flex-col justify-center gap-6">
+            <p className="text-xs tracking-widest uppercase text-gold-dark dark:text-gold">
+              Notre mission
+            </p>
 
-        <blockquote
-          className="font-serif text-2xl md:text-3xl leading-snug"
-          style={{ color: "#FDFAF4" }}
-        >
-          "Chaque tissu porte une histoire. Chaque pièce,{" "}
-          <em style={{ color: "#D4AF37", fontStyle: "normal" }}>
-            une identité.
-          </em>
-          "
-        </blockquote>
+            <blockquote className="font-serif text-2xl md:text-3xl leading-snug text-text">
+              &quot;Chaque tissu porte une histoire. Chaque pièce,{" "}
+              <em className="not-italic text-gold-dark dark:text-gold">
+                une identité.
+              </em>
+              &quot;
+            </blockquote>
 
-        <p className="text-sm leading-relaxed" style={{ color: "#D4CCBA" }}>
-          AfroStyle naît d'une conviction : la mode africaine mérite une scène
-          mondiale. Nous connectons les créateurs d'Afrique aux amateurs de mode
-          authentique partout sur la planète.
-        </p>
+            <p className="text-sm md:text-base leading-relaxed text-text-2">
+              AfroStyle naît d&apos;une conviction : la mode africaine mérite une
+              scène mondiale. Nous connectons les créateurs d&apos;Afrique aux
+              amateurs de mode authentique partout sur la planète.
+            </p>
 
-        <Link href="/about" className="btn-primary self-start">
-          Notre histoire <ArrowRight size={14} />
-        </Link>
+            <Link href="/about" className="btn-primary self-start">
+              Notre histoire <ArrowRight size={14} />
+            </Link>
+          </div>
+        </div>
 
-        {/* Stats */}
-        <div
-          className="flex gap-8 pt-6"
-          style={{ borderTop: "0.5px solid rgba(212,175,55,0.15)" }}
-        >
-          {[
-            { num: "100%", label: "Fait en Afrique" },
-            { num: "87", label: "Créateurs soutenus" },
-            { num: "14", label: "Pays représentés" },
-          ].map((s) => (
-            <div key={s.label}>
-              <div
-                className="font-serif text-2xl font-bold"
-                style={{ color: "#D4AF37" }}
-              >
-                {s.num}
+        {/* Statistiques — centrées en bas du bloc */}
+        <div className="mt-12 border-t border-line pt-10">
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-3 text-center">
+            {STORY_STATS.map((s) => (
+              <div key={s.label}>
+                <div className="font-serif text-3xl font-bold text-gold-dark dark:text-gold">
+                  {s.num}
+                </div>
+                <div className="text-xs tracking-widest uppercase mt-1 text-text-2">
+                  {s.label}
+                </div>
               </div>
-              <div
-                className="text-xs tracking-widest uppercase mt-1"
-                style={{ color: "#D4CCBA" }}
-              >
-                {s.label}
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </section>

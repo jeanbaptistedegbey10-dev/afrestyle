@@ -1,9 +1,10 @@
-// src/components/home/HeroSection.tsx
+// src/components/home/HeroSection.tsx — Éditorial Luxe, double thème Ivory/Obsidian
 "use client";
 
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import { useEffect, useState } from "react";
+import Image from "next/image";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
+import { IMAGES } from "@/constants/images";
 
 const STATS = [
   { num: "87+", label: "Créateurs" },
@@ -12,20 +13,23 @@ const STATS = [
 ];
 
 export default function HeroSection() {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-
   return (
-    <section
-      className="relative min-h-[88vh] flex items-end overflow-hidden"
-      style={{ padding: "4rem 2.5rem" }}
-    >
-      {/* Fond */}
+    <section className="relative overflow-hidden bg-bg-2 py-16 sm:py-20 lg:py-24">
+      {/* Fond — dégradé thématique subtil (ivoire → sable clair / obsidienne → anthracite) */}
       <div
         className="absolute inset-0"
         style={{
           background:
-            "linear-gradient(135deg, #0F172A 0%, #1a0f2e 40%, #0F172A 100%)",
+            "linear-gradient(135deg, var(--bg) 0%, var(--bg-2) 45%, var(--surface-2) 100%)",
+        }}
+      />
+
+      {/* Halo doré — profondeur */}
+      <div
+        className="absolute -top-1/4 -right-1/4 w-[60vw] h-[60vw] rounded-full pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(circle, var(--gold-soft) 0%, transparent 65%)",
         }}
       />
 
@@ -33,115 +37,114 @@ export default function HeroSection() {
       <div
         className="absolute inset-0"
         style={{
-          opacity: 0.04,
+          opacity: 0.05,
           backgroundImage: `
-            repeating-linear-gradient(0deg, transparent, transparent 30px, rgba(212,175,55,0.5) 30px, rgba(212,175,55,0.5) 31px),
-            repeating-linear-gradient(90deg, transparent, transparent 30px, rgba(212,175,55,0.5) 30px, rgba(212,175,55,0.5) 31px)
+            repeating-linear-gradient(0deg, transparent, transparent 30px, var(--gold) 30px, var(--gold) 31px),
+            repeating-linear-gradient(90deg, transparent, transparent 30px, var(--gold) 30px, var(--gold) 31px)
           `,
         }}
       />
 
-      {/* Bloc image droite asymétrique */}
-      <div
-        className="absolute right-0 top-0 bottom-0 hidden lg:flex items-center justify-center"
-        style={{
-          width: "55%",
-          background: "linear-gradient(160deg, #2d1a4a, #1a2d1a, #2d2410)",
-          clipPath: "polygon(12% 0, 100% 0, 100% 100%, 0 100%)",
-        }}
-      >
-        {/* Placeholder — remplace par une vraie image de créateur */}
-        <div className="text-center opacity-20">
-          <p
-            className="text-xs tracking-widest uppercase"
-            style={{ color: "#D4AF37" }}
-          >
-            Photo créateur vedette
-          </p>
-        </div>
-      </div>
+      {/* Conteneur standardisé — grille éditoriale 2 colonnes */}
+      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+          {/* Colonne texte */}
+          <div className="lg:col-span-5 space-y-6 animate-fade-in">
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 text-xs tracking-widest uppercase px-4 py-2 rounded-sm bg-gold-soft text-gold-dark dark:text-gold border border-gold/40">
+              <span className="w-5 h-px bg-gold inline-block" />
+              Nouvelle collection 2024
+            </div>
 
-      {/* Contenu */}
-      <div
-        className="relative z-10 max-w-xl"
-        style={{
-          opacity: mounted ? 1 : 0,
-          transform: mounted ? "translateY(0)" : "translateY(20px)",
-          transition: "all 0.8s ease-out",
-        }}
-      >
-        {/* Badge */}
-        <div
-          className="inline-flex items-center gap-2 text-xs tracking-widest uppercase mb-6 px-4 py-2"
-          style={{
-            color: "#D4AF37",
-            border: "0.5px solid rgba(212,175,55,0.3)",
-            borderRadius: "2px",
-          }}
-        >
-          <span
-            style={{
-              width: 20,
-              height: 1,
-              background: "#D4AF37",
-              display: "inline-block",
-            }}
-          />
-          Nouvelle collection 2024
-        </div>
+            {/* Titre — Serif géant */}
+            <h1
+              className="font-serif leading-[0.95] text-text"
+              style={{ fontSize: "clamp(2.75rem, 5vw, 4.5rem)" }}
+            >
+              L&apos;Afrique
+              <br />
+              réinvente
+              <br />
+              <em className="text-gold-dark dark:text-gold">le luxe</em>
+            </h1>
 
-        {/* Titre */}
-        <h1
-          className="font-serif leading-none mb-4"
-          style={{ fontSize: "clamp(2.8rem, 5vw, 4.5rem)", color: "#FDFAF4" }}
-        >
-          L'Afrique
-          <br />
-          réinvente
-          <br />
-          <em style={{ color: "#D4AF37" }}>le luxe</em>
-        </h1>
+            <p className="text-text-2 text-base md:text-lg leading-relaxed max-w-[440px]">
+              Des créateurs d&apos;exception. Des tissus d&apos;héritage. Une mode
+              contemporaine qui honore ses racines.
+            </p>
 
-        <p
-          className="text-base mb-10 leading-relaxed"
-          style={{ color: "#D4CCBA", maxWidth: 420 }}
-        >
-          Des créateurs d'exception. Des tissus d'héritage. Une mode
-          contemporaine qui honore ses racines.
-        </p>
-
-        {/* CTA */}
-        <div className="flex items-center gap-4 flex-wrap">
-          <Link href="/collections" className="btn-primary">
-            Explorer la collection
-            <ArrowRight size={14} />
-          </Link>
-          <Link href="/designers" className="btn-outline">
-            Découvrir les créateurs
-          </Link>
-        </div>
-
-        {/* Stats */}
-        <div
-          className="flex gap-8 mt-10 pt-8"
-          style={{ borderTop: "0.5px solid rgba(212,175,55,0.15)" }}
-        >
-          {STATS.map((s) => (
-            <div key={s.label}>
-              <div
-                className="font-serif text-3xl font-bold"
-                style={{ color: "#D4AF37" }}
+            {/* CTA — micro-interactions */}
+            <div className="flex items-center gap-4 flex-wrap pt-2">
+              <Link
+                href="/collections"
+                className="group btn-primary hover:shadow-[0_8px_24px_var(--gold-soft)] hover:-translate-y-0.5"
               >
-                {s.num}
-              </div>
-              <div
-                className="text-xs tracking-widest uppercase mt-1"
-                style={{ color: "#D4CCBA" }}
+                Explorer la collection
+                <ArrowRight
+                  size={14}
+                  className="transition-transform duration-300 group-hover:translate-x-1"
+                />
+              </Link>
+              <Link
+                href="/lookbook"
+                className="btn-outline hover:-translate-y-0.5 hover:shadow-[0_6px_18px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_6px_18px_rgba(0,0,0,0.5)]"
               >
-                {s.label}
+                Voir le lookbook
+              </Link>
+            </div>
+
+            {/* Stats */}
+            <div className="flex flex-wrap gap-8 pt-6 border-t border-line">
+              {STATS.map((s) => (
+                <div key={s.label}>
+                  <div className="font-serif text-3xl font-bold text-gold-dark dark:text-gold">
+                    {s.num}
+                  </div>
+                  <div className="text-text-2 text-xs tracking-widest uppercase mt-1">
+                    {s.label}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Colonne visuelle — média hero */}
+          <div className="lg:col-span-7">
+            <div className="relative w-full aspect-[4/5] lg:aspect-square rounded-2xl overflow-hidden border border-line shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.5)]">
+              {/* Visuel — photo créateur vedette (Unsplash HD) */}
+              <Image
+                src={IMAGES.hero}
+                alt="Mannequin portant une haute tenue africaine élégante — femme en ensemble Pagne/Wax"
+                fill
+                priority
+                sizes="(max-width: 1024px) 100vw, 58vw"
+                className="object-cover"
+              />
+
+              {/* Voile dégradé — profondeur dorée + lisibilité de la carte flottante */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
+
+              {/* Carte flottante — info collection */}
+              <div className="absolute inset-x-4 bottom-4 sm:inset-x-6 sm:bottom-6 rounded-xl border border-line bg-nav backdrop-blur-md px-5 py-4 flex items-center justify-between shadow-sm">
+                <div className="min-w-0">
+                  <p className="text-[0.65rem] tracking-[0.2em] uppercase text-text-3">
+                    En vedette
+                  </p>
+                  <p className="mt-0.5 truncate font-serif text-base text-text">
+                    Collection Kente{" "}
+                    <em className="text-gold-dark dark:text-gold">2024</em>
+                  </p>
+                </div>
+                <Link
+                  href="/lookbook"
+                  aria-label="Voir le lookbook"
+                  className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-text text-bg transition-all duration-300 hover:bg-gold hover:text-white"
+                >
+                  <ArrowUpRight size={16} />
+                </Link>
               </div>
             </div>
-          ))}
+          </div>
         </div>
       </div>
     </section>

@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Copie worktree de l'agent Kilo (dossier mort, déjà exclu de git)
+    ".kilo/**",
   ]),
 ]);
 

@@ -1,34 +1,28 @@
 // src/lib/actions/admin.actions.ts
+// PHASE 3 — modèle mono-marque : login/logout admin uniquement.
+// Les actions créateurs (approve/reject/suspend) et Prisma ont été supprimés.
 "use server";
 
-import { db } from "@/lib/db";
-import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import crypto from "crypto";
-
-const ADMIN_COOKIE = "admin_token";
+import {
+  ADMIN_COOKIE_NAME,
+  getAdminSecret,
+  isAdminSecretConfigured,
+  timingSafeCompare,
+} from "@/lib/auth/adminAuth";
 
 /**
- * Vérifie si la requête vient d'un admin authentifié
- * Utilise timingSafeEqual pour prévenir les timing attacks
+ * Vérifie si la requête vient d'un admin authentifié.
+ * Compare le cookie au secret en temps constant (anti timing-attack).
+ * Redirige vers /admin/login si absent/invalide/non configuré
+ * (le proxy affiche alors ?error=config-missing, sans boucle).
  */
-async function assertAdmin() {
+export async function assertAdmin() {
   const cookieStore = await cookies();
-  const adminToken = cookieStore.get(ADMIN_COOKIE)?.value;
-  const validToken = process.env.ADMIN_SECRET_TOKEN;
+  const adminToken = cookieStore.get(ADMIN_COOKIE_NAME)?.value;
 
-  if (!adminToken || !validToken) {
-    redirect("/admin/login");
-  }
-
-  // timingSafeEqual évite les attaques par timing (comparaison en temps constant)
-  const a = Buffer.from(adminToken);
-  const b = Buffer.from(validToken);
-  const isValid =
-    a.length === b.length && crypto.timingSafeEqual(a, b);
-
-  if (!isValid) {
+  if (!isAdminSecretConfigured() || !timingSafeCompare(adminToken ?? "", getAdminSecret())) {
     redirect("/admin/login");
   }
 }
@@ -54,29 +48,31 @@ export async function adminLoginAction(formData: FormData) {
   // Délai artificiel pour ralentir les attaques par force brute
   await new Promise((r) => setTimeout(r, 600));
 
-  // Comparaison sécurisée en temps constant
-  let isValid = false;
-  try {
-    const a1 = Buffer.from(username.padEnd(validUsername.length));
-    const b1 = Buffer.from(validUsername);
-    const a2 = Buffer.from(password.padEnd(validPassword.length));
-    const b2 = Buffer.from(validPassword);
-    isValid =
-      a1.length === b1.length &&
-      crypto.timingSafeEqual(a1, b1) &&
-      a2.length === b2.length &&
-      crypto.timingSafeEqual(a2, b2);
-  } catch {
-    isValid = false;
-  }
+  // Comparaison sécurisée en temps constant (cf. lib/auth/adminAuth.ts)
+  const isValid =
+    timingSafeCompare(username, validUsername) &&
+    timingSafeCompare(password, validPassword);
 
   if (!isValid) {
     return { success: false, error: "Identifiant ou mot de passe incorrect" };
   }
 
+  // PHASE 2 (fix boucle /admin) — la session admin repose sur
+  // ADMIN_SECRET_TOKEN, le MÊME secret que celui vérifié par le proxy
+  // et assertAdmin(). Avant : on posait ADMIN_PASSWORD dans le cookie alors
+  // que la garde comparait à ADMIN_SECRET_TOKEN → mismatch permanent.
+  const sessionToken = getAdminSecret();
+  if (!sessionToken) {
+    return {
+      success: false,
+      error:
+        "Configuration admin manquante : définissez ADMIN_SECRET_TOKEN dans .env.local (voir .env.example).",
+    };
+  }
+
   // Crée un cookie de session admin sécurisé
   const cookieStore = await cookies();
-  cookieStore.set(ADMIN_COOKIE, validPassword, {
+  cookieStore.set(ADMIN_COOKIE_NAME, sessionToken, {
     httpOnly: true,
     secure:   process.env.NODE_ENV === "production",
     sameSite: "lax",
@@ -92,76 +88,6 @@ export async function adminLoginAction(formData: FormData) {
  */
 export async function adminLogoutAction() {
   const cookieStore = await cookies();
-  cookieStore.delete(ADMIN_COOKIE);
+  cookieStore.delete(ADMIN_COOKIE_NAME);
   redirect("/admin/login");
-}
-
-/**
- * Valide un créateur — requiert d'être admin
- * autoPublish: si true, les produits seront publiés automatiquement
- */
-export async function approveDesigner(formData: FormData) {
-  await assertAdmin();
-
-  const designerId = formData.get("designerId") as string;
-  const autoPublish = formData.get("autoPublish") === "on";
-  if (!designerId) return;
-
-  await db.designer.update({
-    where: { id: designerId },
-    data: {
-      status: "APPROVED",
-      autoPublish,
-      applications: {
-        updateMany: {
-          where: { designerId },
-          data:  { reviewedAt: new Date() },
-        },
-      },
-    },
-  });
-
-  revalidatePath("/admin/designers");
-}
-
-/**
- * Refuse un créateur — requiert d'être admin
- */
-export async function rejectDesigner(formData: FormData) {
-  await assertAdmin();
-
-  const designerId = formData.get("designerId") as string;
-  const reason     = formData.get("reason")     as string;
-  if (!designerId) return;
-
-  await db.designer.update({
-    where: { id: designerId },
-    data: {
-      status:          "REJECTED",
-      rejectionReason: reason || "Ne correspond pas aux critères actuels",
-    },
-  });
-
-  revalidatePath("/admin/designers");
-}
-
-/**
- * Suspend un créateur — requiert d'être admin
- */
-export async function suspendDesigner(formData: FormData) {
-  await assertAdmin();
-
-  const designerId = formData.get("designerId") as string;
-  const reason     = formData.get("reason")     as string;
-  if (!designerId) return;
-
-  await db.designer.update({
-    where: { id: designerId },
-    data: {
-      status:          "SUSPENDED",
-      rejectionReason: reason || null,
-    },
-  });
-
-  revalidatePath("/admin/designers");
 }

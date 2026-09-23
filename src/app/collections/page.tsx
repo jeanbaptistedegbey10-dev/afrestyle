@@ -1,90 +1,88 @@
-// src/app/collections/page.tsx — Affiche TOUS les produits + pagination
+// src/app/collections/page.tsx — Phase 5 Luxe & Editorial (+ Phase 6 : ISR)
 import { Suspense } from "react";
 import { getProducts } from "@/lib/shopify/products";
-import ProductGrid from "@/components/product/ProductGrid";
+import CollectionCatalog from "@/components/product/CollectionCatalog";
 import CollectionFilters from "@/components/product/CollectionFilters";
+import ProductGridSkeleton from "@/components/product/ProductGridSkeleton";
+import {
+  COLLECTION_PAGE_SIZE,
+  buildCollectionQuery,
+  filterSignature,
+  resolveCollectionSort,
+  toApiParams,
+} from "@/lib/collections";
 
 type SearchParams = {
   searchParams: Promise<{
-    genre?: string;
-    pays?: string;
-    tissu?: string;
-    style?: string;
-    sort?: string;
-    q?: string;
+    genre?: string; gender?: string; category?: string;
+    pays?: string; tissu?: string;
+    style?: string; sort?: string; q?: string;
   }>;
 };
 
+/** ISR catalogue : 5 min + invalidation instantanée via webhook /api/revalidate. */
+export const revalidate = 300;
+
 export default async function CollectionsPage({ searchParams }: SearchParams) {
   const params = await searchParams;
+  const query = buildCollectionQuery(params);
+  const sort = resolveCollectionSort(params.sort);
 
-  const queryParts: string[] = [];
-  if (params.genre)  queryParts.push(`tag:${params.genre}`);
-  if (params.pays)   queryParts.push(`tag:pays-${params.pays}`);
-  if (params.tissu)  queryParts.push(`tag:tissu-${params.tissu}`);
-  if (params.style)  queryParts.push(`tag:style-${params.style}`);
-  if (params.q)      queryParts.push(params.q);
-
-  const sortMap: Record<string, { sortKey: string; reverse: boolean }> = {
-    "prix-asc":  { sortKey: "PRICE", reverse: false },
-    "prix-desc": { sortKey: "PRICE", reverse: true },
-    "recent":    { sortKey: "CREATED_AT", reverse: true },
-    "populaire": { sortKey: "BEST_SELLING", reverse: false },
-  };
-  const sort = sortMap[params.sort ?? "recent"] ?? sortMap["recent"];
-
-  // Augmente le nombre de produits de 12 à 50
   const { products, pageInfo } = await getProducts({
-    first: 50,
-    query: queryParts.join(" ") || undefined,
+    first: COLLECTION_PAGE_SIZE,
+    query: query || undefined,
     sortKey: sort.sortKey,
     reverse: sort.reverse,
   });
 
+  const signature = filterSignature(params);
+  const apiParams = toApiParams(params);
+  const genderParam = params.gender || params.category;
+  const activeLabels = [
+    params.genre || genderParam, params.pays, params.tissu, params.style,
+  ].filter(Boolean);
+
   return (
-    <div className="min-h-screen">
-      <div
-        className="py-16 px-6 text-center border-b"
-        style={{ borderColor: "rgba(212,175,55,0.1)" }}
-      >
-        <p className="text-xs tracking-widest uppercase mb-3" style={{ color: "#D4AF37" }}>
-          Notre sélection
+    <div className="min-h-screen bg-[#FDFAF4] text-neutral-900">
+      <header className="border-b border-neutral-200 px-6 py-14 text-center md:py-20">
+        <p className="mb-3 text-[11px] font-medium uppercase tracking-[0.3em] text-neutral-500">
+          N 01 — Notre selection
         </p>
-        <h1 className="font-serif text-5xl mb-4" style={{ color: "#FDFAF4" }}>
-          {params.genre
-            ? params.genre.charAt(0).toUpperCase() + params.genre.slice(1)
-            : params.tissu
-            ? `Collection ${params.tissu.charAt(0).toUpperCase() + params.tissu.slice(1)}`
-            : params.pays
-            ? `Créateurs du ${params.pays.charAt(0).toUpperCase() + params.pays.slice(1)}`
+        <h1 className="font-serif text-4xl leading-tight md:text-6xl">
+          {params.genre || genderParam
+            ? (params.genre || genderParam)!.charAt(0).toUpperCase() + (params.genre || genderParam)!.slice(1)
+            : params.tissu ? `Collection ${params.tissu.charAt(0).toUpperCase() + params.tissu.slice(1)}`
+            : params.pays ? `Createurs du ${params.pays.charAt(0).toUpperCase() + params.pays.slice(1)}`
             : "La Collection"}
         </h1>
-        <p className="text-sm max-w-md mx-auto" style={{ color: "#D4CCBA" }}>
-          {products.length} pièce{products.length > 1 ? "s" : ""} —{" "}
+        <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-neutral-500">
           {products.length === 0
-            ? "Aucun produit pour ces filtres"
-            : "Chaque création raconte une histoire"}
+            ? "Chaque creation raconte une histoire"
+            : `${products.length} piece${products.length > 1 ? "s" : ""} — Chaque creation raconte une histoire`}
         </p>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-6 py-10">
-        <Suspense fallback={<div style={{ color: "#D4CCBA" }}>Chargement...</div>}>
-          <CollectionFilters activeFilters={params} />
-        </Suspense>
-        <ProductGrid products={products} />
-        
-        {/* Bouton Voir plus si pagination disponible */}
-        {pageInfo.hasNextPage && (
-          <div className="text-center mt-12">
-            <a
-              href={`/collections?q=${params.q || ""}&genre=${params.genre || ""}&pays=${params.pays || ""}&tissu=${params.tissu || ""}&style=${params.style || ""}&sort=${params.sort || "recent"}`}
-              className="inline-block px-8 py-3 text-xs tracking-widest uppercase transition-all duration-200"
-              style={{ background: "#D4AF37", color: "#0F172A" }}
-            >
-              Voir plus de produits →
-            </a>
-          </div>
+        {activeLabels.length > 0 && (
+          <p className="mt-3 text-[11px] uppercase tracking-[0.25em] text-neutral-400">
+            {activeLabels.join(" · ")}
+          </p>
         )}
+      </header>
+
+      <div className="mx-auto max-w-7xl px-6 py-10">
+        <div className="flex flex-col gap-10 lg:flex-row">
+          <Suspense fallback={<div className="hidden w-60 lg:block"><ProductGridSkeleton count={4} /></div>}>
+            <CollectionFilters activeFilters={params} />
+          </Suspense>
+          <div className="min-w-0 flex-1">
+            <Suspense fallback={<ProductGridSkeleton count={8} />}>
+              <CollectionCatalog
+                key={signature}
+                initialProducts={products}
+                initialPageInfo={pageInfo}
+                apiParams={apiParams}
+              />
+            </Suspense>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -1,11 +1,15 @@
 // src/app/api/seed/shopify-products/route.ts
 // Crée les 30 produits manquants dans Shopify Admin API
+//
+// PHASE 2 — route de seed DEV-ONLY : protégée par le header
+// `x-admin-secret: <ADMIN_SECRET_TOKEN>` (HTTP 401 sinon).
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { adminFetch } from "@/lib/shopify/adminClient";
+import type { ShopifyUserError } from "@/lib/shopify/errors";
+import { hasValidAdminHeader } from "@/lib/auth/adminAuth";
 
-const SHOPIFY_ADMIN_TOKEN = process.env.SHOPIFY_ADMIN_TOKEN || "REPLACE_WITH_YOUR_ADMIN_TOKEN";
-const SHOPIFY_STORE = process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN || "afrestyle-dev";
-const ADMIN_API = `https://${SHOPIFY_STORE}.myshopify.com/admin/api/2024-01/graphql.json`;
+// Le token d'administration vient exclusivement de
+// SHOPIFY_ADMIN_ACCESS_TOKEN, via le client admin serveur `adminFetch`.
 
 interface ProductSeed {
   title: string;
@@ -71,14 +75,24 @@ const PRODUCTS_TO_CREATE: ProductSeed[] = [
   { title: "Veston Traditionnel", vendor: "Moussa Sow", productType: "Vêtement", tags: ["homme", "pays-guinee", "tissu-wax", "style-traditionnel"], description: "Veston en wax guinéen. Doublure en soie. Coupe ajustée moderne." },
 ];
 
-const CREATE_PRODUCT_MUTATION = `
-  mutation productCreate($input: ProductInput!) {
-    productCreate(input: $input) {
+// Admin API 2026-07 : `productCreate(product: ProductCreateInput!)`.
+// `ProductInput.options` et `ProductInput.variants` n'existent plus :
+//   • les options passent par `productOptions` (OptionCreateInput) ;
+//   • la variante par défaut est créée automatiquement par Shopify ;
+//   • son prix se règle avec `productVariantsBulkUpdate`.
+const SEED_PRODUCT_CREATE_MUTATION = `
+  mutation SeedProductCreate($product: ProductCreateInput!) {
+    productCreate(product: $product) {
       product {
         id
         handle
         title
         vendor
+        variants(first: 1) {
+          nodes {
+            id
+          }
+        }
       }
       userErrors {
         field
@@ -88,56 +102,123 @@ const CREATE_PRODUCT_MUTATION = `
   }
 `;
 
-async function createShopifyProduct(product: ProductSeed) {
-  const variables = {
-    input: {
-      title: product.title,
-      vendor: product.vendor,
-      productType: product.productType,
-      tags: product.tags.join(", "),
-      descriptionHtml: `<p>${product.description}</p>`,
-      status: "ACTIVE" as const,
-      published: true,
-      options: [
-        { name: "Taille", values: ["S", "M", "L", "XL"] },
-        { name: "Couleur", values: ["Naturel", "Noir", "Or"] },
-      ],
-      variants: [
-        { optionValues: [{ optionName: "Taille", name: "M" }, { optionName: "Couleur", name: "Naturel" }], price: "89.00", inventoryQuantities: [{ availableQuantity: 10, locationId: null }] },
-      ],
-    },
-  };
+const SEED_VARIANT_PRICE_MUTATION = `
+  mutation SeedVariantPrice($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
+    productVariantsBulkUpdate(productId: $productId, variants: $variants) {
+      product {
+        id
+      }
+      userErrors {
+        field
+        message
+      }
+    }
+  }
+`;
 
-  const res = await fetch(ADMIN_API, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Shopify-Access-Token": SHOPIFY_ADMIN_TOKEN,
+const SEED_VARIANT_PRICE = "89.00";
+const SEED_SIZES = ["S", "M", "L", "XL"];
+const SEED_COLORS = ["Naturel", "Noir", "Or"];
+
+type SeedProductResult = {
+  created: boolean;
+  productId: string | null;
+  warnings: string[];
+  error: string | null;
+};
+
+async function createShopifyProduct(
+  product: ProductSeed,
+): Promise<SeedProductResult> {
+  const warnings: string[] = [];
+
+  const payload = await adminFetch<{
+    productCreate: {
+      product: { id: string; variants: { nodes: { id: string }[] } | null } | null;
+      userErrors: ShopifyUserError[];
+    };
+  }>({
+    query: SEED_PRODUCT_CREATE_MUTATION,
+    variables: {
+      product: {
+        title: product.title,
+        vendor: product.vendor,
+        productType: product.productType,
+        tags: product.tags,
+        descriptionHtml: `<p>${product.description}</p>`,
+        status: "ACTIVE",
+        productOptions: [
+          { name: "Taille", values: SEED_SIZES.map((name) => ({ name })) },
+          { name: "Couleur", values: SEED_COLORS.map((name) => ({ name })) },
+        ],
+      },
     },
-    body: JSON.stringify({ query: CREATE_PRODUCT_MUTATION, variables }),
   });
 
-  const data = await res.json();
-  return data;
+  const created = payload.productCreate.product;
+
+  if (!created || payload.productCreate.userErrors.length > 0) {
+    return {
+      created: false,
+      productId: null,
+      warnings,
+      error:
+        payload.productCreate.userErrors
+          .map((userError) => userError.message)
+          .join(", ") || "productCreate n'a retourné aucun produit",
+    };
+  }
+
+  const defaultVariantId = created.variants?.nodes?.[0]?.id;
+
+  if (!defaultVariantId) {
+    warnings.push(
+      `Prix ${SEED_VARIANT_PRICE} non appliqué (variante par défaut introuvable).`,
+    );
+    return { created: true, productId: created.id, warnings, error: null };
+  }
+
+  const pricePayload = await adminFetch<{
+    productVariantsBulkUpdate: { userErrors: ShopifyUserError[] };
+  }>({
+    query: SEED_VARIANT_PRICE_MUTATION,
+    variables: {
+      productId: created.id,
+      variants: [{ id: defaultVariantId, price: SEED_VARIANT_PRICE }],
+    },
+  });
+
+  if (pricePayload.productVariantsBulkUpdate.userErrors.length > 0) {
+    warnings.push(
+      `Prix non appliqué : ${pricePayload.productVariantsBulkUpdate.userErrors
+        .map((userError) => userError.message)
+        .join(", ")}`,
+    );
+  }
+
+  return { created: true, productId: created.id, warnings, error: null };
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  // ── Garde dev/test : header x-admin-secret requis ─────────────────────
+  if (!hasValidAdminHeader(request)) {
+    return NextResponse.json(
+      { success: false, error: "Unauthorized" },
+      { status: 401 },
+    );
+  }
+
   const results: string[] = [];
 
-  // Récupère les produits existants
-  const existingRes = await fetch(ADMIN_API, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Shopify-Access-Token": SHOPIFY_ADMIN_TOKEN,
-    },
-    body: JSON.stringify({
-      query: `{ products(first: 100) { edges { node { title vendor } } } }`,
-    }),
+  // Récupère les produits existants (Admin API GraphQL)
+  const existingProducts = await adminFetch<{
+    products: { nodes: { title: string; vendor: string }[] };
+  }>({
+    query: `{ products(first: 100) { nodes { title vendor } } }`,
   });
-  const existingData = await existingRes.json();
+
   const existingTitles = new Set(
-    existingData.data?.products?.edges?.map((e: any) => e.node.title) ?? []
+    existingProducts.products.nodes.map((node) => node.title),
   );
 
   let created = 0;
@@ -152,56 +233,22 @@ export async function GET() {
 
     const result = await createShopifyProduct(product);
     
-    if (result.data?.productCreate?.product) {
+    if (result.created) {
       results.push(`✅  "${product.title}" — créé (${product.vendor})`);
       created++;
     } else {
-      const errors = result.data?.productCreate?.userErrors ?? [];
-      results.push(`❌  "${product.title}" — erreur: ${errors.map((e: any) => e.message).join(", ")}`);
+      results.push(`❌  "${product.title}" — erreur: ${result.error ?? "inconnue"}`);
     }
 
-    // Petit délai pour éviter les rate limits
-    await new Promise(r => setTimeout(r, 500));
+    for (const warning of result.warnings) {
+      results.push(`⚠️  "${product.title}" — ${warning}`);
+    }
+
+    // Petit delai anti rate-limit.
+    await new Promise((r) => setTimeout(r, 500));
   }
 
-  // Associe les produits Shopify aux designers dans la base
-  // Pour chaque designer, on cherche les produits avec son vendor
-  // Associe les produits Shopify aux designers dans la base
-  console.log("🔗 Association des produits aux designers...");
-  const designers = await db.designer.findMany({ where: { status: "APPROVED" } });
-  
-  for (const designer of designers) {
-    // Récupère les produits Shopify via REST API (plus fiable)
-    const restRes = await fetch(
-      `https://${SHOPIFY_STORE}.myshopify.com/admin/api/2024-01/products.json?limit=50&vendor=${encodeURIComponent(designer.shopifyVendorName)}&fields=id,title`,
-      {
-        headers: { "X-Shopify-Access-Token": SHOPIFY_ADMIN_TOKEN },
-      }
-    );
-    const restData = await restRes.json();
-    const shopifyProducts = restData.products ?? [];
-
-    let linked = 0;
-    for (const product of shopifyProducts) {
-      const productId = `gid://shopify/Product/${product.id}`;
-      const existing = await db.designerProduct.findUnique({
-        where: { shopifyProductId: productId },
-      });
-      if (!existing) {
-        await db.designerProduct.create({
-          data: {
-            shopifyProductId: productId,
-            designerId: designer.id,
-          },
-        });
-        linked++;
-      }
-    }
-    if (linked > 0) {
-      console.log(`   ${designer.brandName}: ${linked} produits associés`);
-    }
-  }
-  console.log("✅ Association terminée");
+  // PHASE 3 : aucune association Prisma, Shopify uniquement.
 
   return NextResponse.json({
     success: true,

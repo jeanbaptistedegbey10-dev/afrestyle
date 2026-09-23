@@ -52,9 +52,9 @@ export function useCart() {
         toast.success("Ajouté au panier !", {
           icon: "✦",
           style: {
-            background: "#1E293B",
-            color: "#F5F0E8",
-            border: "1px solid rgba(212,175,55,0.3)",
+            background: "#FFFFFF",
+            color: "#1A1A1A",
+            border: "1px solid rgba(197,160,89,0.35)",
           },
         });
       } catch (error) {
@@ -105,9 +105,9 @@ export function useCart() {
         setShopifyCart(updatedCart);
         toast.success("Article retiré", {
           style: {
-            background: "#1E293B",
-            color: "#F5F0E8",
-            border: "1px solid rgba(212,175,55,0.3)",
+            background: "#FFFFFF",
+            color: "#1A1A1A",
+            border: "1px solid rgba(197,160,89,0.35)",
           },
         });
       } catch (error) {

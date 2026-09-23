@@ -32,14 +32,14 @@ export default function LoginForm() {
   }
 
   return (
-    <form action={handleSubmit} className="space-y-4">
+    <form action={handleSubmit} className="space-y-4 p-8" style={{ background: "#FFFFFF", border: "1px solid rgba(0,0,0,0.06)", borderRadius: "2px" }}>
 
       {/* Email */}
       <div>
         <label
           htmlFor="email"
           className="block text-xs tracking-widest uppercase mb-2"
-          style={{ color: "#D4AF37" }}
+          style={{ color: "#4A4A44" }}
         >
           Email
         </label>
@@ -50,18 +50,12 @@ export default function LoginForm() {
           required
           autoComplete="email"
           placeholder="votre@email.com"
-          className="w-full px-4 py-3 text-sm outline-none transition-all"
-          style={{
-            background: "#1E293B",
-            border: "0.5px solid rgba(212,175,55,0.2)",
-            color: "#F5F0E8",
-            borderRadius: "2px",
-          }}
+          className="w-full px-4 py-3 text-sm outline-none field-light"
           onFocus={(e) => {
-            e.target.style.borderColor = "#D4AF37";
+            e.target.style.borderColor = "#C5A059";
           }}
           onBlur={(e) => {
-            e.target.style.borderColor = "rgba(212,175,55,0.2)";
+            e.target.style.borderColor = "rgba(0,0,0,0.06)";
           }}
         />
       </div>
@@ -71,7 +65,7 @@ export default function LoginForm() {
         <label
           htmlFor="password"
           className="block text-xs tracking-widest uppercase mb-2"
-          style={{ color: "#D4AF37" }}
+          style={{ color: "#4A4A44" }}
         >
           Mot de passe
         </label>
@@ -83,25 +77,20 @@ export default function LoginForm() {
             required
             autoComplete="current-password"
             placeholder="••••••••"
-            className="w-full px-4 py-3 pr-12 text-sm outline-none transition-all"
-            style={{
-              background: "#1E293B",
-              border: "0.5px solid rgba(212,175,55,0.2)",
-              color: "#F5F0E8",
-              borderRadius: "2px",
-            }}
+            className="w-full px-4 py-3 pr-12 text-sm outline-none field-light"
             onFocus={(e) => {
-              e.target.style.borderColor = "#D4AF37";
+              e.target.style.borderColor = "#C5A059";
             }}
             onBlur={(e) => {
-              e.target.style.borderColor = "rgba(212,175,55,0.2)";
+              e.target.style.borderColor = "rgba(0,0,0,0.06)";
             }}
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
+            aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
             className="absolute right-4 top-1/2 -translate-y-1/2"
-            style={{ color: "#D4CCBA" }}
+            style={{ color: "#8A857A" }}
           >
             {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
           </button>
@@ -112,8 +101,8 @@ export default function LoginForm() {
       <div className="text-right">
         <Link
           href="/account/forgot-password"
-          className="text-xs tracking-widest uppercase"
-          style={{ color: "#D4CCBA" }}
+          className="text-xs tracking-widest uppercase hover:text-[#B8860B] transition-colors"
+          style={{ color: "#8A857A" }}
         >
           Mot de passe oublié ?
         </Link>
@@ -124,9 +113,9 @@ export default function LoginForm() {
         <div
           className="px-4 py-3 text-sm rounded-sm"
           style={{
-            background: "rgba(220,38,38,0.1)",
-            border: "0.5px solid rgba(220,38,38,0.3)",
-            color: "#fca5a5",
+            background: "rgba(220,38,38,0.05)",
+            border: "1px solid rgba(220,38,38,0.25)",
+            color: "#B91C1C",
           }}
         >
           {error}
@@ -137,10 +126,10 @@ export default function LoginForm() {
       <button
         type="submit"
         disabled={isPending}
-        className="w-full py-4 flex items-center justify-center gap-2 text-sm font-medium tracking-widest uppercase transition-all"
+        className="w-full py-4 flex items-center justify-center gap-2 text-sm font-medium tracking-widest uppercase transition-all hover:bg-[#C5A059] hover:text-white"
         style={{
-          background: isPending ? "#A8871C" : "#D4AF37",
-          color: "#0F172A",
+          background: isPending ? "#C5A059" : "#1A1A1A",
+          color: "#FAF8F5",
           borderRadius: "2px",
           cursor: isPending ? "not-allowed" : "pointer",
         }}

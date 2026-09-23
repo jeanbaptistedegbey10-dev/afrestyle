@@ -1,8 +1,9 @@
 // src/app/lookbook/page.tsx
 import type { Metadata } from "next";
 import Link from "next/link";
-import Image from "next/image";
 import { getProducts } from "@/lib/shopify/products";
+import { FALLBACK_PRODUCT_IMAGE } from "@/lib/assets/images";
+import LookbookImage from "@/components/lookbook/LookbookImage";
 
 export const metadata: Metadata = {
   title: "Lookbook",
@@ -11,38 +12,52 @@ export const metadata: Metadata = {
 
 export default async function LookbookPage() {
   // Fetch les vrais produits depuis Shopify
-  const { products } = await getProducts({ first: 8 });
+  let products: Awaited<ReturnType<typeof getProducts>>["products"] = [];
+  let shopifyError: string | null = null;
+  try {
+    ({ products } = await getProducts({ first: 8 }));
+  } catch (error) {
+    console.error("[lookbook] Impossible de charger les produits Shopify :", error);
+    shopifyError = "Impossible de charger les produits depuis Shopify. Veuillez vérifier la configuration de l'API.";
+  }
 
   return (
-    <div style={{ background: "#0F172A", minHeight: "100vh" }}>
+    <div style={{ background: "#FAF8F5", minHeight: "100vh", color: "#1A1A1A" }}>
 
       {/* Header */}
       <div
         className="py-20 px-6 text-center"
-        style={{ borderBottom: "0.5px solid rgba(212,175,55,0.1)" }}
+        style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}
       >
         <p
           className="text-xs tracking-widest uppercase mb-4"
-          style={{ color: "#D4AF37" }}
+          style={{ color: "#B8860B" }}
         >
           Printemps — Été 2024
         </p>
         <h1
           className="font-serif mb-4"
-          style={{ fontSize: "clamp(2.5rem, 6vw, 5rem)", color: "#FDFAF4" }}
+          style={{ fontSize: "clamp(2.5rem, 6vw, 5rem)", color: "#1A1A1A" }}
         >
-          Le <em style={{ color: "#D4AF37" }}>Lookbook</em>
+          Le <em style={{ color: "#B8860B" }}>Lookbook</em>
         </h1>
-        <p className="text-sm max-w-md mx-auto" style={{ color: "#D4CCBA" }}>
-          Une saison dédiée à la rencontre entre l'héritage textile africain
+        <p className="text-sm max-w-md mx-auto" style={{ color: "#4A4A44" }}>
+          Une saison dédiée à la rencontre entre l&apos;héritage textile africain
           et la modernité contemporaine.
         </p>
       </div>
 
       {/* Grille Lookbook asymétrique */}
-      {products.length === 0 ? (
-        <div className="text-center py-24" style={{ color: "#D4CCBA" }}>
-          <p className="font-serif text-2xl mb-4" style={{ color: "#FDFAF4" }}>
+      {shopifyError ? (
+        <div className="text-center py-24" style={{ color: "#4A4A44" }}>
+          <p className="font-serif text-2xl mb-4" style={{ color: "#B8860B" }}>
+            Connexion impossible
+          </p>
+          <p className="max-w-md mx-auto">{shopifyError}</p>
+        </div>
+      ) : products.length === 0 ? (
+        <div className="text-center py-24" style={{ color: "#4A4A44" }}>
+          <p className="font-serif text-2xl mb-4" style={{ color: "#1A1A1A" }}>
             Aucun produit disponible
           </p>
           <p>Ajoute des produits dans Shopify Admin pour les voir ici.</p>
@@ -56,6 +71,8 @@ export default async function LookbookPage() {
               // Alternance de tailles pour l'effet lookbook
               const isLarge = index === 0 || index === 3 || index === 6;
               const image = product.images[0];
+              const imageSrc = image?.url ?? FALLBACK_PRODUCT_IMAGE;
+              const imageAlt = image?.altText ?? product.title;
 
               return (
                 <Link
@@ -68,33 +85,21 @@ export default async function LookbookPage() {
                     gridRow: isLarge ? "span 2" : "span 1",
                   }}
                 >
-                  {/* Image */}
+                  {/* Image — plein écran, ratio 3/4, object-cover */}
                   <div
-                    className="relative w-full overflow-hidden"
+                    className="relative aspect-[3/4] w-full overflow-hidden"
                     style={{
-                      aspectRatio: isLarge ? "3/4" : "4/3",
-                      background: "#1E293B",
+                      // fond neutre éditorial en attendant le chargement
+                      background: "#F0ECE4",
                     }}
                   >
-                    {image ? (
-                      <Image
-                        src={image.url}
-                        alt={image.altText ?? product.title}
-                        fill
-                        className="object-cover transition-transform duration-700 group-hover:scale-105"
-                        sizes="(max-width: 768px) 50vw, 33vw"
-                      />
-                    ) : (
-                      /* Fallback gradient si pas d'image */
-                      <div
-                        className="w-full h-full"
-                        style={{
-                          background: `linear-gradient(135deg, 
-                            hsl(${(index * 47) % 360}, 30%, 15%), 
-                            hsl(${(index * 47 + 120) % 360}, 25%, 10%))`,
-                        }}
-                      />
-                    )}
+                                                          <LookbookImage
+                      src={imageSrc}
+                      alt={imageAlt}
+                      fill
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                      sizes="(max-width: 768px) 50vw, 33vw"
+                    />
 
                     {/* Overlay au hover */}
                     <div
@@ -107,7 +112,7 @@ export default async function LookbookPage() {
                       {(product.country || product.fabric) && (
                         <p
                           className="text-xs tracking-widest uppercase mb-1"
-                          style={{ color: "#D4AF37" }}
+                          style={{ color: "#C5A059" }}
                         >
                           {[product.country, product.fabric]
                             .filter(Boolean)
@@ -118,7 +123,7 @@ export default async function LookbookPage() {
 
                       <p
                         className="font-serif text-lg leading-tight mb-1"
-                        style={{ color: "#FDFAF4" }}
+                        style={{ color: "#FFFFFF" }}
                       >
                         {product.title}
                       </p>
@@ -126,15 +131,15 @@ export default async function LookbookPage() {
                       <div className="flex items-center justify-between">
                         <span
                           className="text-sm font-medium"
-                          style={{ color: "#D4AF37" }}
+                          style={{ color: "#FFFFFF" }}
                         >
                           {product.priceFormatted}
                         </span>
                         <span
                           className="text-xs px-3 py-1 tracking-wider uppercase"
                           style={{
-                            background: "#D4AF37",
-                            color: "#0F172A",
+                            background: "#C5A059",
+                            color: "#FFFFFF",
                             borderRadius: "2px",
                           }}
                         >
@@ -147,8 +152,8 @@ export default async function LookbookPage() {
                     <div
                       className="absolute bottom-4 right-4 w-8 h-8 rounded-full flex items-center justify-center group-hover:opacity-0 transition-opacity duration-200"
                       style={{
-                        background: "rgba(212,175,55,0.9)",
-                        color: "#0F172A",
+                        background: "rgba(197,160,89,0.95)",
+                        color: "#FFFFFF",
                         fontWeight: 700,
                         fontSize: "18px",
                       }}
@@ -161,11 +166,11 @@ export default async function LookbookPage() {
                   <div className="pt-3 pb-2">
                     <p
                       className="font-serif text-sm leading-tight"
-                      style={{ color: "#FDFAF4" }}
+                      style={{ color: "#1A1A1A" }}
                     >
                       {product.title}
                     </p>
-                    <p className="text-xs mt-0.5" style={{ color: "#D4AF37" }}>
+                    <p className="text-xs mt-0.5" style={{ color: "#B8860B" }}>
                       par {product.vendor} · {product.priceFormatted}
                     </p>
                   </div>
@@ -179,17 +184,17 @@ export default async function LookbookPage() {
       {/* CTA */}
       <div
         className="text-center py-16 px-6"
-        style={{ borderTop: "0.5px solid rgba(212,175,55,0.1)" }}
+        style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}
       >
         <h2
           className="font-serif text-3xl mb-4"
-          style={{ color: "#FDFAF4" }}
+          style={{ color: "#1A1A1A" }}
         >
           Portez le lookbook
         </h2>
-        <p className="text-sm mb-8" style={{ color: "#D4CCBA" }}>
-          Chaque pièce est disponible à l'achat — livrée directement
-          depuis l'atelier du créateur.
+        <p className="text-sm mb-8" style={{ color: "#4A4A44" }}>
+          Chaque pièce est disponible à l&apos;achat — livrée directement
+          depuis l&apos;atelier du créateur.
         </p>
         <Link href="/collections" className="btn-primary inline-flex">
           Acheter la collection

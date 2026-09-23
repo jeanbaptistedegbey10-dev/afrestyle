@@ -2,7 +2,6 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { forgotPasswordAction } from "@/lib/actions/auth.actions";
 import { Loader2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -11,7 +10,6 @@ export default function ForgotPasswordForm() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
-  const router = useRouter();
 
   function handleSubmit(formData: FormData) {
     setError(null);
@@ -34,7 +32,7 @@ export default function ForgotPasswordForm() {
           <label
             htmlFor="email"
             className="block text-xs tracking-widest uppercase mb-2"
-            style={{ color: "#D4AF37" }}
+            style={{ color: "#4A4A44" }}
           >
             Email
           </label>
@@ -47,16 +45,16 @@ export default function ForgotPasswordForm() {
             placeholder="votre@email.com"
             className="w-full px-4 py-3 text-sm outline-none transition-all"
             style={{
-              background: "#1E293B",
-              border: "0.5px solid rgba(212,175,55,0.2)",
-              color: "#F5F0E8",
+              background: "#FFFFFF",
+              border: "1px solid rgba(0,0,0,0.06)",
+              color: "#1A1A1A",
               borderRadius: "2px",
             }}
             onFocus={(e) => {
-              e.target.style.borderColor = "#D4AF37";
+              e.target.style.borderColor = "#C5A059";
             }}
             onBlur={(e) => {
-              e.target.style.borderColor = "rgba(212,175,55,0.2)";
+              e.target.style.borderColor = "rgba(0,0,0,0.06)";
             }}
           />
         </div>
@@ -66,9 +64,9 @@ export default function ForgotPasswordForm() {
           <div
             className="px-4 py-3 text-sm rounded-sm"
             style={{
-              background: "rgba(220,38,38,0.1)",
-              border: "0.5px solid rgba(220,38,38,0.3)",
-              color: "#fca5a5",
+              background: "rgba(220,38,38,0.05)",
+              border: "1px solid rgba(220,38,38,0.25)",
+              color: "#B91C1C",
             }}
           >
             {error}
@@ -80,9 +78,9 @@ export default function ForgotPasswordForm() {
           <div
             className="px-4 py-3 text-sm rounded-sm"
             style={{
-              background: "rgba(34,197,94,0.1)",
-              border: "0.5px solid rgba(34,197,94,0.3)",
-              color: "#86efac",
+              background: "rgba(34,197,94,0.08)",
+              border: "1px solid rgba(34,197,94,0.3)",
+              color: "#15803d",
             }}
           >
             {success}
@@ -93,10 +91,10 @@ export default function ForgotPasswordForm() {
         <button
           type="submit"
           disabled={isPending}
-          className="w-full py-4 flex items-center justify-center gap-2 text-sm font-medium tracking-widest uppercase transition-all"
+          className="w-full py-4 flex items-center justify-center gap-2 text-sm font-medium tracking-widest uppercase transition-all hover:bg-[#C5A059] hover:text-white"
           style={{
-            background: isPending ? "#A8871C" : "#D4AF37",
-            color: "#0F172A",
+            background: isPending ? "#C5A059" : "#1A1A1A",
+            color: "#FAF8F5",
             borderRadius: "2px",
             cursor: isPending ? "not-allowed" : "pointer",
           }}
@@ -112,8 +110,8 @@ export default function ForgotPasswordForm() {
       {/* Retour */}
       <Link
         href="/account/login"
-        className="inline-flex items-center gap-2 text-xs tracking-widest uppercase"
-        style={{ color: "#D4CCBA" }}
+        className="inline-flex items-center gap-2 text-xs tracking-widest uppercase hover:text-[#B8860B] transition-colors"
+        style={{ color: "#8A857A" }}
       >
         <ArrowLeft size={14} /> Retour à la connexion
       </Link>

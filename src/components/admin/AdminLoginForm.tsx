@@ -17,7 +17,7 @@ export default function AdminLoginForm() {
     startTransition(async () => {
       const result = await adminLoginAction(formData);
       if (result.success) {
-        router.push("/admin/designers");
+        router.push("/collections");
         router.refresh();
       } else {
         setError(result.error ?? "Erreur de connexion");

@@ -6,7 +6,7 @@ import { Toaster } from "react-hot-toast";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import CartDrawer from "@/components/cart/CartDrawer";
-import { getCurrentCustomer } from "@/lib/actions/auth.actions";
+import Providers from "@/components/theme/Providers";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -22,42 +22,82 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL?.trim() || "https://afrestyle.vercel.app",
+  ),
   title: {
-    default: "AfroStyle — Mode Africaine Contemporaine",
+    default: "AfroStyle — Haute Couture Africaine Contemporaine",
     template: "%s | AfroStyle",
   },
-  description: "La première destination premium pour la mode africaine contemporaine.",
+  description:
+    "AfroStyle, Maison de haute couture africaine contemporaine : créations premium en wax, kente et bogolan, confectionnées par des designers africains d'exception.",
+  keywords: [
+    "mode africaine",
+    "haute couture africaine",
+    "wax premium",
+    "kente",
+    "bogolan",
+    "créateurs africains",
+    "AfroStyle",
+  ],
+  authors: [{ name: "AfroStyle" }],
+  creator: "AfroStyle",
+  openGraph: {
+    type: "website",
+    locale: "fr_FR",
+    siteName: "AfroStyle",
+    title: "AfroStyle — Haute Couture Africaine Contemporaine",
+    description:
+      "La première destination premium pour la mode africaine contemporaine. 87 créateurs, 14 pays, des pièces d'exception.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "AfroStyle — Haute Couture Africaine Contemporaine",
+    description:
+      "La première destination premium pour la mode africaine contemporaine.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // Fetch côté serveur dans le layout — pas de boucle
-  const customer = await getCurrentCustomer();
-
   return (
-    <html lang="fr" className={`${playfair.variable} ${dmSans.variable}`}>
-      <body
-        className="font-sans antialiased min-h-screen"
-        style={{ backgroundColor: "#0F172A", color: "#F5F0E8" }}
-      >
-        <Navbar />
-        <main>{children}</main>
-        <Footer />
-        <CartDrawer />
-        {/* Toaster pour les notifications */}
-        <Toaster
-          position="bottom-right"
-          toastOptions={{
-            style: {
-              background: "#1E293B",
-              color: "#F5F0E8",
-              border: "1px solid rgba(212,175,55,0.2)",
-            },
-          }}
-        />
+    <html
+      lang="fr"
+      className={`${playfair.variable} ${dmSans.variable}`}
+      suppressHydrationWarning
+    >
+      <body className="bg-bg text-text font-sans antialiased min-h-screen transition-colors duration-300">
+        <Providers>
+          <Navbar />
+          <main>{children}</main>
+          <Footer />
+          <CartDrawer />
+          {/* Toaster pour les notifications */}
+          <Toaster
+            position="bottom-right"
+            toastOptions={{
+              style: {
+                background: "var(--toast-surface)",
+                color: "var(--text)",
+                border: "1px solid var(--gold-soft)",
+                boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
+              },
+            }}
+          />
+        </Providers>
       </body>
     </html>
   );

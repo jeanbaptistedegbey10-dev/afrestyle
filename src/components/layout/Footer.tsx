@@ -1,76 +1,105 @@
-// src/components/layout/Footer.tsx
+// src/components/layout/Footer.tsx — Éditorial Luxe, double thème Ivory/Obsidian
+"use client";
+
 import Link from "next/link";
+import { useMounted } from "@/hooks/useMounted";
+
+type FooterLink = { label: string; href: string };
+
+const SHOP_LINKS: FooterLink[] = [
+  { label: "Femme", href: "/collections?gender=femme" },
+  { label: "Homme", href: "/collections?gender=homme" },
+  { label: "Accessoires", href: "/collections?category=accessoires" },
+  { label: "Toute la collection", href: "/collections" },
+];
+
+const MAISON_LINKS: FooterLink[] = [
+  { label: "Notre histoire", href: "/about" },
+  { label: "Lookbook", href: "/lookbook" },
+  { label: "La collection", href: "/collections" },
+];
+
+const HELP_LINKS: FooterLink[] = [
+  { label: "Livraison", href: "/shipping" },
+  { label: "Retours & Échanges", href: "/returns" },
+  { label: "Foire aux questions", href: "/faq" },
+  { label: "Contact", href: "/contact" },
+];
+
+const SOCIALS: FooterLink[] = [
+  { label: "Instagram", href: "https://instagram.com" },
+  { label: "TikTok", href: "https://tiktok.com" },
+  { label: "Pinterest", href: "https://pinterest.com" },
+];
 
 export default function Footer() {
+  // new Date() diffère entre serveur et client (changement d'année pendant
+  // une session) : on calcule l'année seulement côté client, après montage.
+  const mounted = useMounted();
+  const year = mounted ? new Date().getFullYear() : null;
+
   return (
-    <footer style={{ background: "#1E293B", borderTop: "0.5px solid rgba(212,175,55,0.1)", padding: "3.5rem 1.5rem 1.5rem" }}>
-      <div style={{ maxWidth: "80rem", margin: "0 auto" }}>
-
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "2.5rem", paddingBottom: "2.5rem", borderBottom: "0.5px solid rgba(212,175,55,0.1)" }}>
-
+    <footer className="bg-surface-2 border-t border-line text-text pt-14 pb-6">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 pb-10 border-b border-line">
           {/* Brand */}
           <div>
-            <p style={{ fontFamily: "var(--font-playfair), serif", fontSize: "1.5rem", color: "#D4AF37", marginBottom: "0.75rem" }}>AfroStyle</p>
-            <p style={{ fontSize: "0.85rem", lineHeight: 1.7, color: "#D4CCBA", marginBottom: "1.5rem", maxWidth: "240px" }}>
+            <p className="font-serif text-2xl text-text mb-3">
+              Afro<span className="text-gold-dark dark:text-gold italic font-normal">Style</span>
+            </p>
+            <p className="text-text-2 text-sm leading-relaxed mb-6 max-w-[240px]">
               La première destination premium pour la mode africaine contemporaine.
             </p>
-            <div style={{ display: "flex", gap: "0.75rem" }}>
-              <SocialLink label="Instagram" />
-              <SocialLink label="TikTok" />
-              <SocialLink label="Pinterest" />
+            <div className="flex gap-3">
+              {SOCIALS.map((s) => (
+                <a
+                  key={s.label}
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={s.label}
+                  className="w-9 h-9 rounded-full border border-line bg-surface text-text-2 flex items-center justify-center text-xs transition-all duration-200 hover:border-gold hover:text-gold-dark dark:hover:text-gold hover:-translate-y-0.5"
+                >
+                  {s.label[0]}
+                </a>
+              ))}
             </div>
           </div>
 
-          {/* Boutique */}
-          <FooterCol title="Boutique" links={["Femme", "Homme", "Accessoires", "Nouveautés", "Ventes privées"]} />
-
-          {/* Créateurs */}
-          <FooterCol title="Créateurs" links={["Tous les designers", "Bénin", "Nigeria", "Sénégal", "Ghana"]} />
-
-          {/* Aide */}
-          <FooterCol title="Aide" links={["Livraison", "Retours", "Guide des tailles", "Contact", "FAQ"]} />
-
+          <FooterCol title="Boutique" links={SHOP_LINKS} />
+          <FooterCol title="Maison" links={MAISON_LINKS} />
+          <FooterCol title="Aide" links={HELP_LINKS} />
         </div>
 
         {/* Bottom */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem", paddingTop: "1.5rem" }}>
-          <p style={{ fontSize: "0.72rem", color: "#D4CCBA" }}>© 2024 AfroStyle. Tous droits réservés.</p>
-          <div style={{ display: "flex", gap: "0.75rem" }}>
+        <div className="flex flex-wrap items-center justify-between gap-4 pt-6">
+          <p className="text-text-3 text-xs">© {year ?? ""} AfroStyle. Tous droits réservés.</p>
+          <div className="flex gap-2">
             <PayBadge label="Visa" />
             <PayBadge label="Mastercard" />
             <PayBadge label="PayPal" />
-            <PayBadge label="Stripe" />
+            <PayBadge label="Shop Pay" />
           </div>
         </div>
-
       </div>
     </footer>
   );
 }
 
-function SocialLink({ label }: { label: string }) {
-  return (
-    <a
-      href="#"
-      aria-label={label}
-      style={{ width: "36px", height: "36px", borderRadius: "50%", border: "0.5px solid rgba(212,175,55,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.75rem", color: "#D4CCBA", textDecoration: "none" }}
-    >
-      {label[0]}
-    </a>
-  );
-}
-
-function FooterCol({ title, links }: { title: string; links: string[] }) {
+function FooterCol({ title, links }: { title: string; links: FooterLink[] }) {
   return (
     <div>
-      <p style={{ fontSize: "0.7rem", letterSpacing: "0.2em", textTransform: "uppercase" as const, color: "#D4AF37", marginBottom: "1.25rem" }}>
+      <p className="text-gold-dark dark:text-gold text-[0.7rem] tracking-[0.2em] uppercase mb-5">
         {title}
       </p>
-      <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-        {links.map((item) => (
-          <li key={item} style={{ marginBottom: "0.6rem" }}>
-            <Link href="#" style={{ fontSize: "0.85rem", color: "#D4CCBA", textDecoration: "none" }}>
-              {item}
+      <ul className="space-y-2.5">
+        {links.map((link) => (
+          <li key={link.label}>
+            <Link
+              href={link.href}
+              className="text-text-2 text-sm transition-colors duration-200 hover:text-gold-dark dark:hover:text-gold"
+            >
+              {link.label}
             </Link>
           </li>
         ))}
@@ -81,7 +110,7 @@ function FooterCol({ title, links }: { title: string; links: string[] }) {
 
 function PayBadge({ label }: { label: string }) {
   return (
-    <span style={{ fontSize: "0.65rem", padding: "0.25rem 0.6rem", border: "0.5px solid rgba(212,175,55,0.2)", borderRadius: "3px", color: "#D4CCBA" }}>
+    <span className="text-[0.65rem] px-2.5 py-1 border border-line bg-surface text-text-3 rounded-sm">
       {label}
     </span>
   );

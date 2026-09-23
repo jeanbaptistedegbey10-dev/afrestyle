@@ -1,5 +1,5 @@
 // src/lib/shopify/customer.ts
-import { shopifyFetch } from "./client";
+import { storefrontFetch } from "./storefrontClient";
 import {
   CUSTOMER_CREATE_MUTATION,
   CUSTOMER_ACCESS_TOKEN_CREATE,
@@ -61,7 +61,7 @@ export async function createCustomer({
   firstName: string;
   lastName: string;
 }): Promise<{ success: boolean; errors: CustomerUserError[] }> {
-  const data = await shopifyFetch<{
+  const data = await storefrontFetch<{
     customerCreate: {
       customer: { id: string } | null;
       customerUserErrors: CustomerUserError[];
@@ -95,7 +95,7 @@ export async function loginCustomer({
   expiresAt: string | null;
   errors: CustomerUserError[];
 }> {
-  const data = await shopifyFetch<{
+  const data = await storefrontFetch<{
     customerAccessTokenCreate: {
       customerAccessToken: {
         accessToken: string;
@@ -123,7 +123,7 @@ export async function loginCustomer({
  * Déconnecte un client — invalide le token Shopify
  */
 export async function logoutCustomer(accessToken: string): Promise<void> {
-  await shopifyFetch({
+  await storefrontFetch({
     query: CUSTOMER_ACCESS_TOKEN_DELETE,
     variables: { customerAccessToken: accessToken },
     cache: "no-store",
@@ -136,7 +136,7 @@ export async function logoutCustomer(accessToken: string): Promise<void> {
 export async function getCustomer(
   accessToken: string
 ): Promise<ShopifyCustomer | null> {
-  const data = await shopifyFetch<{
+  const data = await storefrontFetch<{
     customer: {
       id: string;
       email: string;
@@ -197,7 +197,7 @@ export async function updateCustomer(
     password?: string;
   }
 ): Promise<{ success: boolean; errors: CustomerUserError[] }> {
-  const data = await shopifyFetch<{
+  const data = await storefrontFetch<{
     customerUpdate: {
       customer: { id: string } | null;
       customerUserErrors: CustomerUserError[];
@@ -225,7 +225,7 @@ export async function recoverPassword(email: string): Promise<{
   success: boolean;
   errors: CustomerUserError[];
 }> {
-  const data = await shopifyFetch<{
+  const data = await storefrontFetch<{
     customerRecover: {
       customerUserErrors: CustomerUserError[];
     };

@@ -17,6 +17,8 @@ export type ShopifyProduct = {
   variants: {
     edges: { node: ShopifyVariant }[];
   };
+  /** Options déclaratives Storefront API : [{ name: "Taille", values: ["S","M","L"] }] */
+  options: ShopifyProductOption[];
   // Métachamps custom qu'on créera dans Shopify
   metafields: {
     edges: { node: ShopifyMetafield }[];
@@ -26,7 +28,7 @@ export type ShopifyProduct = {
   };
   tags: string[]; // ["wax", "femme", "benin", "designer-adaeze"]
   vendor: string; // Nom du créateur
-  availableForSale: boolean; // <-- AJOUTÉ ICI pour corriger l'erreur de build
+  availableForSale: boolean;
 };
 
 export type ShopifyMoney = {
@@ -41,10 +43,17 @@ export type ShopifyImage = {
   height: number;
 };
 
+export type ShopifyProductOption = {
+  name: string; // "Taille" | "Tissu" | "Couleur"
+  values: string[]; // ["S", "M", "L"]
+};
+
 export type ShopifyVariant = {
   id: string;
-  title: string; // "S / Noir", "M / Beige"
+  title: string; // "S / Kente / Noir"
   availableForSale: boolean;
+  quantityAvailable?: number | null;
+  sku?: string | null;
   price: ShopifyMoney;
   compareAtPrice: ShopifyMoney | null;
   selectedOptions: {
@@ -89,6 +98,17 @@ export type ShopifyCart = {
   totalQuantity: number;
 };
 
+// ─── Types normalisés pour l'UI ─────────────────────────────────────────────
+
+/** Option normalisée exposée à l'UI (dérivée de `product.options` ou des variantes) */
+export type ProductOption = {
+  name: string;
+  values: string[];
+};
+
+/** Sélection courante sous forme clé/valeur : { Taille: "M", Tissu: "Kente" } */
+export type SelectedOptions = Record<string, string>;
+
 // Type normalisé pour l'UI (simplifié par rapport aux types Shopify bruts)
 export type Product = {
   id: string;
@@ -97,9 +117,13 @@ export type Product = {
   description: string;
   price: string;
   priceFormatted: string; // "€ 185"
+  /** Code devise ISO 4217 issu de `priceRange.minVariantPrice.currencyCode` (ex. "EUR"). */
+  currencyCode: string;
   compareAtPrice: string | null;
   images: ShopifyImage[];
   variants: ShopifyVariant[];
+  /** Source de vérité pour le sélecteur. Jamais inféré à l'affichage seul. */
+  options: ProductOption[];
   vendor: string;
   tags: string[];
   country: string | null; // Extrait des tags: "benin"
@@ -107,3 +131,16 @@ export type Product = {
   style: string | null; // Extrait des tags: "traditionnel"
   availableForSale: boolean;
 };
+
+/** Ligne minimale renvoyée par `GET_SITEMAP_PRODUCTS_QUERY` (sitemap + revalidation). */
+export type ShopifySitemapProduct = {
+  handle: string;
+  updatedAt: string;
+};
+
+/** Ligne minimale renvoyée par `GET_COLLECTIONS_QUERY` (sitemap + navigation). */
+export type ShopifyCollectionHandle = {
+  handle: string;
+  updatedAt: string;
+};
+

@@ -36,6 +36,18 @@ yarn-error.log*
 .env
 .env.local
 .env*.local
+# le modèle de variables d'environnement est versionné (aucun secret dedans)
+!.env.example
+
+# IDE
+.vscode/
+
+# worktrees d'agents
+.kilo/
+.kilocode/
+
+# logs de build/automation
+*.log
 # vercel
 .vercel
 

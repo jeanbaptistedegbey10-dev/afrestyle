@@ -1,37 +1,58 @@
-// src/components/product/ProductCard.tsx
+// src/components/product/ProductCard.tsx — Relief Éditorial Luxe, double thème
 "use client";
 
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { Heart, ShoppingBag } from "lucide-react";
+import { Heart, ImageOff } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { cn, capitalize } from "@/lib/utils";
+import { FALLBACK_PRODUCT_IMAGE, getSvgPlaceholder } from "@/lib/assets/images";
 import type { Product } from "@/lib/shopify/types";
-
 
 type ProductCardProps = {
   product: Product;
+  /** Prop conservée pour compatibilité (ProductGrid) — le thème est désormais
+   *  géré par les variables CSS globales dans les deux modes. */
+  tone?: "light" | "dark";
+  /** Visuel Unsplash de repli quand le produit n'a aucune image Shopify.
+   *  Si non fourni, on utilise l'Ensemble Wax Architectural (FALLBACK_PRODUCT_IMAGE). */
+  fallbackImage?: string;
 };
 
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({
+  product,
+  fallbackImage,
+}: ProductCardProps) {
+  // `||` (et non `??`) : un fallback vide ("") doit basculer sur l'image par défaut.
+  const effectiveFallback = fallbackImage || FALLBACK_PRODUCT_IMAGE;
+
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
+  const [imageErrored, setImageErrored] = useState(false);
+  const [fallbackErrored, setFallbackErrored] = useState(false);
   const { addItem } = useCart();
 
   const mainImage = product.images[0];
-  // Deuxième image pour l'effet hover (swap d'image)
-  const hoverImage = product.images[1] ?? product.images[0];
+  const hoverImage = product.images[1];
+  const showSecond = isHovered && hoverImage;
 
   async function handleQuickAdd(e: React.MouseEvent) {
-  e.preventDefault();
-  if (!product.variants[0]) return;
-  setIsAdding(true);
-  await addItem(product.variants[0].id, 1);
-  await new Promise((r) => setTimeout(r, 1000));
-  setIsAdding(false);
-}
+    e.preventDefault();
+    if (!product.variants[0]) return;
+    setIsAdding(true);
+    await addItem(product.variants[0].id, 1);
+    await new Promise((r) => setTimeout(r, 1000));
+    setIsAdding(false);
+  }
+
+  function handleMainImageError() {
+    setImageErrored(true);
+  }
+
+  // Si l'image principale a échoué au chargement, on force le fallback.
+  const displayMainImage = imageErrored ? null : mainImage;
 
   return (
     <Link
@@ -40,90 +61,103 @@ export default function ProductCard({ product }: ProductCardProps) {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Image container */}
-      <div className="relative aspect-[3/4] overflow-hidden bg-ink-2 border border-gold/10 mb-4">
-        {/* Image principale */}
-        {mainImage ? (
+      {/* Visuel — carte en relief : fond dédié, bordure subtile, ombre + élévation au survol */}
+      <div className="relative aspect-[3/4] w-full overflow-hidden rounded-sm border border-line bg-surface mb-4 shadow-sm transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1 group-hover:border-gold/40">
+        {displayMainImage ? (
+          <>
+            <Image
+              src={mainImage.url}
+              alt={mainImage.altText ?? product.title}
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+              className={cn(
+                "object-cover transition-all duration-700 ease-out group-hover:scale-[1.04]",
+                showSecond ? "opacity-0" : "opacity-100"
+              )}
+              onError={handleMainImageError}
+            />
+            {hoverImage && (
+              <Image
+                src={hoverImage.url}
+                alt={hoverImage.altText ?? product.title}
+                fill
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                className={cn(
+                  "object-cover transition-all duration-700 ease-out group-hover:scale-[1.04]",
+                  showSecond ? "opacity-100" : "opacity-0"
+                )}
+              />
+            )}
+          </>
+        ) : effectiveFallback ? (
           <Image
-            src={isHovered && hoverImage ? hoverImage.url : mainImage.url}
-            alt={mainImage.altText ?? product.title}
+            src={fallbackErrored ? getSvgPlaceholder() : effectiveFallback}
+            alt={product.title}
             fill
-            sizes="(max-width: 768px) 50vw, 25vw"
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+            className="object-cover"
+            // 2e palier : SVG local si le visuel de repli échoue aussi (jamais de zone vide).
+            onError={() => setFallbackErrored(true)}
           />
         ) : (
-          // Placeholder SVG généré dynamiquement
-          <div className="w-full h-full flex items-center justify-center" style={{
-            background: `linear-gradient(135deg, #2d1535 0%, #0d2218 100%)`
-          }}>
-            <div className="text-center">
-              <div className="w-24 h-24 rounded-full border-2 border-gold/20 flex items-center justify-center mx-auto mb-3">
-                <span className="text-gold font-serif text-2xl font-bold">
-                  {product.title.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase().slice(0,2)}
-                </span>
-              </div>
-              <p className="text-sand-3 text-xs tracking-widest uppercase px-4 line-clamp-2">
-                {product.title}
-              </p>
-            </div>
+          <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-surface-2 px-4 text-center">
+            <ImageOff size={20} className="text-gold-dark dark:text-gold opacity-70" aria-hidden="true" />
+            <p className="text-xs uppercase tracking-[0.2em] text-text-3">
+              {product.title}
+            </p>
           </div>
         )}
 
-        {/* Badge Nouveau / Promo */}
+        {/* Badges — contraste éclatant dans les deux modes */}
         {product.tags.includes("nouveau") && (
-          <span className="absolute top-3 left-3 bg-gold text-ink text-xs font-medium tracking-wider uppercase px-2 py-1">
+          <span className="absolute left-3 top-3 rounded-sm bg-text text-bg px-2 py-1 text-[10px] font-medium uppercase tracking-[0.15em]">
             Nouveau
           </span>
         )}
         {product.compareAtPrice && (
-          <span className="absolute top-3 left-3 bg-red-600 text-white text-xs font-medium tracking-wider uppercase px-2 py-1">
+          <span className="absolute left-3 top-3 rounded-sm bg-[#8C1D2F] text-white px-2 py-1 text-[10px] font-medium uppercase tracking-[0.15em] shadow-sm">
             Promo
           </span>
         )}
 
-        {/* Wishlist button */}
+        {/* Wishlist */}
         <button
           onClick={(e) => {
             e.preventDefault();
             setIsWishlisted(!isWishlisted);
           }}
-          aria-label={
-            isWishlisted ? "Retirer des favoris" : "Ajouter aux favoris"
-          }
-          className="absolute top-3 right-3 w-8 h-8 rounded-full bg-ink/80 flex items-center justify-center text-sand-3 hover:text-gold transition-colors duration-200"
+          aria-label={isWishlisted ? "Retirer des favoris" : "Ajouter aux favoris"}
+          className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-sm bg-surface text-text border border-line shadow-sm opacity-0 transition-all duration-300 group-hover:opacity-100 hover:border-gold"
         >
           <Heart
             size={14}
-            className={cn(
-              "transition-all",
-              isWishlisted && "fill-gold text-gold",
-            )}
+            className={cn("transition-all", isWishlisted && "fill-gold text-gold")}
           />
         </button>
 
-        {/* Quick add — apparaît au hover */}
+        {/* Quick add */}
         <div
           className={cn(
             "absolute inset-x-0 bottom-0 p-3 transition-all duration-300",
-            isHovered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2",
+            isHovered ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"
           )}
         >
           <button
             onClick={handleQuickAdd}
             disabled={isAdding || !product.availableForSale}
             className={cn(
-              "w-full py-2 text-xs font-medium tracking-widest uppercase transition-all duration-200",
+              "w-full rounded-sm py-2 text-[11px] font-medium uppercase tracking-[0.2em] transition-all duration-300",
               isAdding
-                ? "bg-green-700 text-white"
-                : "bg-gold text-ink hover:bg-gold-light",
+                ? "bg-gold text-white"
+                : "bg-surface text-text border border-line hover:bg-text hover:text-bg hover:border-text",
               !product.availableForSale &&
-                "bg-ink-3 text-sand-3 cursor-not-allowed",
+                "cursor-not-allowed bg-surface-2 text-text-3 border-line"
             )}
           >
             {!product.availableForSale
               ? "Épuisé"
               : isAdding
-                ? "✓ Ajouté !"
+                ? "Ajouté"
                 : "Ajouter au panier"}
           </button>
         </div>
@@ -131,34 +165,26 @@ export default function ProductCard({ product }: ProductCardProps) {
 
       {/* Infos produit */}
       <div>
-        {/* Pays · Tissu */}
-        <p className="text-gold text-xs tracking-widest uppercase mb-1">
-          {[
-            product.country && capitalize(product.country),
-            product.fabric && capitalize(product.fabric),
-          ]
+        <p className="mb-1 text-[11px] uppercase tracking-[0.2em] text-text-3">
+          {[product.country && capitalize(product.country), product.fabric && capitalize(product.fabric)]
             .filter(Boolean)
             .join(" · ")}
         </p>
-
-        {/* Titre */}
-        <h3 className="font-serif text-cream text-base mb-1 group-hover:text-gold transition-colors duration-200">
+        <h3 className="font-serif text-base leading-snug text-text transition-colors duration-300 group-hover:text-gold-dark dark:group-hover:text-gold group-hover:decoration-1 group-hover:underline-offset-4">
           {product.title}
         </h3>
-
-        {/* Prix + Créateur */}
-        <div className="flex items-center justify-between">
+        <div className="mt-1 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-sand font-medium">
+            <span className="text-sm font-medium text-text">
               {product.priceFormatted}
             </span>
             {product.compareAtPrice && (
-              <span className="text-sand-3 text-sm line-through">
+              <span className="text-sm text-text-3 line-through">
                 {product.compareAtPrice}
               </span>
             )}
           </div>
-          <span className="text-sand-3 text-xs">{product.vendor}</span>
+          <span className="text-xs text-text-3">{product.vendor}</span>
         </div>
       </div>
     </Link>

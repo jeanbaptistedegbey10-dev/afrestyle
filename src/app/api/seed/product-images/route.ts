@@ -1,11 +1,19 @@
 // src/app/api/seed/product-images/route.ts
 // Génère et upload les images des produits Shopify
+//
+// PHASE 2 — route de seed DEV-ONLY : protégée par le header
+// `x-admin-secret: <ADMIN_SECRET_TOKEN>` (HTTP 401 sinon).
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { getShopifyStoreDomain } from "@/lib/shopify/version";
+import { hasValidAdminHeader } from "@/lib/auth/adminAuth";
 
-const SHOPIFY_ADMIN_TOKEN = process.env.SHOPIFY_ADMIN_TOKEN!;
-const SHOPIFY_STORE = process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN!;
-const ADMIN_API = `https://${SHOPIFY_STORE}/admin/api/2024-01`;
+// Elle utilise volontairement l'Admin API **REST legacy** (/products.json,
+// /images.json) : ces endpoints ne font pas partie de l'API supportée en
+// 2026-07 (REST Admin déprécié depuis 2024-10). La version moderne passe par
+// `stagedUploadsCreate` + `productCreateMedia` en GraphQL Admin.
+//
+// Le token d'administration vient exclusivement de SHOPIFY_ADMIN_ACCESS_TOKEN.
+const ADMIN_REST_API = `https://${getShopifyStoreDomain()}/admin/api/2024-01`;
 
 const COLORS = [
   ["#2d1535", "#0d2218"], ["#0a2010", "#201408"], ["#201408", "#0a1820"],
@@ -35,13 +43,29 @@ function generateProductSVG(title: string, vendor: string, price: string, index:
 </svg>`;
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  // ── Garde dev/test : header x-admin-secret requis ─────────────────────
+  if (!hasValidAdminHeader(request)) {
+    return NextResponse.json(
+      { success: false, error: "Unauthorized" },
+      { status: 401 },
+    );
+  }
+
   try {
+    const adminToken = process.env.SHOPIFY_ADMIN_ACCESS_TOKEN;
+    if (!adminToken) {
+      return NextResponse.json(
+        { success: false, error: "SHOPIFY_ADMIN_ACCESS_TOKEN est manquant." },
+        { status: 500 },
+      );
+    }
+
     console.log("🎨 Génération des images produits...\n");
 
     // Récupère tous les produits
-    const res = await fetch(`${ADMIN_API}/products.json?limit=250`, {
-      headers: { "X-Shopify-Access-Token": SHOPIFY_ADMIN_TOKEN },
+    const res = await fetch(`${ADMIN_REST_API}/products.json?limit=250`, {
+      headers: { "X-Shopify-Access-Token": adminToken },
     });
     const data = await res.json();
     const products = data.products ?? [];
@@ -56,9 +80,9 @@ export async function GET() {
 
       // Upload en base64
       const base64 = Buffer.from(svg).toString("base64");
-      const imageRes = await fetch(`${ADMIN_API}/products/${product.id}/images.json`, {
+      const imageRes = await fetch(`${ADMIN_REST_API}/products/${product.id}/images.json`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "X-Shopify-Access-Token": SHOPIFY_ADMIN_TOKEN },
+        headers: { "Content-Type": "application/json", "X-Shopify-Access-Token": adminToken },
         body: JSON.stringify({
           image: { attachment: base64, filename: fileName, alt: product.title },
         }),
