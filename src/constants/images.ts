@@ -26,36 +26,39 @@ const U = (id: string, w: number = 1200) =>
   `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&q=80`;
 
 export const IMAGES = {
-  /** Hero — photo lifestyle élégante (créateur en costume traditionnel). */
-  hero: U("photo-1567401893414-76b7b1e5a7a5"),
+  /** Hero — photo éditoriale mode africaine contemporaine (vérifiée HTTP 200). */
+  hero: U("photo-1614291129226-41dae34c2128"),
 
-  /** Story — section Histoire (tenue africaine élégante). */
-  story: U("photo-1578514386404-0e4d2fdcb8d4"),
+  /** Story — section Histoire (silhouette en pagne, horizon dramatique). */
+  story: U("photo-1531123414780-f74242c2b052"),
 
-  /** Univers — grandes cartes visuelles par catégorie. */
+  /** Univers — grandes cartes visuelles par catégorie.
+   *  ⚠️ Tous ces IDs sont vérifiés HTTP 200 — les anciens
+   *  (photo-157851…, photo-158347…, photo-159284…, photo-159552…)
+   *  renvoyaient 404 et affichaient des blocs noirs sans fallback. */
   categories: {
-    femme: U("photo-1567401893414-76b7b1e5a7a5", 800),
-    homme: U("photo-1583474954944-0a9b4c62f7b9", 800),
-    accessoires: U("photo-1592841200221-a983b1e9ae1a", 800),
-    surMesure: U("photo-1595526114035-073e2a7d5534", 800),
+    femme: U("photo-1696962678565-bee84e6b9cb6", 800),
+    homme: U("photo-1667366982563-dbeedf5281b9", 800),
+    accessoires: U("photo-1493655161922-ef98929de9d8", 800),
+    surMesure: U("photo-1708170236295-20ab8fbadcef", 800),
   },
 
   /** Rotation visuels produits Éditorial Luxe (effet rotation dans ProductsSection). */
   products: [
-    U("photo-1567401893414-76b7b1e5a7a5", 800),
-    U("photo-1583474954944-0a9b4c62f7b9", 800),
-    U("photo-1592841200221-a983b1e9ae1a", 800),
-    U("photo-1595526114035-073e2a7d5534", 800),
-    U("photo-1578514386404-0e4d2fdcb8d4", 800),
-    U("photo-1567401893414-76b7b1e5a7a5", 800),
+    U("photo-1696962678565-bee84e6b9cb6", 800),
+    U("photo-1667366982563-dbeedf5281b9", 800),
+    U("photo-1687052001151-316f9356dbc0", 800),
+    U("photo-1611853904829-6d0f4034ce2f", 800),
+    U("photo-1625646741211-711bdd65c570", 800),
+    U("photo-1578509566163-068acd11b8e7", 800),
   ],
 
   /** Lookbook — cadrages éditoriaux « L'élégance en images ». */
   lookbook: [
-    U("photo-1567401893414-76b7b1e5a7a5", 800),
-    U("photo-1583474954944-0a9b4c62f7b9", 800),
-    U("photo-1578514386404-0e4d2fdcb8d4", 800),
-    U("photo-1592841200221-a983b1e9ae1a", 800),
+    U("photo-1578509566163-068acd11b8e7", 800), // Kente — Accra
+    U("photo-1611853904829-6d0f4034ce2f", 800), // Wax contemporain — Abidjan
+    U("photo-1515658323406-25d61c141a6e", 800), // Perles & coiffure — Bamako
+    U("photo-1708170236295-20ab8fbadcef", 800), // Grand boubou — Dakar
   ],
 } as const;
 

@@ -81,7 +81,7 @@ export default function LoadMoreProducts({
         type="button"
         onClick={() => void loadMore()}
         disabled={loading}
-        className="border border-neutral-900 px-10 py-3 text-[11px] font-medium uppercase tracking-[0.2em] text-neutral-900 transition-colors duration-300 hover:bg-neutral-900 hover:text-white disabled:cursor-wait disabled:opacity-60"
+        className="border border-text px-10 py-3 text-[11px] font-medium uppercase tracking-[0.2em] text-text transition-colors duration-300 hover:bg-text hover:text-bg disabled:cursor-wait disabled:opacity-60"
       >
         {loading ? (
           <span className="inline-flex items-center gap-2">
@@ -92,7 +92,7 @@ export default function LoadMoreProducts({
           "Découvrir plus"
         )}
       </button>
-      {error && <p className="text-xs text-neutral-500">{error}</p>}
+      {error && <p className="text-xs text-text-3">{error}</p>}
     </div>
   );
 }

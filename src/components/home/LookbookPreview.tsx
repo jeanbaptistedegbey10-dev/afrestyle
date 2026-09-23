@@ -4,9 +4,9 @@
 // ce ratio les rangées de grille s'effondrent en fins rectangles horizontaux.
 // + légendes éditoriales + CTA vers /lookbook.
 import Link from "next/link";
-import Image from "next/image";
 import { ArrowUpRight, AtSign } from "lucide-react";
 import { IMAGES } from "@/constants/images";
+import SafeImage from "@/components/ui/SafeImage";
 
 const LOOKS = [
   {
@@ -60,8 +60,8 @@ export default function LookbookPreview() {
               href="/lookbook"
               className="group relative aspect-[3/4] w-full overflow-hidden rounded-xl border border-line shadow-[0_10px_28px_rgba(0,0,0,0.08)] dark:shadow-[0_10px_28px_rgba(0,0,0,0.45)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_44px_rgba(0,0,0,0.14)] dark:hover:shadow-[0_18px_44px_rgba(0,0,0,0.55)]"
             >
-              {/* Visuel — zoom fluide au survol */}
-              <Image
+              {/* Visuel — zoom fluide au survol (onError → fallback local) */}
+              <SafeImage
                 src={item.url}
                 alt={item.title}
                 fill

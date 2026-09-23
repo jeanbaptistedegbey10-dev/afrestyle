@@ -2,9 +2,9 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { IMAGES } from "@/constants/images";
+import SafeImage from "@/components/ui/SafeImage";
 
 const STATS = [
   { num: "87+", label: "Créateurs" },
@@ -111,8 +111,8 @@ export default function HeroSection() {
           {/* Colonne visuelle — média hero */}
           <div className="lg:col-span-7">
             <div className="relative w-full aspect-[4/5] lg:aspect-square rounded-2xl overflow-hidden border border-line shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.5)]">
-              {/* Visuel — photo créateur vedette (Unsplash HD) */}
-              <Image
+              {/* Visuel — photo créateur vedette (Unsplash HD, fallback local) */}
+              <SafeImage
                 src={IMAGES.hero}
                 alt="Mannequin portant une haute tenue africaine élégante — femme en ensemble Pagne/Wax"
                 fill

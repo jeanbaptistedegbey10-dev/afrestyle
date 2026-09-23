@@ -14,27 +14,27 @@ export default async function RegisterPage() {
   return (
     <div
       className="min-h-screen flex items-center justify-center px-6 py-12"
-      style={{ background: "#FAF8F5" }}
+      style={{ background: "var(--bg)" }}
     >
       <div className="w-full max-w-md">
 
         <div className="text-center mb-10">
-          <Link href="/" className="font-serif text-3xl" style={{ color: "#1A1A1A" }}>
-            Afro<span style={{ color: "#C5A059", fontStyle: "italic", fontWeight: 400 }}>Style</span>
+          <Link href="/" className="font-serif text-3xl" style={{ color: "var(--text)" }}>
+            Afro<span style={{ color: "var(--gold)", fontStyle: "italic", fontWeight: 400 }}>Style</span>
           </Link>
-          <p className="text-xs tracking-widest uppercase mt-4 mb-2" style={{ color: "#B8860B" }}>
+          <p className="text-xs tracking-widest uppercase mt-4 mb-2" style={{ color: "var(--gold-dark)" }}>
             Rejoindre la communauté
           </p>
-          <h1 className="font-serif text-3xl" style={{ color: "#1A1A1A" }}>
+          <h1 className="font-serif text-3xl" style={{ color: "var(--text)" }}>
             Créer un compte
           </h1>
         </div>
 
         <RegisterForm />
 
-        <p className="text-center text-sm mt-6" style={{ color: "#4A4A44" }}>
+        <p className="text-center text-sm mt-6" style={{ color: "var(--text-2)" }}>
           Déjà un compte ?{" "}
-          <Link href="/account/login" className="hover:underline underline-offset-2" style={{ color: "#B8860B" }}>
+          <Link href="/account/login" className="hover:underline underline-offset-2" style={{ color: "var(--gold-dark)" }}>
             Se connecter
           </Link>
         </p>

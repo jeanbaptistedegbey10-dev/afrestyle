@@ -52,8 +52,8 @@ export function useCart() {
         toast.success("Ajouté au panier !", {
           icon: "✦",
           style: {
-            background: "#FFFFFF",
-            color: "#1A1A1A",
+            background: "var(--toast-surface)",
+            color: "var(--text)",
             border: "1px solid rgba(197,160,89,0.35)",
           },
         });
@@ -105,8 +105,8 @@ export function useCart() {
         setShopifyCart(updatedCart);
         toast.success("Article retiré", {
           style: {
-            background: "#FFFFFF",
-            color: "#1A1A1A",
+            background: "var(--toast-surface)",
+            color: "var(--text)",
             border: "1px solid rgba(197,160,89,0.35)",
           },
         });

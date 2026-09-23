@@ -53,8 +53,8 @@ function FilterGroup({ title, options, active, onSelect }: {
   active?: string; onSelect: (v: string) => void;
 }) {
   return (
-    <div className="border-b border-neutral-200 py-6 first:pt-0 last:border-b-0">
-      <p className="mb-4 text-[11px] font-medium uppercase tracking-[0.25em] text-neutral-500">
+    <div className="border-b border-line py-6 first:pt-0 last:border-b-0">
+      <p className="mb-4 text-[11px] font-medium uppercase tracking-[0.25em] text-text-3">
         {title}
       </p>
       <div className="flex flex-wrap gap-2">
@@ -66,8 +66,8 @@ function FilterGroup({ title, options, active, onSelect }: {
               className={cn(
                 "rounded-none border px-3 py-1.5 text-xs tracking-wide transition-colors duration-300",
                 isActive
-                  ? "border-neutral-900 bg-neutral-900 text-white"
-                  : "border-neutral-300 bg-transparent text-neutral-700 hover:border-neutral-900 hover:text-neutral-900",
+                  ? "border-text bg-text text-bg"
+                  : "border-line bg-transparent text-text-2 hover:border-text hover:text-text",
               )}>{f.label}</button>
           );
         })}
@@ -108,21 +108,21 @@ export default function CollectionFilters({ activeFilters }: { activeFilters: Ac
       <FilterGroup title="Tissu" options={FILTERS.tissu} active={activeFilters.tissu} onSelect={(v) => updateFilter("tissu", v)} />
       <FilterGroup title="Style" options={FILTERS.style} active={activeFilters.style} onSelect={(v) => updateFilter("style", v)} />
       <div className="py-6">
-        <p className="mb-4 text-[11px] font-medium uppercase tracking-[0.25em] text-neutral-500">Trier par</p>
+        <p className="mb-4 text-[11px] font-medium uppercase tracking-[0.25em] text-text-3">Trier par</p>
         <div className="flex flex-col gap-1">
           {FILTERS.sort.map((f) => {
             const isActive = (activeFilters.sort ?? "recent") === f.value;
             return (
               <button key={f.value} type="button" onClick={() => updateFilter("sort", f.value)} aria-pressed={isActive}
                 className={cn("rounded-none px-0 py-1.5 text-left font-serif text-lg leading-snug transition-colors duration-300",
-                  isActive ? "text-neutral-900 underline decoration-neutral-900 underline-offset-4" : "text-neutral-400 hover:text-neutral-900")}>{f.label}</button>
+                  isActive ? "text-text underline decoration-gold underline-offset-4" : "text-text-3 hover:text-text")}>{f.label}</button>
             );
           })}
         </div>
       </div>
       {activeCount > 0 && (
         <button type="button" onClick={clearAll}
-          className="mt-2 border-b border-neutral-900 pb-0.5 text-[11px] font-medium uppercase tracking-[0.2em] text-neutral-900 transition-colors hover:text-neutral-500">
+          className="mt-2 border-b border-gold pb-0.5 text-[11px] font-medium uppercase tracking-[0.2em] text-text transition-colors hover:text-gold-dark">
           Reinitialiser les filtres</button>
       )}
     </div>
@@ -132,20 +132,20 @@ export default function CollectionFilters({ activeFilters }: { activeFilters: Ac
     <>
       <div className="mb-6 flex items-center justify-between lg:hidden">
         <button type="button" onClick={() => setOpen(true)}
-          className="inline-flex items-center gap-2 border border-neutral-300 px-4 py-2 text-[11px] font-medium uppercase tracking-[0.2em] text-neutral-900">
+          className="inline-flex items-center gap-2 border border-line px-4 py-2 text-[11px] font-medium uppercase tracking-[0.2em] text-text">
           <SlidersHorizontal size={14} />Filtres{activeCount > 0 && <span>({activeCount})</span>}</button>
-        <p className="text-[11px] uppercase tracking-[0.2em] text-neutral-500">Trier : {sortLabel}</p>
+        <p className="text-[11px] uppercase tracking-[0.2em] text-text-3">Trier : {sortLabel}</p>
       </div>
       <aside className="hidden w-60 shrink-0 lg:block">
         <div className="sticky top-24">{body}</div>
       </aside>
       {open && (
         <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true">
-          <div className="absolute inset-0 bg-neutral-900/40" onClick={() => setOpen(false)} />
-          <div className="absolute inset-y-0 left-0 flex w-[85%] max-w-sm flex-col bg-[#FDFAF4] px-6 py-6 shadow-xl">
-            <div className="mb-4 flex items-center justify-between border-b border-neutral-200 pb-4">
-              <p className="text-[11px] font-medium uppercase tracking-[0.25em] text-neutral-900">Filtres</p>
-              <button type="button" onClick={() => setOpen(false)} aria-label="Fermer les filtres" className="text-neutral-900"><X size={18} /></button>
+          <div className="absolute inset-0 bg-black/50" onClick={() => setOpen(false)} />
+          <div className="absolute inset-y-0 left-0 flex w-[85%] max-w-sm flex-col bg-bg text-text px-6 py-6 shadow-xl">
+            <div className="mb-4 flex items-center justify-between border-b border-line pb-4">
+              <p className="text-[11px] font-medium uppercase tracking-[0.25em] text-text">Filtres</p>
+              <button type="button" onClick={() => setOpen(false)} aria-label="Fermer les filtres" className="text-text"><X size={18} /></button>
             </div>
             <div className="flex-1 overflow-y-auto">{body}</div>
           </div>

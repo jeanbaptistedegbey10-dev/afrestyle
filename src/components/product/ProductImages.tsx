@@ -104,7 +104,7 @@ export default function ProductImages({
                 aria-label={`Voir l'image ${i + 1}`}
                 className="relative aspect-square overflow-hidden rounded-sm transition-all"
                 style={{
-                  border: `1px solid ${i === activeIndex ? "#C5A059" : "rgba(0,0,0,0.08)"}`,
+                  border: `1px solid ${i === activeIndex ? "var(--gold)" : "var(--line)"}`,
                 }}
               >
                 <Image
@@ -122,7 +122,7 @@ export default function ProductImages({
 
       <div
         className="relative flex-1 aspect-[3/4] overflow-hidden rounded-sm"
-        style={{ background: "#F0ECE4" }}
+        style={{ background: "var(--surface-2)" }}
       >
         {activeImage ? (
           <>
@@ -141,7 +141,7 @@ export default function ProductImages({
             {variantImage && activeIndex === 0 && (
               <span
                 className="absolute left-3 top-3 text-[11px] uppercase tracking-widest px-2 py-1 rounded-sm"
-                style={{ background: "rgba(255,255,255,0.92)", color: "#1A1A1A" }}
+                style={{ background: "rgba(255,255,255,0.92)", color: "var(--text)" }}
               >
                 Variante
               </span>

@@ -25,28 +25,28 @@ const VALUES = [
 
 export default function AboutPage() {
   return (
-    <div style={{ background: "#FAF8F5", minHeight: "100vh", color: "#1A1A1A" }}>
+    <div style={{ background: "var(--bg)", minHeight: "100vh", color: "var(--text)" }}>
 
       {/* Hero */}
       <div
         className="relative py-32 px-6 text-center overflow-hidden"
-        style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}
+        style={{ borderBottom: "1px solid var(--line)" }}
       >
         <div
           className="absolute inset-0"
           style={{
             opacity: 0.08,
-            backgroundImage: `repeating-linear-gradient(135deg, #C5A059 0px, #C5A059 1px, transparent 1px, transparent 80px)`,
+            backgroundImage: `repeating-linear-gradient(135deg, var(--gold) 0px, var(--gold) 1px, transparent 1px, transparent 80px)`,
           }}
         />
-        <p className="text-xs tracking-widest uppercase mb-4 relative" style={{ color: "#B8860B" }}>
+        <p className="text-xs tracking-widest uppercase mb-4 relative" style={{ color: "var(--gold-dark)" }}>
           Notre histoire
         </p>
-        <h1 className="font-serif text-5xl md:text-7xl mb-6 relative leading-tight" style={{ color: "#1A1A1A" }}>
+        <h1 className="font-serif text-5xl md:text-7xl mb-6 relative leading-tight" style={{ color: "var(--text)" }}>
           L’Afrique mérite<br />
-          <em style={{ color: "#B8860B" }}>une scène mondiale</em>
+          <em style={{ color: "var(--gold-dark)" }}>une scène mondiale</em>
         </h1>
-        <p className="text-base max-w-xl mx-auto relative" style={{ color: "#4A4A44" }}>
+        <p className="text-base max-w-xl mx-auto relative" style={{ color: "var(--text-2)" }}>
           AfroStyle est né d’une conviction simple : les créateurs africains sont parmi
           les plus talentueux du monde. Il leur manquait juste une vitrine à la hauteur
           de leur talent.
@@ -56,13 +56,13 @@ export default function AboutPage() {
       {/* Mission */}
       <div
         className="py-20 px-6"
-        style={{ background: "#FFFFFF", borderBottom: "1px solid rgba(0,0,0,0.06)" }}
+        style={{ background: "var(--surface)", borderBottom: "1px solid var(--line)" }}
       >
         <div className="max-w-4xl mx-auto text-center">
-          <p className="text-xs tracking-widest uppercase mb-6" style={{ color: "#B8860B" }}>
+          <p className="text-xs tracking-widest uppercase mb-6" style={{ color: "var(--gold-dark)" }}>
             Notre mission
           </p>
-          <blockquote className="font-serif text-3xl md:text-4xl leading-snug" style={{ color: "#1A1A1A" }}>
+          <blockquote className="font-serif text-3xl md:text-4xl leading-snug" style={{ color: "var(--text)" }}>
             « Connecter les créateurs d’Afrique aux amateurs de mode authentique
             partout sur la planète — et permettre à chaque artiste de vivre
             dignement de son art. »
@@ -73,11 +73,11 @@ export default function AboutPage() {
       {/* Valeurs */}
       <div className="py-20 px-6">
         <div className="max-w-7xl mx-auto">
-          <p className="text-xs tracking-widest uppercase mb-4 text-center" style={{ color: "#B8860B" }}>
+          <p className="text-xs tracking-widest uppercase mb-4 text-center" style={{ color: "var(--gold-dark)" }}>
             Ce en quoi nous croyons
           </p>
-          <h2 className="font-serif text-4xl mb-12 text-center" style={{ color: "#1A1A1A" }}>
-            Nos <em style={{ color: "#B8860B" }}>valeurs</em>
+          <h2 className="font-serif text-4xl mb-12 text-center" style={{ color: "var(--text)" }}>
+            Nos <em style={{ color: "var(--gold-dark)" }}>valeurs</em>
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {VALUES.map((value) => (
@@ -85,17 +85,17 @@ export default function AboutPage() {
                 key={value.title}
                 className="p-8 rounded-sm"
                 style={{
-                  background: "#FFFFFF",
-                  border: "1px solid rgba(0,0,0,0.06)",
+                  background: "var(--surface)",
+                  border: "1px solid var(--line)",
                 }}
               >
-                <span className="text-2xl mb-4 block" style={{ color: "#B8860B" }}>
+                <span className="text-2xl mb-4 block" style={{ color: "var(--gold-dark)" }}>
                   {value.icon}
                 </span>
-                <h3 className="font-serif text-xl mb-3" style={{ color: "#1A1A1A" }}>
+                <h3 className="font-serif text-xl mb-3" style={{ color: "var(--text)" }}>
                   {value.title}
                 </h3>
-                <p className="text-sm leading-relaxed" style={{ color: "#4A4A44" }}>
+                <p className="text-sm leading-relaxed" style={{ color: "var(--text-2)" }}>
                   {value.text}
                 </p>
               </div>
@@ -105,13 +105,13 @@ export default function AboutPage() {
       </div>
 
       {/* Timeline */}
-      <div className="py-20 px-6" style={{ background: "#FFFFFF", borderTop: "1px solid rgba(0,0,0,0.06)" }}>
+      <div className="py-20 px-6" style={{ background: "var(--surface)", borderTop: "1px solid var(--line)" }}>
         <div className="max-w-3xl mx-auto">
-          <p className="text-xs tracking-widest uppercase mb-4" style={{ color: "#B8860B" }}>
+          <p className="text-xs tracking-widest uppercase mb-4" style={{ color: "var(--gold-dark)" }}>
             Notre parcours
           </p>
-          <h2 className="font-serif text-4xl mb-12" style={{ color: "#1A1A1A" }}>
-            De l’idée à la <em style={{ color: "#B8860B" }}>réalité</em>
+          <h2 className="font-serif text-4xl mb-12" style={{ color: "var(--text)" }}>
+            De l’idée à la <em style={{ color: "var(--gold-dark)" }}>réalité</em>
           </h2>
           <div className="space-y-0">
             {TIMELINE.map((event, i) => (
@@ -123,7 +123,7 @@ export default function AboutPage() {
                 <div className="flex flex-col items-center">
                   <div
                     className="w-3 h-3 rounded-full flex-shrink-0 mt-1"
-                    style={{ background: "#C5A059" }}
+                    style={{ background: "var(--gold)" }}
                   />
                   {i < TIMELINE.length - 1 && (
                     <div
@@ -136,14 +136,14 @@ export default function AboutPage() {
                 <div className="pb-10">
                   <span
                     className="text-xs tracking-widest uppercase font-medium"
-                    style={{ color: "#B8860B" }}
+                    style={{ color: "var(--gold-dark)" }}
                   >
                     {event.year}
                   </span>
-                  <h3 className="font-serif text-xl mt-1 mb-2" style={{ color: "#1A1A1A" }}>
+                  <h3 className="font-serif text-xl mt-1 mb-2" style={{ color: "var(--text)" }}>
                     {event.title}
                   </h3>
-                  <p className="text-sm leading-relaxed" style={{ color: "#4A4A44" }}>
+                  <p className="text-sm leading-relaxed" style={{ color: "var(--text-2)" }}>
                     {event.text}
                   </p>
                 </div>
@@ -163,10 +163,10 @@ export default function AboutPage() {
             { num: "70%", label: "Reversé aux créateurs" },
           ].map((stat) => (
             <div key={stat.label}>
-              <div className="font-serif text-5xl font-bold mb-2" style={{ color: "#B8860B" }}>
+              <div className="font-serif text-5xl font-bold mb-2" style={{ color: "var(--gold-dark)" }}>
                 {stat.num}
               </div>
-              <div className="text-xs tracking-widest uppercase" style={{ color: "#4A4A44" }}>
+              <div className="text-xs tracking-widest uppercase" style={{ color: "var(--text-2)" }}>
                 {stat.label}
               </div>
             </div>
@@ -177,12 +177,12 @@ export default function AboutPage() {
       {/* CTA */}
       <div
         className="py-20 px-6 text-center"
-        style={{ background: "#FFFFFF", borderTop: "1px solid rgba(0,0,0,0.06)" }}
+        style={{ background: "var(--surface)", borderTop: "1px solid var(--line)" }}
       >
-        <h2 className="font-serif text-4xl mb-4" style={{ color: "#1A1A1A" }}>
+        <h2 className="font-serif text-4xl mb-4" style={{ color: "var(--text)" }}>
           Rejoins l’aventure
         </h2>
-        <p className="text-sm mb-8 max-w-md mx-auto" style={{ color: "#4A4A44" }}>
+        <p className="text-sm mb-8 max-w-md mx-auto" style={{ color: "var(--text-2)" }}>
           Que tu sois créateur, client ou passionné de mode africaine —
           AfroStyle est ta maison.
         </p>

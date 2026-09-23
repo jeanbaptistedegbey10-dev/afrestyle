@@ -111,11 +111,11 @@ export default function ProductForm({ product, onVariantChange }: ProductFormPro
       {/* Prix + dispo : synchronisés sur la variante exacte */}
       <div className="space-y-2" aria-live="polite">
         <div className="flex items-center gap-4">
-          <span className="font-serif text-3xl font-bold" style={{ color: "#1A1A1A" }}>
+          <span className="font-serif text-3xl font-bold" style={{ color: "var(--text)" }}>
             {priceLabel}
           </span>
           {showPromo && (
-            <span className="text-lg line-through" style={{ color: "#8A857A" }}>
+            <span className="text-lg line-through" style={{ color: "var(--text-3)" }}>
               {compareLabel}
             </span>
           )}
@@ -124,24 +124,24 @@ export default function ProductForm({ product, onVariantChange }: ProductFormPro
           <span
             aria-hidden
             className="inline-block h-2 w-2 rounded-full"
-            style={{ background: !selectedVariant ? "#8A857A" : inStock ? "#22c55e" : "#ef4444" }}
+            style={{ background: !selectedVariant ? "var(--text-3)" : inStock ? "#22c55e" : "#ef4444" }}
           />
           {!selectedVariant ? (
-            <span style={{ color: "#8A857A" }}>Combinaison indisponible</span>
+            <span style={{ color: "var(--text-3)" }}>Combinaison indisponible</span>
           ) : inStock ? (
             <span style={{ color: "#15803d" }}>En stock</span>
           ) : (
             <span style={{ color: "#b91c1c" }}>Épuisé</span>
           )}
           {selectedVariant?.sku && (
-            <span className="text-xs" style={{ color: "#8A857A" }}>
+            <span className="text-xs" style={{ color: "var(--text-3)" }}>
               · Réf. {selectedVariant.sku}
             </span>
           )}
         </p>
       </div>
 
-      <div style={{ height: "1px", background: "rgba(0,0,0,0.08)" }} />
+      <div style={{ height: "1px", background: "var(--line)" }} />
 
       {!isSingleVariant &&
         product.options.map((option) => {
@@ -149,9 +149,9 @@ export default function ProductForm({ product, onVariantChange }: ProductFormPro
           if (values.length === 0) return null;
           return (
             <fieldset key={option.name}>
-              <legend className="text-xs tracking-widest uppercase mb-3" style={{ color: "#B8860B" }}>
+              <legend className="text-xs tracking-widest uppercase mb-3" style={{ color: "var(--gold-dark)" }}>
                 {option.name}
-                <span className="ml-2 normal-case tracking-normal" style={{ color: "#4A4A44" }}>
+                <span className="ml-2 normal-case tracking-normal" style={{ color: "var(--text-2)" }}>
                   — {selectedOptions[option.name] ?? "à choisir"}
                 </span>
               </legend>
@@ -173,10 +173,10 @@ export default function ProductForm({ product, onVariantChange }: ProductFormPro
                       className="min-w-[3rem] px-4 py-2 text-sm border rounded-sm transition-all duration-200 disabled:cursor-not-allowed"
                       style={
                         isSelected
-                          ? { background: "#1A1A1A", color: "#FAF8F5", borderColor: "#1A1A1A", fontWeight: 600 }
+                          ? { background: "var(--text)", color: "var(--bg)", borderColor: "var(--text)", fontWeight: 600 }
                           : disabled
-                            ? { background: "#F5F2EC", color: "#8A857A", borderColor: "rgba(0,0,0,0.06)", opacity: 0.7 }
-                            : { background: "#FFFFFF", color: "#1A1A1A", borderColor: "rgba(0,0,0,0.08)" }
+                            ? { background: "var(--surface-2)", color: "var(--text-3)", borderColor: "var(--line)", opacity: 0.7 }
+                            : { background: "var(--surface)", color: "var(--text)", borderColor: "var(--line)" }
                       }
                     >
                       {value}
@@ -189,28 +189,28 @@ export default function ProductForm({ product, onVariantChange }: ProductFormPro
         })}
 
       {selectedVariant && !isSingleVariant && (
-        <p className="text-xs" style={{ color: "#8A857A" }} aria-live="polite">
+        <p className="text-xs" style={{ color: "var(--text-3)" }} aria-live="polite">
           Sélection : {selectedVariant.selectedOptions.map((o) => o.value).join(" · ")}
         </p>
       )}
 
       {/* Quantité */}
       <div className="flex items-center gap-4">
-        <span className="text-xs tracking-widest uppercase" style={{ color: "#B8860B" }}>
+        <span className="text-xs tracking-widest uppercase" style={{ color: "var(--gold-dark)" }}>
           Quantité
         </span>
-        <div className="flex items-center border rounded-sm" style={{ borderColor: "rgba(0,0,0,0.08)", background: "#FFFFFF" }}>
+        <div className="flex items-center border rounded-sm" style={{ borderColor: "var(--line)", background: "var(--surface)" }}>
           <button
             type="button"
             aria-label="Diminuer la quantité"
             onClick={() => setQuantity((q) => Math.max(1, q - 1))}
             disabled={quantity <= 1}
             className="px-3 py-2 disabled:opacity-30"
-            style={{ color: "#1A1A1A" }}
+            style={{ color: "var(--text)" }}
           >
             <Minus size={14} />
           </button>
-          <span className="w-8 text-center text-sm font-medium" style={{ color: "#1A1A1A" }}>
+          <span className="w-8 text-center text-sm font-medium" style={{ color: "var(--text)" }}>
             {quantity}
           </span>
           <button
@@ -219,7 +219,7 @@ export default function ProductForm({ product, onVariantChange }: ProductFormPro
             onClick={() => setQuantity((q) => Math.min(maxQuantity, q + 1))}
             disabled={quantity >= maxQuantity}
             className="px-3 py-2 disabled:opacity-30"
-            style={{ color: "#1A1A1A" }}
+            style={{ color: "var(--text)" }}
           >
             <Plus size={14} />
           </button>
@@ -235,10 +235,10 @@ export default function ProductForm({ product, onVariantChange }: ProductFormPro
           className="flex-1 flex items-center justify-center gap-2 py-4 text-sm font-medium tracking-widest uppercase rounded-sm transition-all duration-200 disabled:cursor-not-allowed"
           style={
             !selectedVariant || !inStock
-              ? { background: "#E8E4DC", color: "#8A857A" }
+              ? { background: "var(--surface-2)", color: "var(--text-3)" }
               : justAdded
                 ? { background: "#16a34a", color: "white" }
-                : { background: "#1A1A1A", color: "#FAF8F5" }
+                : { background: "var(--text)", color: "var(--bg)" }
           }
         >
           <ShoppingBag size={16} />
@@ -260,12 +260,12 @@ export default function ProductForm({ product, onVariantChange }: ProductFormPro
           aria-pressed={isWishlisted}
           className="w-14 flex items-center justify-center border rounded-sm transition-all duration-200"
           style={{
-            borderColor: isWishlisted ? "#C5A059" : "rgba(0,0,0,0.08)",
-            color: isWishlisted ? "#C5A059" : "#4A4A44",
-            background: "#FFFFFF",
+            borderColor: isWishlisted ? "var(--gold)" : "var(--line)",
+            color: isWishlisted ? "var(--gold)" : "var(--text-2)",
+            background: "var(--surface)",
           }}
         >
-          <Heart size={18} fill={isWishlisted ? "#C5A059" : "none"} />
+          <Heart size={18} fill={isWishlisted ? "var(--gold)" : "none"} />
         </button>
       </div>
 

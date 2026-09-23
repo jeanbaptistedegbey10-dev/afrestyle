@@ -8,10 +8,7 @@ export const metadata: Metadata = {
 
 export default function OrderConfirmedPage() {
   return (
-    <div
-      className="min-h-screen flex items-center justify-center px-6"
-      style={{ background: "#FAF8F5" }}
-    >
+    <div className="flex min-h-screen items-center justify-center bg-bg px-6 text-text">
       <div className="text-center max-w-lg">
 
         {/* Icône succès */}
@@ -19,35 +16,25 @@ export default function OrderConfirmedPage() {
           className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-8"
           style={{ background: "rgba(197,160,89,0.12)", border: "1px solid rgba(197,160,89,0.4)" }}
         >
-          <span style={{ fontSize: "2rem", color: "#B8860B" }}>✦</span>
+          <span className="text-gold-dark dark:text-gold" style={{ fontSize: "2rem" }}>
+            ✦
+          </span>
         </div>
 
-        <p
-          className="text-xs tracking-widest uppercase mb-4"
-          style={{ color: "#B8860B" }}
-        >
+        <p className="text-xs tracking-widest uppercase mb-4 text-gold-dark dark:text-gold">
           Commande confirmée
         </p>
 
-        <h1
-          className="font-serif text-4xl mb-4"
-          style={{ color: "#1A1A1A" }}
-        >
+        <h1 className="font-serif text-4xl mb-4 text-text">
           Merci pour votre commande !
         </h1>
 
-        <p
-          className="text-sm leading-relaxed mb-4"
-          style={{ color: "#4A4A44" }}
-        >
+        <p className="text-sm leading-relaxed mb-4 text-text-2">
           Vous allez recevoir un email de confirmation avec les détails
           de votre commande et les informations de suivi.
         </p>
 
-        <p
-          className="text-sm mb-10"
-          style={{ color: "#4A4A44" }}
-        >
+        <p className="text-sm mb-10 text-text-2">
           Chaque pièce AfroStyle est préparée avec soin par notre équipe
           et expédiée directement depuis l’atelier du créateur.
         </p>

@@ -16,22 +16,22 @@ export default async function AccountPage() {
   if (!customer) redirect("/account/login");
 
   return (
-    <div style={{ background: "#FAF8F5", minHeight: "100vh", color: "#1A1A1A" }}>
+    <div style={{ background: "var(--bg)", minHeight: "100vh", color: "var(--text)" }}>
 
       {/* Header */}
       <div
         className="py-12 px-6"
-        style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}
+        style={{ borderBottom: "1px solid var(--line)" }}
       >
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div>
-            <p className="text-xs tracking-widest uppercase mb-2" style={{ color: "#B8860B" }}>
+            <p className="text-xs tracking-widest uppercase mb-2" style={{ color: "var(--gold-dark)" }}>
               Espace personnel
             </p>
-            <h1 className="font-serif text-4xl" style={{ color: "#1A1A1A" }}>
+            <h1 className="font-serif text-4xl" style={{ color: "var(--text)" }}>
               Bonjour, {customer.firstName} ✦
             </h1>
-            <p className="text-sm mt-1" style={{ color: "#8A857A" }}>
+            <p className="text-sm mt-1" style={{ color: "var(--text-3)" }}>
               {customer.email}
             </p>
           </div>
@@ -39,12 +39,12 @@ export default async function AccountPage() {
           <form action={logoutAction}>
             <button
               type="submit"
-              className="text-xs tracking-widest uppercase px-4 py-2 transition-colors hover:border-[#C5A059] hover:text-[#B8860B]"
+              className="text-xs tracking-widest uppercase px-4 py-2 transition-colors hover:border-gold hover:text-gold-dark dark:hover:text-gold"
               style={{
-                border: "1px solid rgba(0,0,0,0.08)",
-                color: "#4A4A44",
+                border: "1px solid var(--line)",
+                color: "var(--text-2)",
                 borderRadius: "2px",
-                background: "#FFFFFF",
+                background: "var(--surface)",
               }}
             >
               Se déconnecter
@@ -66,15 +66,15 @@ export default async function AccountPage() {
               key={stat.label}
               className="p-6 text-center"
               style={{
-                background: "#FFFFFF",
-                border: "1px solid rgba(0,0,0,0.06)",
+                background: "var(--surface)",
+                border: "1px solid var(--line)",
                 borderRadius: "2px",
               }}
             >
-              <div className="font-serif text-4xl font-bold mb-1" style={{ color: "#B8860B" }}>
+              <div className="font-serif text-4xl font-bold mb-1" style={{ color: "var(--gold-dark)" }}>
                 {stat.num}
               </div>
-              <div className="text-xs tracking-widest uppercase" style={{ color: "#4A4A44" }}>
+              <div className="text-xs tracking-widest uppercase" style={{ color: "var(--text-2)" }}>
                 {stat.label}
               </div>
             </div>
@@ -83,7 +83,7 @@ export default async function AccountPage() {
 
         {/* Commandes */}
         <div>
-          <h2 className="font-serif text-2xl mb-6" style={{ color: "#1A1A1A" }}>
+          <h2 className="font-serif text-2xl mb-6" style={{ color: "var(--text)" }}>
             Mes commandes
           </h2>
 
@@ -91,12 +91,12 @@ export default async function AccountPage() {
             <div
               className="text-center py-12"
               style={{
-                background: "#FFFFFF",
-                border: "1px solid rgba(0,0,0,0.06)",
+                background: "var(--surface)",
+                border: "1px solid var(--line)",
                 borderRadius: "2px",
               }}
             >
-              <p className="font-serif text-xl mb-4" style={{ color: "#1A1A1A" }}>
+              <p className="font-serif text-xl mb-4" style={{ color: "var(--text)" }}>
                 Aucune commande pour l’instant
               </p>
               <Link href="/collections" className="btn-primary inline-flex">
@@ -110,24 +110,24 @@ export default async function AccountPage() {
                   key={order.id}
                   className="p-6"
                   style={{
-                    background: "#FFFFFF",
-                    border: "1px solid rgba(0,0,0,0.06)",
+                    background: "var(--surface)",
+                    border: "1px solid var(--line)",
                     borderRadius: "2px",
                   }}
                 >
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <p className="font-serif text-lg" style={{ color: "#1A1A1A" }}>
+                      <p className="font-serif text-lg" style={{ color: "var(--text)" }}>
                         Commande #{order.orderNumber}
                       </p>
-                      <p className="text-xs mt-1" style={{ color: "#8A857A" }}>
+                      <p className="text-xs mt-1" style={{ color: "var(--text-3)" }}>
                         {new Date(order.processedAt).toLocaleDateString("fr-FR", {
                           day: "numeric", month: "long", year: "numeric",
                         })}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-serif text-xl font-bold" style={{ color: "#B8860B" }}>
+                      <p className="font-serif text-xl font-bold" style={{ color: "var(--gold-dark)" }}>
                         {formatPrice(
                           order.currentTotalPrice.amount,
                           order.currentTotalPrice.currencyCode
@@ -148,21 +148,21 @@ export default async function AccountPage() {
                             width={40}
                             height={48}
                             className="w-10 h-12 object-cover"
-                            style={{ borderRadius: "2px", background: "#F0ECE4" }}
+                            style={{ borderRadius: "2px", background: "var(--surface-2)" }}
                           />
                         )}
                         <div>
-                          <p className="text-sm" style={{ color: "#1A1A1A" }}>
+                          <p className="text-sm" style={{ color: "var(--text)" }}>
                             {item.title}
                           </p>
-                          <p className="text-xs" style={{ color: "#8A857A" }}>
+                          <p className="text-xs" style={{ color: "var(--text-3)" }}>
                             Qté : {item.quantity}
                           </p>
                         </div>
                       </div>
                     ))}
                     {order.lineItems.length > 3 && (
-                      <p className="text-xs" style={{ color: "#8A857A" }}>
+                      <p className="text-xs" style={{ color: "var(--text-3)" }}>
                         +{order.lineItems.length - 3} autre(s) article(s)
                       </p>
                     )}
@@ -175,37 +175,37 @@ export default async function AccountPage() {
 
         {/* Adresse */}
         <div>
-          <h2 className="font-serif text-2xl mb-6" style={{ color: "#1A1A1A" }}>
+          <h2 className="font-serif text-2xl mb-6" style={{ color: "var(--text)" }}>
             Adresse de livraison
           </h2>
           {customer.defaultAddress ? (
             <div
               className="p-6"
               style={{
-                background: "#FFFFFF",
-                border: "1px solid rgba(0,0,0,0.06)",
+                background: "var(--surface)",
+                border: "1px solid var(--line)",
                 borderRadius: "2px",
               }}
             >
-              <p style={{ color: "#1A1A1A" }}>{customer.defaultAddress.address1}</p>
+              <p style={{ color: "var(--text)" }}>{customer.defaultAddress.address1}</p>
               {customer.defaultAddress.address2 && (
-                <p style={{ color: "#1A1A1A" }}>{customer.defaultAddress.address2}</p>
+                <p style={{ color: "var(--text)" }}>{customer.defaultAddress.address2}</p>
               )}
-              <p style={{ color: "#1A1A1A" }}>
+              <p style={{ color: "var(--text)" }}>
                 {customer.defaultAddress.zip} {customer.defaultAddress.city}
               </p>
-              <p style={{ color: "#8A857A" }}>{customer.defaultAddress.country}</p>
+              <p style={{ color: "var(--text-3)" }}>{customer.defaultAddress.country}</p>
             </div>
           ) : (
             <div
               className="p-6 text-center"
               style={{
-                background: "#FFFFFF",
-                border: "1px solid rgba(0,0,0,0.06)",
+                background: "var(--surface)",
+                border: "1px solid var(--line)",
                 borderRadius: "2px",
               }}
             >
-              <p style={{ color: "#8A857A" }}>Aucune adresse enregistrée</p>
+              <p style={{ color: "var(--text-3)" }}>Aucune adresse enregistrée</p>
             </div>
           )}
         </div>
@@ -218,11 +218,11 @@ export default async function AccountPage() {
 function StatusBadge({ status }: { status: string }) {
   const config: Record<string, { label: string; color: string; bg: string }> = {
     FULFILLED:   { label: "Livré",      color: "#15803d", bg: "rgba(34,197,94,0.08)" },
-    UNFULFILLED: { label: "En cours",   color: "#B8860B", bg: "rgba(197,160,89,0.12)" },
+    UNFULFILLED: { label: "En cours",   color: "var(--gold-dark)", bg: "rgba(197,160,89,0.12)" },
     PARTIAL:     { label: "Partiel",    color: "#c2410c", bg: "rgba(253,186,116,0.12)" },
     IN_TRANSIT:  { label: "En transit", color: "#1d4ed8", bg: "rgba(147,197,253,0.12)" },
   };
-  const { label, color, bg } = config[status] ?? { label: status, color: "#4A4A44", bg: "rgba(0,0,0,0.04)" };
+  const { label, color, bg } = config[status] ?? { label: status, color: "var(--text-2)", bg: "var(--line)" };
 
   return (
     <span

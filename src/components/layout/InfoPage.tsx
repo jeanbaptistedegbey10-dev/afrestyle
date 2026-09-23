@@ -15,23 +15,17 @@ export default function InfoPage({
   children: ReactNode;
 }) {
   return (
-    <div className="min-h-screen" style={{ background: "#FAF8F5" }}>
+    <div className="min-h-screen bg-bg text-text">
       {/* Header éditorial */}
-      <header
-        className="px-6 py-16 text-center md:py-20"
-        style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}
-      >
-        <p
-          className="mb-4 text-[11px] font-medium uppercase tracking-[0.3em]"
-          style={{ color: "#B8860B" }}
-        >
+      <header className="border-b border-line px-6 py-16 text-center md:py-20">
+        <p className="mb-4 text-[11px] font-medium uppercase tracking-[0.3em] text-gold-dark dark:text-gold">
           {eyebrow}
         </p>
-        <h1 className="font-serif text-4xl leading-tight text-[#1A1A1A] md:text-6xl">
+        <h1 className="font-serif text-4xl leading-tight text-text md:text-6xl">
           {title}
         </h1>
         {intro && (
-          <p className="mx-auto mt-5 max-w-md text-sm leading-relaxed text-[#4A4A44]">
+          <p className="mx-auto mt-5 max-w-md text-sm leading-relaxed text-text-2">
             {intro}
           </p>
         )}
@@ -52,18 +46,11 @@ export function InfoCard({
   children: ReactNode;
 }) {
   return (
-    <section
-      className="mb-6 p-6 md:p-8"
-      style={{
-        background: "#FFFFFF",
-        border: "1px solid rgba(0,0,0,0.06)",
-        borderRadius: "2px",
-      }}
-    >
+    <section className="mb-6 rounded-sm border border-line bg-surface p-6 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-gold/40 hover:shadow-md md:p-8">
       {title && (
-        <h2 className="font-serif mb-3 text-xl text-[#1A1A1A]">{title}</h2>
+        <h2 className="font-serif mb-3 text-xl text-text">{title}</h2>
       )}
-      <div className="space-y-3 text-sm leading-relaxed text-[#4A4A44]">
+      <div className="space-y-3 text-sm leading-relaxed text-text-2">
         {children}
       </div>
     </section>

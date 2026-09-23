@@ -7,9 +7,9 @@ import { registerAction } from "@/lib/actions/auth.actions";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 const inputStyle = {
-  background: "#FFFFFF",
-  border: "1px solid rgba(0,0,0,0.06)",
-  color: "#1A1A1A",
+  background: "var(--surface)",
+  border: "1px solid var(--line)",
+  color: "var(--text)",
   borderRadius: "2px",
 };
 
@@ -24,7 +24,7 @@ function Field({
       <label
         htmlFor={id}
         className="block text-xs tracking-widest uppercase mb-2"
-        style={{ color: "#4A4A44" }}
+        style={{ color: "var(--text-2)" }}
       >
         {label}
       </label>
@@ -34,8 +34,8 @@ function Field({
         autoComplete={autoComplete}
         className="w-full px-4 py-3 text-sm outline-none"
         style={inputStyle}
-        onFocus={(e) => { e.target.style.borderColor = "#C5A059"; }}
-        onBlur={(e) => { e.target.style.borderColor = "rgba(0,0,0,0.06)"; }}
+        onFocus={(e) => { e.target.style.borderColor = "var(--gold)"; }}
+        onBlur={(e) => { e.target.style.borderColor = "var(--line)"; }}
       />
     </div>
   );
@@ -72,7 +72,7 @@ export default function RegisterForm() {
 
       {/* Password avec toggle */}
       <div>
-        <label htmlFor="password" className="block text-xs tracking-widest uppercase mb-2" style={{ color: "#4A4A44" }}>
+        <label htmlFor="password" className="block text-xs tracking-widest uppercase mb-2" style={{ color: "var(--text-2)" }}>
           Mot de passe
         </label>
         <div className="relative">
@@ -83,20 +83,20 @@ export default function RegisterForm() {
             autoComplete="new-password"
             className="w-full px-4 py-3 pr-12 text-sm outline-none"
             style={inputStyle}
-            onFocus={(e) => { e.target.style.borderColor = "#C5A059"; }}
-            onBlur={(e) => { e.target.style.borderColor = "rgba(0,0,0,0.06)"; }}
+            onFocus={(e) => { e.target.style.borderColor = "var(--gold)"; }}
+            onBlur={(e) => { e.target.style.borderColor = "var(--line)"; }}
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
             aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
             className="absolute right-4 top-1/2 -translate-y-1/2"
-            style={{ color: "#8A857A" }}
+            style={{ color: "var(--text-3)" }}
           >
             {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
           </button>
         </div>
-        <p className="text-xs mt-1" style={{ color: "#8A857A" }}>
+        <p className="text-xs mt-1" style={{ color: "var(--text-3)" }}>
           Minimum 8 caractères
         </p>
       </div>
@@ -105,13 +105,13 @@ export default function RegisterForm() {
       <label className="flex items-start gap-3 cursor-pointer">
         <input
           type="checkbox" name="terms" required
-          className="mt-0.5 accent-[#C5A059]"
+          className="mt-0.5 accent-[var(--gold)]"
         />
-        <span className="text-xs leading-relaxed" style={{ color: "#4A4A44" }}>
+        <span className="text-xs leading-relaxed" style={{ color: "var(--text-2)" }}>
           J’accepte les{" "}
-          <a href="/terms" style={{ color: "#B8860B" }}>conditions générales</a>
+          <a href="/terms" style={{ color: "var(--gold-dark)" }}>conditions générales</a>
           {" "}et la{" "}
-          <a href="/privacy" style={{ color: "#B8860B" }}>politique de confidentialité</a>
+          <a href="/privacy" style={{ color: "var(--gold-dark)" }}>politique de confidentialité</a>
         </span>
       </label>
 
@@ -133,10 +133,10 @@ export default function RegisterForm() {
       <button
         type="submit"
         disabled={isPending}
-        className="w-full py-4 flex items-center justify-center gap-2 text-sm font-medium tracking-widest uppercase transition-all hover:bg-[#C5A059] hover:text-white"
+        className="w-full py-4 flex items-center justify-center gap-2 text-sm font-medium tracking-widest uppercase transition-all hover:bg-gold hover:text-white"
         style={{
-          background: isPending ? "#C5A059" : "#1A1A1A",
-          color: "#FAF8F5",
+          background: isPending ? "var(--gold)" : "var(--text)",
+          color: "var(--bg)",
           borderRadius: "2px",
           cursor: isPending ? "not-allowed" : "pointer",
         }}

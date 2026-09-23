@@ -87,19 +87,19 @@ export default async function ProductPage({
             {/* Breadcrumb */}
             <nav
               className="text-xs tracking-widest uppercase"
-              style={{ color: "#8A857A" }}
+              style={{ color: "var(--text-3)" }}
             >
               <span>Shop</span>
-              <span className="mx-2" style={{ color: "#B8860B" }}>
+              <span className="mx-2" style={{ color: "var(--gold-dark)" }}>
                 ›
               </span>
-              <span style={{ color: "#1A1A1A" }}>{product.title}</span>
+              <span style={{ color: "var(--text)" }}>{product.title}</span>
             </nav>
 
             {/* Origine */}
             <p
               className="text-xs tracking-widest uppercase"
-              style={{ color: "#B8860B" }}
+              style={{ color: "var(--gold-dark)" }}
             >
               {[product.country, product.fabric]
                 .filter(Boolean)
@@ -110,17 +110,17 @@ export default async function ProductPage({
             {/* Titre */}
             <h1
               className="font-serif text-4xl leading-tight"
-              style={{ color: "#1A1A1A" }}
+              style={{ color: "var(--text)" }}
             >
               {product.title}
             </h1>
 
             {/* Créateur */}
-            <p className="text-sm" style={{ color: "#4A4A44" }}>
+            <p className="text-sm" style={{ color: "var(--text-2)" }}>
               par{" "}
               <span
                 className="font-medium transition-colors"
-                style={{ color: "#B8860B" }}
+                style={{ color: "var(--gold-dark)" }}
               >
                 {product.vendor}
               </span>
@@ -130,21 +130,21 @@ export default async function ProductPage({
                 Pas de prix statique ici pour éviter tout double affichage. */}
 
             {/* Séparateur */}
-            <div style={{ height: "1px", background: "rgba(0,0,0,0.08)" }} />
+            <div style={{ height: "1px", background: "var(--line)" }} />
 
             {/* Formulaire variantes + ajout panier (remonté par produit) */}
             <ProductForm key={product.id} product={product} />
 
             {/* Description */}
-            <div style={{ height: "1px", background: "rgba(0,0,0,0.08)" }} />
+            <div style={{ height: "1px", background: "var(--line)" }} />
             <div>
               <h3
                 className="text-xs tracking-widest uppercase mb-3"
-                style={{ color: "#B8860B" }}
+                style={{ color: "var(--gold-dark)" }}
               >
                 Description
               </h3>
-              <p className="text-sm leading-relaxed" style={{ color: "#4A4A44" }}>
+              <p className="text-sm leading-relaxed" style={{ color: "var(--text-2)" }}>
                 {product.description}
               </p>
             </div>
@@ -153,9 +153,9 @@ export default async function ProductPage({
             <div
               className="rounded-sm p-4 text-sm space-y-2"
               style={{
-                background: "#FFFFFF",
-                border: "1px solid rgba(0,0,0,0.06)",
-                color: "#4A4A44",
+                background: "var(--surface)",
+                border: "1px solid var(--line)",
+                color: "var(--text-2)",
               }}
             >
               <p>🚚 Livraison internationale 7-14 jours</p>

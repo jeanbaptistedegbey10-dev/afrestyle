@@ -29,21 +29,21 @@ export default function ReturnsPage() {
 
       <InfoCard title="Procédure">
         <p>
-          <strong className="text-[#1A1A1A]">1.</strong> Écrivez-nous depuis la
-          page <Link href="/contact" className="text-[#B8860B] underline underline-offset-2">Contact</Link>{" "}
+          <strong className="text-text">1.</strong> Écrivez-nous depuis la
+          page <Link href="/contact" className="text-gold-dark dark:text-gold underline underline-offset-2">Contact</Link>{" "}
           en précisant votre numéro de commande.
         </p>
         <p>
-          <strong className="text-[#1A1A1A]">2.</strong> Nous vous transmettons
+          <strong className="text-text">2.</strong> Nous vous transmettons
           une étiquette de retour prépayée sous 48h.
         </p>
         <p>
-          <strong className="text-[#1A1A1A]">3.</strong> Dès réception et
+          <strong className="text-text">3.</strong> Dès réception et
           contrôle (2 à 3 jours), le remboursement est effectué sur votre moyen
           de paiement d’origine.
         </p>
         <p>
-          Les retours sont <strong className="text-[#1A1A1A]">gratuits</strong>{" "}
+          Les retours sont <strong className="text-text">gratuits</strong>{" "}
           en France et en Afrique de l’Ouest.
         </p>
       </InfoCard>

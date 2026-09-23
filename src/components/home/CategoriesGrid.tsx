@@ -2,9 +2,9 @@
 // Photos Unsplash HD (src/constants/images.ts) + overlay sombre + typographie
 // serif pour une lecture éditoriale haut de gamme dans les deux thèmes.
 import Link from "next/link";
-import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { IMAGES } from "@/constants/images";
+import SafeImage from "@/components/ui/SafeImage";
 
 const CATEGORIES = [
   {
@@ -69,8 +69,9 @@ export default function CategoriesGrid() {
               href={cat.href}
               className="group relative block aspect-[3/4] overflow-hidden rounded-xl border border-line shadow-[0_12px_32px_rgba(0,0,0,0.10)] dark:shadow-[0_12px_32px_rgba(0,0,0,0.5)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_48px_rgba(0,0,0,0.16)] dark:hover:shadow-[0_20px_48px_rgba(0,0,0,0.6)]"
             >
-              {/* Visuel — photo Unsplash HD, zoom fluide au survol */}
-              <Image
+              {/* Visuel — photo Unsplash HD, zoom fluide au survol.
+                  SafeImage : onError → FALLBACK_PRODUCT_IMAGE → SVG local */}
+              <SafeImage
                 src={cat.image}
                 alt={cat.alt}
                 fill

@@ -32,7 +32,7 @@ export default function ForgotPasswordForm() {
           <label
             htmlFor="email"
             className="block text-xs tracking-widest uppercase mb-2"
-            style={{ color: "#4A4A44" }}
+            style={{ color: "var(--text-2)" }}
           >
             Email
           </label>
@@ -45,16 +45,16 @@ export default function ForgotPasswordForm() {
             placeholder="votre@email.com"
             className="w-full px-4 py-3 text-sm outline-none transition-all"
             style={{
-              background: "#FFFFFF",
-              border: "1px solid rgba(0,0,0,0.06)",
-              color: "#1A1A1A",
+              background: "var(--surface)",
+              border: "1px solid var(--line)",
+              color: "var(--text)",
               borderRadius: "2px",
             }}
             onFocus={(e) => {
-              e.target.style.borderColor = "#C5A059";
+              e.target.style.borderColor = "var(--gold)";
             }}
             onBlur={(e) => {
-              e.target.style.borderColor = "rgba(0,0,0,0.06)";
+              e.target.style.borderColor = "var(--line)";
             }}
           />
         </div>
@@ -91,10 +91,10 @@ export default function ForgotPasswordForm() {
         <button
           type="submit"
           disabled={isPending}
-          className="w-full py-4 flex items-center justify-center gap-2 text-sm font-medium tracking-widest uppercase transition-all hover:bg-[#C5A059] hover:text-white"
+          className="w-full py-4 flex items-center justify-center gap-2 text-sm font-medium tracking-widest uppercase transition-all hover:bg-gold hover:text-white"
           style={{
-            background: isPending ? "#C5A059" : "#1A1A1A",
-            color: "#FAF8F5",
+            background: isPending ? "var(--gold)" : "var(--text)",
+            color: "var(--bg)",
             borderRadius: "2px",
             cursor: isPending ? "not-allowed" : "pointer",
           }}
@@ -110,8 +110,8 @@ export default function ForgotPasswordForm() {
       {/* Retour */}
       <Link
         href="/account/login"
-        className="inline-flex items-center gap-2 text-xs tracking-widest uppercase hover:text-[#B8860B] transition-colors"
-        style={{ color: "#8A857A" }}
+        className="inline-flex items-center gap-2 text-xs tracking-widest uppercase hover:text-gold-dark dark:hover:text-gold transition-colors"
+        style={{ color: "var(--text-3)" }}
       >
         <ArrowLeft size={14} /> Retour à la connexion
       </Link>

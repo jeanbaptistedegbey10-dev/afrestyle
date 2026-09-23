@@ -17,16 +17,16 @@ export default function ContactPage() {
     >
       <InfoCard title="Service client">
         <p>
-          <strong className="text-[#1A1A1A]">E-mail :</strong>{" "}
+          <strong className="text-text">E-mail :</strong>{" "}
           <a
             href="mailto:contact@afrestyle.com"
-            className="text-[#B8860B] underline underline-offset-2"
+            className="text-gold-dark dark:text-gold underline underline-offset-2"
           >
             contact@afrestyle.com
           </a>
         </p>
         <p>
-          <strong className="text-[#1A1A1A]">Horaires :</strong> du lundi au
+          <strong className="text-text">Horaires :</strong> du lundi au
           vendredi, 9h — 18h (GMT).
         </p>
       </InfoCard>
@@ -45,7 +45,7 @@ export default function ContactPage() {
           portfolio et une présentation de votre univers à{" "}
           <a
             href="mailto:createurs@afrestyle.com"
-            className="text-[#B8860B] underline underline-offset-2"
+            className="text-gold-dark dark:text-gold underline underline-offset-2"
           >
             createurs@afrestyle.com
           </a>
