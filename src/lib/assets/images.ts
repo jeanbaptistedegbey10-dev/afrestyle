@@ -11,15 +11,17 @@
 // ────────────────────────────────────────────────────────────────────────────
 
 /**
- * URL d'une photo mode africaine authentique (Unsplash) utilisée comme
- * fallback produit élégant. Cette image est vérifiée et stable.
+ * Visuel de secours de marque (modèle en Pagne Wax, photo éditoriale
+ * AfroStyle) — **jamais** un portant/magasin générique.
+ * URL vérifiée HTTP 200 (audit images). Dernier palier de repli :
+ * le SVG officiel `getSvgPlaceholder()`.
  */
 export const FALLBACK_PRODUCT_IMAGE: string =
-  "https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?auto=format&fit=crop&w=800&q=80";
+  "https://images.unsplash.com/photo-1696962678565-bee84e6b9cb6?auto=format&fit=crop&w=800&q=80";
 
 /** Texte alternatif accessible pour le fallback produit. */
 export const FALLBACK_IMAGE_ALT: string =
-  "Visuel de repli AfroStyle — mode africaine traditionnelle";
+  "Visuel de repli AfroStyle — création en Wax de la collection";
 
 /**
  * Génère un placeholder SVG élégant (ratio 3/4, palette or sur fond sombre)

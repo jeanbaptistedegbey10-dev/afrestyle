@@ -51,13 +51,21 @@ export {
   getAllProductsCatalog,
   getCollectionHandles,
   getCollectionProducts,
+  getLookbookCollectionHandle,
+  getLookbookProducts,
   getOnlineStorePublicationId,
   getProductByHandle,
   getProducts,
   getProductsByVendor,
   getSitemapProducts,
+  LOOKBOOK_PRODUCT_LIMIT,
 } from "./products";
-export type { CreateProductInput, CreateProductResult } from "./products";
+export type {
+  CreateProductInput,
+  CreateProductResult,
+  LookbookCollection,
+  LookbookData,
+} from "./products";
 
 // ── Panier (Storefront) ─────────────────────────────────────────────────────
 export {

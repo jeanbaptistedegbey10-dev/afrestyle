@@ -6,13 +6,12 @@
 // ────────────────────────────────────────────────────────────────────────────
 
 import type { Product } from "@/lib/shopify/types";
+import { getAppUrl, STORE_CURRENCY } from "@/constants/store";
 
-/** Base canonique du site (sans slash final). Fallback prod sécurisé. */
+/** Base canonique du site (sans slash final) — voir getAppUrl() :
+ *  NEXT_PUBLIC_APP_URL → NEXT_PUBLIC_SITE_URL → URL de production (jamais localhost en prod). */
 export function getSiteUrl(): string {
-  const raw =
-    process.env.NEXT_PUBLIC_SITE_URL?.trim() ||
-    "https://afrestyle.vercel.app";
-  return raw.replace(/\/+$/, "");
+  return getAppUrl();
 }
 
 export type ProductJsonLd = {
@@ -57,7 +56,8 @@ export function buildProductJsonLd(product: Product): ProductJsonLd {
     offers: {
       "@type": "Offer",
       url,
-      priceCurrency: product.currencyCode || "EUR",
+      // Devise d'affichage unique de la boutique (EUR) — cohérent avec l'UI.
+      priceCurrency: STORE_CURRENCY,
       price: product.price,
       availability: product.availableForSale
         ? "https://schema.org/InStock"

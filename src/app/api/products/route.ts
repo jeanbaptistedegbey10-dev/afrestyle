@@ -1,7 +1,8 @@
 // src/app/api/products/route.ts
 // ────────────────────────────────────────────────────────────────────────────
 //  API Route cursor-based du catalogue (Phase 5).
-//  GET /api/products?genre=femme&cursor=<endCursor>&first=12
+//  GET /api/products?gender=femme&cursor=<endCursor>&first=12
+//  (alias legacy acceptés : genre, category — cf. resolveGender()).
 //  Utilisée par <LoadMoreProducts /> pour concaténer les pages suivantes
 //  sans recharger la page. La construction query/tri est partagée avec
 //  la page serveur via @/lib/collections (source de vérité unique).
@@ -29,7 +30,9 @@ export async function GET(request: Request): Promise<NextResponse> {
   const sp = url.searchParams;
 
   const params: CollectionFilterParams = {
+    gender: sp.get("gender") ?? undefined,
     genre: sp.get("genre") ?? undefined,
+    category: sp.get("category") ?? undefined,
     pays: sp.get("pays") ?? undefined,
     tissu: sp.get("tissu") ?? undefined,
     style: sp.get("style") ?? undefined,

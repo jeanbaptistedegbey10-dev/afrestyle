@@ -33,6 +33,13 @@ const nextConfig = {
         hostname: "images.unsplash.com",
       },
     ],
+    // ⚠️ Next 16 met en cache une image optimisée pendant 4 h par défaut
+    // (`minimumCacheTTL: 14400`). Or les visuels produits sont ré-uploadés
+    // dans Shopify Admin sous la MÊME URL (`/files/…jpg?v=…`) : une pièce
+    // mise à jour resterait donc invisible 4 heures. On désactive ce cache
+    // pour que le premier rafraîchissement affiche l'image réellement servie
+    // par le CDN Shopify (le CDN Shopify conserve, lui, sa propre gestion).
+    minimumCacheTTL: 0,
     formats: ["image/avif", "image/webp"],
   },
   // Server Actions : stables depuis Next 15 — pas de bloc `experimental` requis

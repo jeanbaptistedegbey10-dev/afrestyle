@@ -32,7 +32,9 @@ function planForTopic(topic: string): {
   if (t.startsWith("collections/")) {
     return {
       tags: ["collections", "products"],
-      paths: ["/", "/collections"],
+      // Le lookbook est piloté par une collection Shopify réelle : une MAJ de
+      // collection doit donc rafraîchir /lookbook au même titre que /collections.
+      paths: ["/", "/collections", "/lookbook"],
     };
   }
   return null;

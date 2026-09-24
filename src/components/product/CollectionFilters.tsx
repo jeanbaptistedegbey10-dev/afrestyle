@@ -41,9 +41,13 @@ const FILTERS = {
   ],
 } as const;
 
-type FilterKey = "genre" | "pays" | "tissu" | "style" | "sort";
+type FilterKey = "gender" | "pays" | "tissu" | "style" | "sort";
 type ActiveFilters = {
-  genre?: string; pays?: string; tissu?: string;
+  /** Clé canonique — alias legacy acceptés dans l'URL : genre, category. */
+  gender?: string;
+  genre?: string;
+  category?: string;
+  pays?: string; tissu?: string;
   style?: string; sort?: string; q?: string;
 };
 
@@ -85,8 +89,20 @@ export default function CollectionFilters({ activeFilters }: { activeFilters: Ac
 
   const updateFilter = useCallback((key: FilterKey, value: string) => {
     const params = new URLSearchParams(searchParams.toString());
-    if (params.get(key) === value) params.delete(key);
-    else params.set(key, value);
+    if (key === "gender") {
+      // Clé canonique : valeur actuelle quelle que soit l'écriture
+      // (?gender= ou alias legacy ?genre= / ?category=), puis purge des alias.
+      const current =
+        params.get("gender") ?? params.get("genre") ?? params.get("category");
+      params.delete("genre");
+      params.delete("category");
+      if (current === value) params.delete("gender");
+      else params.set("gender", value);
+    } else if (params.get(key) === value) {
+      params.delete(key);
+    } else {
+      params.set(key, value);
+    }
     params.delete("cursor");
     const qs = params.toString();
     router.push(qs ? `${pathname}?${qs}` : pathname);
@@ -98,12 +114,15 @@ export default function CollectionFilters({ activeFilters }: { activeFilters: Ac
     setOpen(false);
   }, [pathname, router]);
 
-  const activeCount = (["genre", "pays", "tissu", "style"] as const).filter((k) => activeFilters[k]).length;
+  const genderValue =
+    activeFilters.gender ?? activeFilters.genre ?? activeFilters.category;
+  const activeCount = [genderValue, activeFilters.pays, activeFilters.tissu, activeFilters.style]
+    .filter(Boolean).length;
   const sortLabel = FILTERS.sort.find((s) => s.value === (activeFilters.sort ?? "recent"))?.label;
 
   const body = (
     <div>
-      <FilterGroup title="Genre" options={FILTERS.genre} active={activeFilters.genre} onSelect={(v) => updateFilter("genre", v)} />
+      <FilterGroup title="Genre" options={FILTERS.genre} active={genderValue} onSelect={(v) => updateFilter("gender", v)} />
       <FilterGroup title="Pays" options={FILTERS.pays} active={activeFilters.pays} onSelect={(v) => updateFilter("pays", v)} />
       <FilterGroup title="Tissu" options={FILTERS.tissu} active={activeFilters.tissu} onSelect={(v) => updateFilter("tissu", v)} />
       <FilterGroup title="Style" options={FILTERS.style} active={activeFilters.style} onSelect={(v) => updateFilter("style", v)} />
@@ -123,7 +142,7 @@ export default function CollectionFilters({ activeFilters }: { activeFilters: Ac
       {activeCount > 0 && (
         <button type="button" onClick={clearAll}
           className="mt-2 border-b border-gold pb-0.5 text-[11px] font-medium uppercase tracking-[0.2em] text-text transition-colors hover:text-gold-dark">
-          Reinitialiser les filtres</button>
+          Tout effacer</button>
       )}
     </div>
   );

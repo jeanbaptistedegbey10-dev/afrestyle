@@ -4,10 +4,11 @@
 
 import { useCart } from "@/hooks/useCart";
 import { X, ShoppingBag, Plus, Minus, Trash2, Loader2, ExternalLink } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { formatPrice } from "@/lib/utils";
 import { useMounted } from "@/hooks/useMounted";
+import SafeImage from "@/components/ui/SafeImage";
+import FreeShippingProgress from "@/components/cart/FreeShippingProgress";
 
 export default function CartDrawer() {
   // L'état du panier vient du store Zustand persisté dans localStorage :
@@ -114,7 +115,7 @@ export default function CartDrawer() {
                     style={{ background: "var(--surface-2)", borderRadius: "2px" }}
                   >
                     {line.merchandise.image ? (
-                      <Image
+                      <SafeImage
                         src={line.merchandise.image.url}
                         alt={line.merchandise.image.altText ?? line.merchandise.product.title}
                         width={80}
@@ -201,6 +202,11 @@ export default function CartDrawer() {
               className="px-6 py-5 space-y-4"
               style={{ borderTop: "1px solid var(--line)" }}
             >
+              {/* Progression vers la livraison offerte (seuil unique : store.ts) */}
+              <FreeShippingProgress
+                subtotal={subtotal ? parseFloat(subtotal.amount) : 0}
+              />
+
               {/* Sous-total */}
               {subtotal && (
                 <div className="flex justify-between items-center">

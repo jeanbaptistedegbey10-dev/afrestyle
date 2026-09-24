@@ -37,6 +37,12 @@ export default function CollectionCatalog({
 
   return (
     <>
+      {/* Compte exact des pièces RÉELLEMENT affichées : suit les filtres
+          (remontage par `key`) ET la pagination « Découvrir plus ». */}
+      <p className="mb-6 text-[11px] uppercase tracking-[0.2em] text-text-3">
+        {products.length} pièce{products.length > 1 ? "s" : ""} affichée
+        {products.length > 1 ? "s" : ""}
+      </p>
       <ProductGrid products={products} />
       <LoadMoreProducts
         apiParams={apiParams}

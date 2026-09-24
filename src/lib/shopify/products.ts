@@ -11,6 +11,7 @@
 // le bug d'origine (createProduct + productPublish visant l'endpoint public).
 
 import { adminFetch } from "./adminClient";
+import { formatPrice } from "@/lib/utils";
 import {
   formatUserErrors,
   toErrorMessage,
@@ -30,6 +31,7 @@ import {
 } from "./queries/products";
 import type {
   ShopifyCollectionHandle,
+  ShopifyImage,
   ShopifyProduct,
   ShopifySitemapProduct,
   Product,
@@ -44,6 +46,17 @@ export type GetProductsQuery = {
   sortKey?: string;
   reverse?: boolean;
   query?: string;
+  /**
+   * Politique de cache de la requête Storefront.
+   * Par défaut `storefrontFetch` conserve `"force-cache"` (comportement
+   * historique du catalogue) ; passer `"no-store"` pour une lecture qui doit
+   * refléter immédiatement la boutique (lookbook éditorial).
+   * ⚠️ Ne jamais combiner `"no-store"` avec une `revalidate` > 0 (conflit
+   * signalé par Next).
+   */
+  cache?: RequestCache;
+  /** Délai ISR en secondes (`false` = cache illimité) — `next.revalidate`. */
+  revalidate?: number | false;
 };
 
 /**
@@ -54,14 +67,9 @@ export type GetProductsQuery = {
  */
 function normalizeProduct(shopifyProduct: ShopifyProduct): Product {
   const price = shopifyProduct.priceRange.minVariantPrice;
-  const amount = parseFloat(price.amount);
 
-  // Formattage prix selon la devise
-  const priceFormatted = new Intl.NumberFormat("fr-FR", {
-    style: "currency",
-    currency: price.currencyCode,
-    minimumFractionDigits: 0,
-  }).format(amount);
+  // Formattage prix — devise d'affichage harmonisée (EUR, cf. src/constants/store.ts).
+  const priceFormatted = formatPrice(price.amount);
 
   // Extrait les mÃ©tadonnÃ©es depuis les tags Shopify
   // Convention: on prÃ©fixe les tags â†’ "pays-benin", "tissu-wax"
@@ -140,6 +148,8 @@ export async function getProducts({
   sortKey = "CREATED_AT",
   reverse = true,
   query,
+  cache,
+  revalidate,
 }: GetProductsQuery = {}): Promise<{
   products: Product[];
   pageInfo: { hasNextPage: boolean; endCursor: string | null };
@@ -153,6 +163,8 @@ export async function getProducts({
     query: GET_PRODUCTS_QUERY,
     variables: { first, after, sortKey, reverse, query },
     tags: ["products"],
+    cache,
+    revalidate,
   });
 
   const products = data.data.products.edges.map((e) =>
@@ -189,9 +201,15 @@ export async function getCollectionProducts({
   handle,
   first = 12,
   after,
+  cache,
+  revalidate,
 }: {
   handle: string;
   first?: number;
+  /** Cf. `GetProductsQuery.cache` — `"no-store"` pour un rendu toujours frais. */
+  cache?: RequestCache;
+  /** Délai ISR en secondes — `next.revalidate`. */
+  revalidate?: number | false;
   /** Curseur de pagination (endCursor de la page prÃ©cÃ©dente). */
   after?: string;
 }) {
@@ -209,6 +227,8 @@ export async function getCollectionProducts({
     query: GET_COLLECTION_PRODUCTS_QUERY,
     variables: { handle, first, after },
     tags: [`collection-${handle}`],
+    cache,
+    revalidate,
   });
 
   const collection = data.data.collection;
@@ -225,6 +245,92 @@ export async function getCollectionProducts({
     ),
     pageInfo: collection.products.pageInfo,
   };
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+//  LOOKBOOK ÉDITORIAL — alimenté par une VRAIE collection Shopify
+//  Aucune donnée codée en dur : titres, visuels principaux et prix proviennent
+//  toujours de la Storefront API. Source unique pour /lookbook et l'aperçu de
+//  la page d'accueil.
+// ───────────────────────────────────────────────────────────────────────────
+
+/** Nombre de pièces éditoriales affichées dans le lookbook. */
+export const LOOKBOOK_PRODUCT_LIMIT = 12;
+
+/**
+ * Handle de la collection Shopify qui pilote le lookbook.
+ * Surchargeable sans redéploiement via `SHOPIFY_LOOKBOOK_COLLECTION_HANDLE`
+ * (Shopify Admin → Produits → Collections, collection visible sur le canal
+ * Storefront) ; par défaut « lookbook ».
+ */
+export function getLookbookCollectionHandle(): string {
+  return process.env.SHOPIFY_LOOKBOOK_COLLECTION_HANDLE?.trim() || "lookbook";
+}
+
+/** Collection Shopify réellement consommée par le lookbook. */
+export type LookbookCollection = {
+  handle: string;
+  title: string;
+  description: string;
+  image: ShopifyImage | null;
+};
+
+export type LookbookData = {
+  products: Product[];
+  /**
+   * `null` quand la collection dédiée est absente ou vide : le lookbook
+   * affiche alors les dernières pièces publiées, et l'UI le dit explicitement.
+   */
+  collection: LookbookCollection | null;
+};
+
+/**
+ * Source de données UNIQUE du lookbook.
+ *
+ * Pourquoi `cache: "no-store"` ?
+ *  • Les visuels produits sont ré-uploadés dans Shopify Admin sous la MÊME URL
+ *    (`/files/…jpg?v=…`) : un `force-cache` fige la page jusqu'au prochain
+ *    build. C'était la cause du bug : les tuiles affichaient le visuel de repli
+ *    alors que les images Shopify étaient bien disponibles dans l'admin.
+ *  • Pour une vitrine éditoriale, l'ISR ne suffit pas : on veut le reflet exact
+ *    de la boutique à chaque requête (complété par `/api/revalidate` pour les
+ *    plateformes qui s'appuient sur le cache).
+ *
+ * Repli : collection absente ou vide → pièces publiées les plus récentes.
+ */
+export async function getLookbookProducts({
+  first = LOOKBOOK_PRODUCT_LIMIT,
+}: {
+  first?: number;
+} = {}): Promise<LookbookData> {
+  const handle = getLookbookCollectionHandle();
+
+  try {
+    const data = await getCollectionProducts({
+      handle,
+      first,
+      cache: "no-store",
+    });
+
+    if (data && data.products.length > 0) {
+      return {
+        products: data.products,
+        collection: {
+          handle,
+          title: data.collection.title,
+          description: data.collection.description,
+          image: data.collection.image,
+        },
+      };
+    }
+  } catch (error) {
+    console.warn(
+      `[shopify:lookbook] collection "${handle}" illisible (${toErrorMessage(error)}) — repli sur le catalogue publié.`,
+    );
+  }
+
+  const { products } = await getProducts({ first, cache: "no-store" });
+  return { products, collection: null };
 }
 
 /**

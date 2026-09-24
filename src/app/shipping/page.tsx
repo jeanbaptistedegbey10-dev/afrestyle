@@ -2,6 +2,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import InfoPage, { InfoCard, InfoCta } from "@/components/layout/InfoPage";
+import {
+  FLAT_SHIPPING_RATE,
+  FREE_SHIPPING_THRESHOLD,
+  formatStoreAmount,
+} from "@/constants/store";
 
 export const metadata: Metadata = {
   title: "Livraison",
@@ -38,9 +43,12 @@ export default function ShippingPage() {
       <InfoCard title="Frais d'expédition">
         <p>
           <strong className="text-text">Livraison internationale offerte</strong>{" "}
-          dès 150€ d’achat.
+          dès {formatStoreAmount(FREE_SHIPPING_THRESHOLD)} d’achat.
         </p>
-        <p>En dessous de 150€ : forfait de 9,90€ worldwide.</p>
+        <p>
+          En dessous de {formatStoreAmount(FREE_SHIPPING_THRESHOLD)} : forfait de{" "}
+          {formatStoreAmount(FLAT_SHIPPING_RATE)} worldwide.
+        </p>
         <p>
           Les éventuels droits de douane sont à la charge du destinataire selon
           la réglementation locale.

@@ -87,12 +87,12 @@ export default function ProductForm({ product, onVariantChange }: ProductFormPro
     }
   }
 
-  const currency = selectedVariant?.price.currencyCode ?? "EUR";
+  // Devise d'affichage harmonisée (EUR) — voir src/constants/store.ts.
   const priceLabel = selectedVariant
-    ? formatPrice(selectedVariant.price.amount, currency)
+    ? formatPrice(selectedVariant.price.amount)
     : product.priceFormatted;
   const compareLabel = selectedVariant?.compareAtPrice
-    ? formatPrice(selectedVariant.compareAtPrice.amount, selectedVariant.compareAtPrice.currencyCode)
+    ? formatPrice(selectedVariant.compareAtPrice.amount)
     : null;
   const showPromo =
     Boolean(selectedVariant?.compareAtPrice) &&

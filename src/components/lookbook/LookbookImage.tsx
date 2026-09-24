@@ -1,47 +1,23 @@
 // src/components/lookbook/LookbookImage.tsx
 // ────────────────────────────────────────────────────────────────────────────
-//  Image produit pour la page Lookbook — **composant client** car il gère
-//  l'état d'erreur de chargement (`onError` côté navigateur).
+//  Image produit pour la page Lookbook — **composant client**.
 //
-//  Bug corrigé : la page lookbook utilisait `onError={() => {}}` — un
-//  gestionnaire vide qui ne faisait rien quand une image Shopify échouait
-//  au chargement. Ce composant capture l'erreur et bascule automatiquement
-//  vers une image de repli élégante (URL Unsplash authentique).
+//  Délègue intégralement à <SafeImage /> : les 3 paliers d'erreur sont gérés
+//  au même endroit pour toute l'application (URL Shopify → visuel de marque →
+//  SVG officiel AfroStyle). Aucune logique de fallback dupliquée ici.
 // ────────────────────────────────────────────────────────────────────────────
 "use client";
 
-import Image from "next/image";
-import { useState } from "react";
-import { FALLBACK_PRODUCT_IMAGE, getSvgPlaceholder } from "@/lib/assets/images";
+import SafeImage from "@/components/ui/SafeImage";
 
 type LookbookImageProps = Omit<
-  React.ComponentProps<typeof Image>,
-  "src" | "alt"
+  React.ComponentProps<typeof SafeImage>,
+  "alt"
 > & {
   src: string;
   alt: string;
 };
 
-export default function LookbookImage({ src, alt, ...rest }: LookbookImageProps) {
-  const [errored, setErrored] = useState(false);
-  const [fallbackErrored, setFallbackErrored] = useState(false);
-  // 3 paliers : image Shopify → fallback Unsplash → SVG local (toujours affichable).
-  const resolvedSrc = fallbackErrored
-    ? getSvgPlaceholder()
-    : errored
-      ? FALLBACK_PRODUCT_IMAGE
-      : src;
-
-  return (
-    <Image
-      {...rest}
-      src={resolvedSrc}
-      alt={alt}
-      onError={() => {
-        if (fallbackErrored) return;
-        if (errored) setFallbackErrored(true);
-        else setErrored(true);
-      }}
-    />
-  );
+export default function LookbookImage(props: LookbookImageProps) {
+  return <SafeImage {...props} />;
 }

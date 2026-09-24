@@ -9,6 +9,7 @@ import {
   buildCollectionQuery,
   filterSignature,
   resolveCollectionSort,
+  resolveGender,
   toApiParams,
 } from "@/lib/collections";
 
@@ -37,9 +38,10 @@ export default async function CollectionsPage({ searchParams }: SearchParams) {
 
   const signature = filterSignature(params);
   const apiParams = toApiParams(params);
-  const genderParam = params.gender || params.category;
+  // Clé canonique `gender` (alias legacy genre/category acceptés).
+  const genderParam = resolveGender(params);
   const activeLabels = [
-    params.genre || genderParam, params.pays, params.tissu, params.style,
+    genderParam, params.pays, params.tissu, params.style,
   ].filter(Boolean);
 
   return (
@@ -49,8 +51,8 @@ export default async function CollectionsPage({ searchParams }: SearchParams) {
           N 01 — Notre selection
         </p>
         <h1 className="font-serif text-4xl leading-tight md:text-6xl">
-          {params.genre || genderParam
-            ? (params.genre || genderParam)!.charAt(0).toUpperCase() + (params.genre || genderParam)!.slice(1)
+          {genderParam
+            ? genderParam.charAt(0).toUpperCase() + genderParam.slice(1)
             : params.tissu ? `Collection ${params.tissu.charAt(0).toUpperCase() + params.tissu.slice(1)}`
             : params.pays ? `Createurs du ${params.pays.charAt(0).toUpperCase() + params.pays.slice(1)}`
             : "La Collection"}

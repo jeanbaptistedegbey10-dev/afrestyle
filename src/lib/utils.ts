@@ -4,6 +4,7 @@
 
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { STORE_CURRENCY, STORE_LOCALE } from "@/constants/store";
 
 /**
  * Combine et déduplique les classes Tailwind
@@ -19,16 +20,26 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
- * Formate un prix Shopify
+ * Formate un prix pour l'affichage — devise harmonisée sur tout le site.
+ *
+ * Shopify peut renvoyer `currencyCode: "USD"` (devise de la boutique) alors
+ * que l'ensemble des textes du site (bandeau, FAQ, livraison) annonce des
+ * montants en euros. La configuration unique `src/constants/store.ts` impose
+ * donc la devise d'affichage EUR — le paramètre `currencyCode` est conservé
+ * pour compatibilité mais n'est plus utilisé pour le rendu.
+ *
  * Shopify renvoie: { amount: "185.00", currencyCode: "EUR" }
  */
 export function formatPrice(
   amount: string,
-  currencyCode: string = "EUR",
+  // Param conservé pour compatibilité avec les call sites existants — la
+  // devise est volontairement forcée à STORE_CURRENCY (harmonisation EUR).
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _currencyCode?: string,
 ): string {
-  return new Intl.NumberFormat("fr-FR", {
+  return new Intl.NumberFormat(STORE_LOCALE, {
     style: "currency",
-    currency: currencyCode,
+    currency: STORE_CURRENCY,
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(parseFloat(amount));

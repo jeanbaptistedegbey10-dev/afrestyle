@@ -1,13 +1,13 @@
 // src/components/product/ProductCard.tsx — Relief Éditorial Luxe, double thème
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { Heart, ImageOff } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
-import { cn, capitalize } from "@/lib/utils";
-import { FALLBACK_PRODUCT_IMAGE, getSvgPlaceholder } from "@/lib/assets/images";
+import { cn, capitalize, formatPrice } from "@/lib/utils";
+import { FALLBACK_PRODUCT_IMAGE } from "@/lib/assets/images";
+import SafeImage from "@/components/ui/SafeImage";
 import type { Product } from "@/lib/shopify/types";
 
 type ProductCardProps = {
@@ -15,8 +15,9 @@ type ProductCardProps = {
   /** Prop conservée pour compatibilité (ProductGrid) — le thème est désormais
    *  géré par les variables CSS globales dans les deux modes. */
   tone?: "light" | "dark";
-  /** Visuel Unsplash de repli quand le produit n'a aucune image Shopify.
-   *  Si non fourni, on utilise l'Ensemble Wax Architectural (FALLBACK_PRODUCT_IMAGE). */
+  /** Visuel de repli (image éditoriale de marque) quand le produit n'a aucune
+   *  image Shopify. Les 3 paliers d'erreur sont gérés par <SafeImage /> :
+   *  URL produit → visuel de marque → SVG officiel AfroStyle. */
   fallbackImage?: string;
 };
 
@@ -30,13 +31,13 @@ export default function ProductCard({
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
-  const [imageErrored, setImageErrored] = useState(false);
-  const [fallbackErrored, setFallbackErrored] = useState(false);
   const { addItem } = useCart();
 
   const mainImage = product.images[0];
   const hoverImage = product.images[1];
-  const showSecond = isHovered && hoverImage;
+  const showSecond = isHovered && Boolean(hoverImage);
+  // SafeImage applique les 3 paliers d'erreur — plus de gestion manuelle onError.
+  const displaySrc = mainImage?.url || effectiveFallback;
 
   async function handleQuickAdd(e: React.MouseEvent) {
     e.preventDefault();
@@ -47,13 +48,6 @@ export default function ProductCard({
     setIsAdding(false);
   }
 
-  function handleMainImageError() {
-    setImageErrored(true);
-  }
-
-  // Si l'image principale a échoué au chargement, on force le fallback.
-  const displayMainImage = imageErrored ? null : mainImage;
-
   return (
     <Link
       href={`/products/${product.handle}`}
@@ -63,21 +57,20 @@ export default function ProductCard({
     >
       {/* Visuel — carte en relief : fond dédié, bordure subtile, ombre + élévation au survol */}
       <div className="relative aspect-[3/4] w-full overflow-hidden rounded-sm border border-line bg-surface mb-4 shadow-sm transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1 group-hover:border-gold/40">
-        {displayMainImage ? (
+        {displaySrc ? (
           <>
-            <Image
-              src={mainImage.url}
-              alt={mainImage.altText ?? product.title}
+            <SafeImage
+              src={displaySrc}
+              alt={mainImage?.altText ?? product.title}
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
               className={cn(
                 "object-cover transition-all duration-700 ease-out group-hover:scale-[1.04]",
                 showSecond ? "opacity-0" : "opacity-100"
               )}
-              onError={handleMainImageError}
             />
             {hoverImage && (
-              <Image
+              <SafeImage
                 src={hoverImage.url}
                 alt={hoverImage.altText ?? product.title}
                 fill
@@ -89,16 +82,6 @@ export default function ProductCard({
               />
             )}
           </>
-        ) : effectiveFallback ? (
-          <Image
-            src={fallbackErrored ? getSvgPlaceholder() : effectiveFallback}
-            alt={product.title}
-            fill
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-            className="object-cover"
-            // 2e palier : SVG local si le visuel de repli échoue aussi (jamais de zone vide).
-            onError={() => setFallbackErrored(true)}
-          />
         ) : (
           <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-surface-2 px-4 text-center">
             <ImageOff size={20} className="text-gold-dark dark:text-gold opacity-70" aria-hidden="true" />
@@ -180,7 +163,7 @@ export default function ProductCard({
             </span>
             {product.compareAtPrice && (
               <span className="text-sm text-text-3 line-through">
-                {product.compareAtPrice}
+                {formatPrice(product.compareAtPrice)}
               </span>
             )}
           </div>

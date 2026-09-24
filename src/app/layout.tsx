@@ -7,6 +7,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import CartDrawer from "@/components/cart/CartDrawer";
 import Providers from "@/components/theme/Providers";
+import { getSiteUrl } from "@/lib/seo";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -22,9 +23,7 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL?.trim() || "https://afrestyle.vercel.app",
-  ),
+  metadataBase: new URL(getSiteUrl()),
   title: {
     default: "AfroStyle — Haute Couture Africaine Contemporaine",
     template: "%s | AfroStyle",
@@ -78,6 +77,7 @@ export default function RootLayout({
       lang="fr"
       className={`${playfair.variable} ${dmSans.variable}`}
       suppressHydrationWarning
+      data-scroll-behavior="smooth"
     >
       <body className="bg-bg text-text font-sans antialiased min-h-screen transition-colors duration-300">
         <Providers>

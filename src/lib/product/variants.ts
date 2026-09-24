@@ -15,8 +15,27 @@
 import type {
   Product,
   SelectedOptions,
+  ShopifyImage,
   ShopifyVariant,
 } from "@/lib/shopify/types";
+
+/**
+ * Visuel principal d'une pièce — helper PUR (aucun import serveur).
+ *
+ * Ordre : image produit (`product.images[0]`) → image de la première variante
+ * qui en possède une → `null` (jamais de visuel inventé : l'UI décide alors
+ * d'afficher son propre visuel de repli).
+ *
+ * Utilisé par le lookbook et l'aperçu accueil : évite de dupliquer la règle
+ * « quelle image représente ce produit » dans chaque page.
+ */
+export function getProductMainImage(product: Product): ShopifyImage | null {
+  return (
+    product.images[0] ??
+    product.variants.find((variant) => variant.image)?.image ??
+    null
+  );
+}
 
 /** Noms des options dans l'ordre Shopify (ex: ["Taille", "Tissu", "Couleur"]). */
 export function getOptionNames(product: Product): string[] {

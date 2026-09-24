@@ -8,11 +8,12 @@ import ProductCard from "@/components/product/ProductCard";
 import { FALLBACK_PRODUCT_IMAGE } from "@/lib/assets/images";
 import type { Product } from "@/lib/shopify/types";
 
+// Clés d'URL unifiées : `gender` partout (accueil → footer → /shop → /collections).
 const CATEGORIES = [
   { label: "Tout voir",     url: "/collections" },
-  { label: "Femme",        url: "/collections?genre=femme" },
-  { label: "Homme",        url: "/collections?genre=homme" },
-  { label: "Accessoires",  url: "/collections?genre=accessoire" },
+  { label: "Femme",        url: "/collections?gender=femme" },
+  { label: "Homme",        url: "/collections?gender=homme" },
+  { label: "Accessoires",  url: "/collections?gender=accessoire" },
   { label: "Wax",          url: "/collections?tissu=wax" },
   { label: "Kente",        url: "/collections?tissu=kente" },
   { label: "Bogolan",      url: "/collections?tissu=bogolan" },

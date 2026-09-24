@@ -3,7 +3,11 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { ShopifyCart, ShopifyCartLine } from "@/lib/shopify/cart";
+import {
+  withCheckoutReturnTo,
+  type ShopifyCart,
+  type ShopifyCartLine,
+} from "@/lib/shopify/cart";
 
 type CartStore = {
   // Le panier Shopify complet (source de vérité)
@@ -43,7 +47,12 @@ export const useCartStore = create<CartStore>()(
       // Computed — lit le cart Shopify comme source de vérité
       totalItems: () => get().shopifyCart?.totalQuantity ?? 0,
       lines: () => get().shopifyCart?.lines ?? [],
-      checkoutUrl: () => get().shopifyCart?.checkoutUrl ?? null,
+      // Resanctionné à chaque lecture : un panier persisté avant correction
+      // (return_to=localhost) reçoit l'URL de retour dynamique à jour.
+      checkoutUrl: () => {
+        const cart = get().shopifyCart;
+        return cart ? withCheckoutReturnTo(cart.checkoutUrl) : null;
+      },
     }),
     {
       name: "afrestyle-cart-v2",

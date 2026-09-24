@@ -9,15 +9,25 @@
 export const COLLECTION_PAGE_SIZE = 12;
 
 export type CollectionFilterParams = {
-  genre?: string;
-  gender?: string;  // alias footer : ?gender=femme|homme
-  category?: string; // alias footer : ?category=accessoires
+  gender?: string;  // clé canonique : ?gender=femme|homme|accessoire
+  genre?: string;   // alias legacy (anciens liens accueil)
+  category?: string; // alias legacy (ancien footer)
   pays?: string;
   tissu?: string;
   style?: string;
   sort?: string;
   q?: string;
 };
+
+/**
+ * Résout la valeur du filtre genre quelle que soit l'écriture de l'URL.
+ * Canonique : `gender` — alias acceptés : `genre`, `category`.
+ */
+export function resolveGender(
+  params: Pick<CollectionFilterParams, "gender" | "genre" | "category">,
+): string | undefined {
+  return params.gender || params.genre || params.category;
+}
 
 /** Contrat de pagination cursor-based exposé à l'UI. */
 export type CollectionPageInfo = {
@@ -51,7 +61,7 @@ export function resolveCollectionSort(sort?: string): {
  */
 export function buildCollectionQuery(params: CollectionFilterParams): string {
   const parts: string[] = [];
-  const genre = params.genre || params.gender || params.category;
+  const genre = resolveGender(params);
   if (genre) parts.push(`tag:${genre}`);
   if (params.pays) parts.push(`tag:pays-${params.pays}`);
   if (params.tissu) parts.push(`tag:tissu-${params.tissu}`);

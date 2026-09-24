@@ -2,14 +2,14 @@
 "use client";
 
 import Link from "next/link";
-import { useMounted } from "@/hooks/useMounted";
 
 type FooterLink = { label: string; href: string };
 
+// Clé canonique des filtres : `gender` (alignée accueil / footer / /shop).
 const SHOP_LINKS: FooterLink[] = [
   { label: "Femme", href: "/collections?gender=femme" },
   { label: "Homme", href: "/collections?gender=homme" },
-  { label: "Accessoires", href: "/collections?category=accessoires" },
+  { label: "Accessoires", href: "/collections?gender=accessoire" },
   { label: "Toute la collection", href: "/collections" },
 ];
 
@@ -26,17 +26,18 @@ const HELP_LINKS: FooterLink[] = [
   { label: "Contact", href: "/contact" },
 ];
 
+// URLs complètes et valides (audit P1) — à ajuster dès que les comptes
+// officiels changent de handle.
 const SOCIALS: FooterLink[] = [
-  { label: "Instagram", href: "https://instagram.com" },
-  { label: "TikTok", href: "https://tiktok.com" },
-  { label: "Pinterest", href: "https://pinterest.com" },
+  { label: "Instagram", href: "https://instagram.com/afrestyle" },
+  { label: "TikTok", href: "https://www.tiktok.com/@afrestyle" },
+  { label: "Pinterest", href: "https://www.pinterest.com/afrestyle" },
 ];
 
 export default function Footer() {
-  // new Date() diffère entre serveur et client (changement d'année pendant
-  // une session) : on calcule l'année seulement côté client, après montage.
-  const mounted = useMounted();
-  const year = mounted ? new Date().getFullYear() : null;
+  // Année dynamique (2026 et suivantes) — calculée à chaque rendu.
+  // `suppressHydrationWarning` couvre le basculement d'année pendant une session.
+  const year = new Date().getFullYear();
 
   return (
     <footer className="bg-surface-2 border-t border-line text-text pt-14 pb-6">
@@ -73,7 +74,9 @@ export default function Footer() {
 
         {/* Bottom */}
         <div className="flex flex-wrap items-center justify-between gap-4 pt-6">
-          <p className="text-text-3 text-xs">© {year ?? ""} AfroStyle. Tous droits réservés.</p>
+          <p className="text-text-3 text-xs" suppressHydrationWarning>
+            © {year} AfroStyle. Tous droits réservés.
+          </p>
           <div className="flex gap-2">
             <PayBadge label="Visa" />
             <PayBadge label="Mastercard" />

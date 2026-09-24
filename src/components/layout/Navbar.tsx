@@ -7,6 +7,7 @@ import { ShoppingBag, Search, Menu, X } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { useMounted } from "@/hooks/useMounted";
 import { cn } from "@/lib/utils";
+import { FREE_SHIPPING_THRESHOLD, formatStoreAmount } from "@/constants/store";
 import ThemeToggle from "@/components/theme/ThemeToggle";
 
 export default function Navbar() {
@@ -35,7 +36,7 @@ export default function Navbar() {
       {/* Bannière d'annonce — Or champagne */}
       <div className="bg-gold text-white text-center text-xs tracking-widest uppercase py-2 px-4 font-medium">
         <span className="opacity-70 mr-3">✦</span>
-        Livraison internationale gratuite dès 150€
+        Livraison internationale gratuite dès {formatStoreAmount(FREE_SHIPPING_THRESHOLD)}
         <span className="opacity-70 ml-3">✦</span>
       </div>
 

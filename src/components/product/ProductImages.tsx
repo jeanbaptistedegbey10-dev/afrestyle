@@ -2,18 +2,19 @@
 // Galerie + synchro image de variante (pilotée par ProductForm via event).
 //
 // Règle d'or visuelle :
-// - L'image active doit TOUJOURS avoir une source saine (fallback si absent).
+// - L'image active doit TOUJOURS avoir une source saine — via <SafeImage />
+//   (3 paliers d'erreur : URL Shopify → visuel de marque → SVG officiel).
 // - Les dimensions affichées proviennent de l'image sélectionnée (produit ou variante),
 //   pas de valeurs en dur, pour conserver un ratio et un srcset cohérents.
+// - Aucun « portant générique » ni texte « Aucune image disponible » : le
+//   repli est l'illustration neutre de marque (SVG AfroStyle).
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import type { ShopifyImage } from "@/lib/shopify/types";
 import { VARIANT_IMAGE_EVENT, type VariantChangeDetail } from "./ProductForm";
-import { FALLBACK_PRODUCT_IMAGE, FALLBACK_IMAGE_ALT, getSvgPlaceholder } from "@/lib/assets/images";
-
-/** Image de secours élégante quand une image produit est absente/expirée. */
+import { FALLBACK_IMAGE_ALT, getSvgPlaceholder } from "@/lib/assets/images";
+import SafeImage from "@/components/ui/SafeImage";
 
 export default function ProductImages({
   images,
@@ -24,7 +25,6 @@ export default function ProductImages({
 }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [variantImage, setVariantImage] = useState<ShopifyImage | null>(null);
-  const [errorUrls, setErrorUrls] = useState<Set<string>>(new Set());
 
   // Quand ProductForm change de variante, bascule sur variant.image si elle
   // fait partie de la galerie ; sinon ajoute-la en tête (badge "Variante").
@@ -59,42 +59,30 @@ export default function ProductImages({
   const gallery = variantImage ? [variantImage, ...images] : images;
 
   if (!gallery.length) {
-    // Aucune image Shopify disponible — affiche un placeholder élégant
-    // au lieu de rien (retour null) pour ne pas vider la grille produit.
+    // Aucune image Shopify disponible — illustration neutre de marque (SVG
+    // officiel AfroStyle) au lieu du texte « Aucune image disponible ».
     return (
       <div className="flex gap-4">
         <div className="relative flex-1 aspect-[3/4] overflow-hidden rounded-sm bg-surface border border-line">
-          <Image
-            src={FALLBACK_PRODUCT_IMAGE}
+          <SafeImage
+            src={getSvgPlaceholder()}
             alt={FALLBACK_IMAGE_ALT}
             fill
-            className="object-cover opacity-60"
+            className="object-cover"
             sizes="(max-width: 768px) 100vw, 50vw"
           />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-xs text-text-3 uppercase tracking-wider">
-              Aucune image disponible
-            </span>
-          </div>
         </div>
       </div>
     );
   }
 
   const active = gallery[activeIndex] ?? gallery[0];
-  const activeImage = active && !errorUrls.has(active.url) ? active : null;
-
-  function handleThumbnailError(url: string) {
-    setErrorUrls((prev) => new Set(prev).add(url));
-  }
 
   return (
     <div className="flex gap-4">
       {gallery.length > 1 && (
         <div className="flex flex-col gap-3 w-20">
           {gallery.map((img, i) => {
-            const thumbnailSrc =
-              !errorUrls.has(img.url) ? img.url : FALLBACK_PRODUCT_IMAGE;
             const thumbnailAlt = img.altText ?? `${title} ${i + 1}`;
 
             return (
@@ -107,12 +95,13 @@ export default function ProductImages({
                   border: `1px solid ${i === activeIndex ? "var(--gold)" : "var(--line)"}`,
                 }}
               >
-                <Image
-                  src={thumbnailSrc}
+                {/* SafeImage : 3 paliers d'erreur aussi sur les miniatures. */}
+                <SafeImage
+                  src={img.url}
                   alt={thumbnailAlt}
                   fill
                   className="object-cover"
-                  onError={() => handleThumbnailError(img.url)}
+                  sizes="80px"
                 />
               </button>
             );
@@ -124,38 +113,23 @@ export default function ProductImages({
         className="relative flex-1 aspect-[3/4] overflow-hidden rounded-sm"
         style={{ background: "var(--surface-2)" }}
       >
-        {activeImage ? (
-          <>
-            <Image
-              key={activeImage.url}
-              src={activeImage.url}
-              alt={activeImage.altText ?? title}
-              width={activeImage.width}
-              height={activeImage.height}
-              fill
-              priority
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, 50vw"
-              onError={() => handleThumbnailError(activeImage.url)}
-            />
-            {variantImage && activeIndex === 0 && (
-              <span
-                className="absolute left-3 top-3 text-[11px] uppercase tracking-widest px-2 py-1 rounded-sm"
-                style={{ background: "rgba(255,255,255,0.92)", color: "var(--text)" }}
-              >
-                Variante
-              </span>
-            )}
-          </>
-          ) : (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <Image
-              src={getSvgPlaceholder()}
-              alt={FALLBACK_IMAGE_ALT}
-              fill
-              className="object-cover"
-            />
-          </div>
+        {/* SafeImage : URL produit → visuel de marque → SVG officiel. */}
+        <SafeImage
+          key={active.url}
+          src={active.url}
+          alt={active.altText ?? title}
+          fill
+          priority
+          className="object-cover"
+          sizes="(max-width: 768px) 100vw, 50vw"
+        />
+        {variantImage && activeIndex === 0 && (
+          <span
+            className="absolute left-3 top-3 text-[11px] uppercase tracking-widest px-2 py-1 rounded-sm"
+            style={{ background: "rgba(255,255,255,0.92)", color: "var(--text)" }}
+          >
+            Variante
+          </span>
         )}
       </div>
     </div>

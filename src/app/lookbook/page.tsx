@@ -1,33 +1,78 @@
 // src/app/lookbook/page.tsx
+// ────────────────────────────────────────────────────────────────────────────
+//  LOOKBOOK ÉDITORIAL — 100 % alimenté par Shopify.
+//
+//  Chaque tuile EST une pièce réelle : visuel principal, titre, créateur et
+//  prix proviennent de la Storefront API (collection dédiée si elle existe,
+//  sinon les dernières pièces publiées) et renvoient vers /products/<handle>.
+//  Aucun tableau de données codé en dur, aucun visuel produit factice.
+//
+//  Fraîcheur : `revalidate = 0` (pas de pré-rendu statique) + lecture
+//  `cache: "no-store"` dans getLookbookProducts() + `minimumCacheTTL: 0` sur
+//  l'optimiseur d'images → une image remplacée dans Shopify Admin apparaît au
+//  premier rafraîchissement, sans rebuild ni purge manuelle.
+// ────────────────────────────────────────────────────────────────────────────
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getProducts } from "@/lib/shopify/products";
-import { FALLBACK_PRODUCT_IMAGE } from "@/lib/assets/images";
+import {
+  LOOKBOOK_PRODUCT_LIMIT,
+  getLookbookProducts,
+  type LookbookData,
+} from "@/lib/shopify/products";
+import { getProductMainImage } from "@/lib/product/variants";
+import { FALLBACK_IMAGE_ALT, FALLBACK_PRODUCT_IMAGE } from "@/lib/assets/images";
+import { capitalize } from "@/lib/utils";
 import LookbookImage from "@/components/lookbook/LookbookImage";
+import type { Product } from "@/lib/shopify/types";
 
 export const metadata: Metadata = {
   title: "Lookbook",
-  description: "Lookbook AfroStyle — La mode africaine contemporaine en images.",
+  description:
+    "Lookbook AfroStyle — la mode africaine contemporaine en images. Chaque look est une pièce réelle de la collection, disponible à l'achat.",
 };
 
+/** Aucun cache de route : le lookbook reflète la boutique à chaque requête. */
+export const revalidate = 0;
+
+/**
+ * Tuiles agrandies (rythme éditorial asymétrique). Ce n'est qu'une mise en
+ * page : l'ordre et le contenu restent ceux renvoyés par Shopify.
+ */
+const LARGE_TILES = new Set([0, 3, 6]);
+
+/** Ligne « Pays · Tissu » dérivée des tags Shopify (`pays-…` / `tissu-…`). */
+function subtitleFor(product: Product): string {
+  return [
+    product.country && capitalize(product.country),
+    product.fabric && capitalize(product.fabric),
+  ]
+    .filter(Boolean)
+    .join(" · ");
+}
+
 export default async function LookbookPage() {
-  // Fetch les vrais produits depuis Shopify
-  let products: Awaited<ReturnType<typeof getProducts>>["products"] = [];
+  let data: LookbookData = { products: [], collection: null };
   let shopifyError: string | null = null;
+
   try {
-    ({ products } = await getProducts({ first: 8 }));
+    data = await getLookbookProducts({ first: LOOKBOOK_PRODUCT_LIMIT });
   } catch (error) {
     console.error("[lookbook] Impossible de charger les produits Shopify :", error);
-    shopifyError = "Impossible de charger les produits depuis Shopify. Veuillez vérifier la configuration de l'API.";
+    shopifyError =
+      "Impossible de charger les produits depuis Shopify. Veuillez vérifier la configuration de l'API.";
   }
+
+  const { products, collection } = data;
+  const collectionHref = collection
+    ? `/collections/${collection.handle}`
+    : "/collections";
 
   return (
     <div className="min-h-screen bg-bg text-text">
-
-      {/* Header */}
+      {/* Header — titre et description issus de la collection Shopify si elle existe */}
       <div className="border-b border-line py-20 px-6 text-center">
         <p className="text-xs tracking-widest uppercase mb-4 text-gold-dark dark:text-gold">
-          Printemps — Été 2024
+          {collection ? collection.title : "Dernières pièces"} — {new Date().getFullYear()}
         </p>
         <h1
           className="font-serif mb-4 text-text"
@@ -36,130 +81,124 @@ export default async function LookbookPage() {
           Le <em className="text-gold-dark dark:text-gold">Lookbook</em>
         </h1>
         <p className="text-sm max-w-md mx-auto text-text-2">
-          Une saison dédiée à la rencontre entre l&apos;héritage textile africain
-          et la modernité contemporaine.
+          {collection?.description ||
+            "Chaque silhouette est une pièce réellement disponible : visuels, créateurs et prix issus directement de la boutique."}
         </p>
+        {!shopifyError && products.length > 0 && (
+          <p className="mt-4 text-[11px] uppercase tracking-[0.3em] text-text-3">
+            {products.length} pièce{products.length > 1 ? "s" : ""} — chacune disponible à l&apos;achat
+          </p>
+        )}
       </div>
 
-      {/* Grille Lookbook asymétrique */}
+      {/* États : erreur Shopify / catalogue vide */}
       {shopifyError ? (
-        <div className="text-center py-24 text-text-2">
-          <p className="font-serif text-2xl mb-4 text-gold-dark dark:text-gold">
-            Connexion impossible
-          </p>
-          <p className="max-w-md mx-auto">{shopifyError}</p>
+        <div className="py-24 px-6 text-center">
+          <div className="mx-auto max-w-md rounded-sm border border-line bg-surface px-6 py-12 shadow-sm">
+            <p className="font-serif text-2xl mb-4 text-gold-dark dark:text-gold">
+              Connexion impossible
+            </p>
+            <p className="text-sm text-text-2">{shopifyError}</p>
+            <Link href="/collections" className="btn-outline mt-8">
+              Voir la collection
+            </Link>
+          </div>
         </div>
       ) : products.length === 0 ? (
-        <div className="text-center py-24 text-text-2">
-          <p className="font-serif text-2xl mb-4 text-text">
-            Aucun produit disponible
-          </p>
-          <p>Ajoute des produits dans Shopify Admin pour les voir ici.</p>
+        <div className="py-24 px-6 text-center">
+          <div className="mx-auto max-w-md rounded-sm border border-line bg-surface px-6 py-12 shadow-sm">
+            <p className="font-serif text-2xl mb-4 text-text">
+              Le lookbook se prépare
+            </p>
+            <p className="text-sm text-text-2">
+              Aucune pièce publiée pour le moment. Ajoute des produits dans
+              Shopify Admin — ou une collection « lookbook » — pour les voir
+              apparaître ici.
+            </p>
+            <Link href="/collections" className="btn-outline mt-8">
+              Voir la collection
+            </Link>
+          </div>
         </div>
       ) : (
         <div className="max-w-7xl mx-auto px-6 py-16">
-
-          {/* Grille masonry simulée */}
+          {/* Grille éditoriale : chaque tuile = un produit Shopify réel */}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
             {products.map((product, index) => {
-              // Alternance de tailles pour l'effet lookbook
-              const isLarge = index === 0 || index === 3 || index === 6;
-              const image = product.images[0];
-              const imageSrc = image?.url ?? FALLBACK_PRODUCT_IMAGE;
-              const imageAlt = image?.altText ?? product.title;
+              const isLarge = LARGE_TILES.has(index);
+              const image = getProductMainImage(product);
+              const imageSrc = image?.url || FALLBACK_PRODUCT_IMAGE;
+              const imageAlt = image?.altText || product.title || FALLBACK_IMAGE_ALT;
+              const subtitle = subtitleFor(product);
 
               return (
                 <Link
                   key={product.id}
                   href={`/products/${product.handle}`}
-                  className="group relative overflow-hidden block"
-                  style={{
-                    borderRadius: "2px",
-                    // Les grandes cartes prennent 2 lignes sur desktop
-                    gridRow: isLarge ? "span 2" : "span 1",
-                  }}
+                  aria-label={`${product.title} — ${product.priceFormatted}`}
+                  className="group relative flex flex-col overflow-hidden rounded-sm border border-line bg-surface shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-gold/40 hover:shadow-xl"
+                  style={{ gridRow: isLarge ? "span 2" : undefined }}
                 >
-                  {/* Image — plein écran, ratio 3/4, object-cover */}
+                  {/* Visuel principal du produit (Shopify CDN) */}
                   <div
-                    className="relative aspect-[3/4] w-full overflow-hidden bg-surface-2"
+                    className={`relative w-full overflow-hidden bg-surface-2 ${
+                      isLarge ? "min-h-0 flex-1" : "aspect-[3/4]"
+                    }`}
                   >
-                                                          <LookbookImage
+                    <LookbookImage
                       src={imageSrc}
                       alt={imageAlt}
                       fill
-                      className="object-cover transition-transform duration-700 group-hover:scale-105"
-                      sizes="(max-width: 768px) 50vw, 33vw"
+                      loading={index === 0 ? "eager" : "lazy"}
+                      sizes={
+                        isLarge
+                          ? "(max-width: 768px) 50vw, 45vw"
+                          : "(max-width: 768px) 50vw, 33vw"
+                      }
+                      className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
                     />
 
-                    {/* Overlay au hover */}
+                    {/* Overlay au survol — appel à l'action explicite */}
                     <div
-                      className="absolute inset-0 flex flex-col justify-end p-4 md:p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                      className="absolute inset-0 flex flex-col justify-end p-4 md:p-6 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
                       style={{
                         background: "linear-gradient(transparent 30%, rgba(0,0,0,0.85))",
                       }}
                     >
-                      {/* Pays · Tissu */}
-                      {(product.country || product.fabric) && (
-                        <p
-                          className="text-xs tracking-widest uppercase mb-1"
-                          style={{ color: "var(--gold)" }}
-                        >
-                          {[product.country, product.fabric]
-                            .filter(Boolean)
-                            .map((s) => s!.toUpperCase())
-                            .join(" · ")}
-                        </p>
-                      )}
-
-                      <p
-                        className="font-serif text-lg leading-tight mb-1"
-                        style={{ color: "#FFFFFF" }}
-                      >
-                        {product.title}
-                      </p>
-
-                      <div className="flex items-center justify-between">
-                        <span
-                          className="text-sm font-medium"
-                          style={{ color: "#FFFFFF" }}
-                        >
-                          {product.priceFormatted}
-                        </span>
-                        <span
-                          className="text-xs px-3 py-1 tracking-wider uppercase"
-                          style={{
-                            background: "var(--gold)",
-                            color: "#FFFFFF",
-                            borderRadius: "2px",
-                          }}
-                        >
-                          Shop →
-                        </span>
-                      </div>
+                      <span className="inline-flex w-fit items-center gap-2 rounded-sm bg-gold px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.2em] text-white">
+                        Shopper la pièce →
+                      </span>
                     </div>
 
-                    {/* Point "+" cliquable visible au repos */}
-                    <div
-                      className="absolute bottom-4 right-4 w-8 h-8 rounded-full flex items-center justify-center group-hover:opacity-0 transition-opacity duration-200"
-                      style={{
-                        background: "rgba(197,160,89,0.95)",
-                        color: "#FFFFFF",
-                        fontWeight: 700,
-                        fontSize: "18px",
-                      }}
-                    >
-                      +
-                    </div>
+                    {/* Badges — même langage visuel que <ProductCard /> */}
+                    {!product.availableForSale && (
+                      <span className="absolute left-3 top-3 rounded-sm border border-line bg-surface/90 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.15em] text-text-2">
+                        Épuisé
+                      </span>
+                    )}
+                    {product.availableForSale && product.tags.includes("nouveau") && (
+                      <span className="absolute left-3 top-3 rounded-sm bg-text px-2 py-1 text-[10px] font-medium uppercase tracking-[0.15em] text-bg">
+                        Nouveau
+                      </span>
+                    )}
                   </div>
 
-                  {/* Infos sous l'image */}
-                  <div className="pt-3 pb-2">
-                    <p className="font-serif text-sm leading-tight text-text">
+                  {/* Informations produit — hiérarchie identique au catalogue */}
+                  <div className="flex flex-col gap-1 p-4">
+                    {subtitle && (
+                      <p className="text-[11px] uppercase tracking-[0.2em] text-text-3">
+                        {subtitle}
+                      </p>
+                    )}
+                    <h2 className="font-serif text-base leading-snug text-text transition-colors duration-300 group-hover:text-gold-dark dark:group-hover:text-gold">
                       {product.title}
-                    </p>
-                    <p className="text-xs mt-0.5 text-gold-dark dark:text-gold">
-                      par {product.vendor} · {product.priceFormatted}
-                    </p>
+                    </h2>
+                    <div className="mt-1 flex items-center justify-between gap-2">
+                      <span className="text-sm font-medium text-text">
+                        {product.priceFormatted}
+                      </span>
+                      <span className="text-xs text-text-3">{product.vendor}</span>
+                    </div>
                   </div>
                 </Link>
               );
@@ -177,11 +216,12 @@ export default async function LookbookPage() {
           Chaque pièce est disponible à l&apos;achat — livrée directement
           depuis l&apos;atelier du créateur.
         </p>
-        <Link href="/collections" className="btn-primary inline-flex">
+        <Link href={collectionHref} className="btn-primary inline-flex">
           Acheter la collection
         </Link>
       </div>
-
     </div>
   );
 }
+
+

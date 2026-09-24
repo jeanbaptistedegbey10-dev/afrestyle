@@ -1,6 +1,7 @@
 // src/app/faq/page.tsx
 import type { Metadata } from "next";
 import InfoPage, { InfoCard, InfoCta } from "@/components/layout/InfoPage";
+import { FREE_SHIPPING_THRESHOLD, formatStoreAmount } from "@/constants/store";
 
 export const metadata: Metadata = {
   title: "Foire aux questions",
@@ -23,7 +24,7 @@ const FAQ = [
   },
   {
     q: "Quels sont les délais de livraison ?",
-    a: "3 à 7 jours ouvrés pour l'Afrique de l'Ouest, 7 à 14 jours pour l'Europe et l'Amérique du Nord. Livraison offerte dès 150€ d'achat.",
+    a: `3 à 7 jours ouvrés pour l'Afrique de l'Ouest, 7 à 14 jours pour l'Europe et l'Amérique du Nord. Livraison offerte dès ${formatStoreAmount(FREE_SHIPPING_THRESHOLD)} d'achat.`,
   },
   {
     q: "Puis-je retourner un article ?",
@@ -39,7 +40,7 @@ const FAQ = [
   },
   {
     q: "Comment devenir créateur partenaire ?",
-    a: "Écrivez-nous via la page Contact avec votre portfolio : notre équipe curiosité examine chaque candidature sous 5 jours ouvrés.",
+    a: "Écrivez-nous via la page Contact avec votre portfolio : notre équipe examine chaque candidature sous 5 jours ouvrés.",
   },
 ];
 

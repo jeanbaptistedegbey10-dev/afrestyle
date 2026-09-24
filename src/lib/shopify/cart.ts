@@ -1,5 +1,6 @@
 // src/lib/shopify/cart.ts
 import { storefrontFetch } from "./storefrontClient";
+import { getAppUrl } from "@/constants/store";
 import {
   CREATE_CART_MUTATION,
   ADD_CART_LINES_MUTATION,
@@ -33,6 +34,34 @@ export type ShopifyCart = {
   };
 };
 
+/**
+ * Ajoute/normalise le paramètre `return_to` de l'URL checkout Shopify.
+ *
+ * URL de retour DYNAMIQUE (jamais codée en dur) :
+ *   process.env.NEXT_PUBLIC_APP_URL → NEXT_PUBLIC_SITE_URL → https://afrestyle.vercel.app
+ * En production, toute valeur localhost est remplacée par l'URL de production
+ * (voir getAppUrl) : aucune chaîne `localhost` n'est transmise à Shopify.
+ *
+ * Appliqué à TOUS les handlers (create/add/update/remove/getCart) via
+ * normalizeCart, puis re-sanctionné côté store pour les paniers persistés.
+ */
+export function withCheckoutReturnTo(checkoutUrl: string): string {
+  if (!checkoutUrl) return checkoutUrl;
+  const returnUrl = `${getAppUrl()}/order-confirmed`;
+  try {
+    const url = new URL(checkoutUrl);
+    // `set` écrase d'éventuelles valeurs obsolètes (ex. return_to=localhost
+    // stocké dans localStorage avant correction).
+    url.searchParams.set("return_to", returnUrl);
+    return url.toString();
+  } catch {
+    // Repli si l'URL n'est pas parsable : on ne jamais doubler return_to.
+    if (/[?&]return_to=/.test(checkoutUrl)) return checkoutUrl;
+    const separator = checkoutUrl.includes("?") ? "&" : "?";
+    return `${checkoutUrl}${separator}return_to=${encodeURIComponent(returnUrl)}`;
+  }
+}
+
 // Normalise la réponse Shopify (edges/node → tableau simple)
 function normalizeCart(rawCart: {
   id: string;
@@ -43,7 +72,8 @@ function normalizeCart(rawCart: {
 }): ShopifyCart {
   return {
     id: rawCart.id,
-    checkoutUrl: rawCart.checkoutUrl,
+    // URL de retour dynamique sur chaque panier renvoyé par Shopify.
+    checkoutUrl: withCheckoutReturnTo(rawCart.checkoutUrl),
     totalQuantity: rawCart.totalQuantity,
     lines: rawCart.lines.edges.map((e) => e.node),
     cost: rawCart.cost,
@@ -77,16 +107,9 @@ export async function createCart(
     throw new Error(data.data.cartCreate.userErrors[0].message);
   }
 
-  const cart = normalizeCart(data.data.cartCreate.cart);
-  
-  // Ajoute le paramètre de retour à l'URL checkout
-  // Shopify accepte ?return_to= pour rediriger après paiement
-  const returnUrl = encodeURIComponent(
-    `${process.env.NEXT_PUBLIC_SITE_URL}/order-confirmed`
-  );
-  cart.checkoutUrl = `${cart.checkoutUrl}&return_to=${returnUrl}`;
-  
-  return cart;
+  // `normalizeCart` applique déjà `withCheckoutReturnTo` (return_to dynamique
+  // basé sur NEXT_PUBLIC_APP_URL) : rien à ajouter ici.
+  return normalizeCart(data.data.cartCreate.cart);
 }
 
 /**
