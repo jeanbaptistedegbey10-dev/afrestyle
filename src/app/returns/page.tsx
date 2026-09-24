@@ -2,11 +2,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import InfoPage, { InfoCard, InfoCta } from "@/components/layout/InfoPage";
+import {
+  RETURN_WINDOW_DAYS,
+  SHIPPING_AND_RETURNS_RULE,
+} from "@/constants/store";
 
 export const metadata: Metadata = {
   title: "Retours & Échanges",
   description:
-    "Politique de retours et d'échanges AfroStyle — 30 jours pour changer d'avis.",
+    "Politique de retours et d'échanges AfroStyle — 30 jours après réception pour changer d'avis.",
 };
 
 export default function ReturnsPage() {
@@ -14,9 +18,11 @@ export default function ReturnsPage() {
     <InfoPage
       eyebrow="Service Client"
       title={<>Retours &amp; Échanges</>}
-      intro="Vous avez 30 jours après réception pour retourner ou échanger une pièce."
+      intro={`Vous disposez de ${RETURN_WINDOW_DAYS} jours après réception pour retourner ou échanger une pièce.`}
     >
+      {/* Règle commerciale canonique — formulation UNIQUE (src/constants/store.ts) */}
       <InfoCard title="Conditions de retour">
+        <p>{SHIPPING_AND_RETURNS_RULE}</p>
         <p>
           Les articles doivent être retournés neufs, non portés, non lavés,
           avec leurs étiquettes d’origine et leur emballage de protection.
@@ -34,8 +40,9 @@ export default function ReturnsPage() {
           en précisant votre numéro de commande.
         </p>
         <p>
-          <strong className="text-text">2.</strong> Nous vous transmettons
-          une étiquette de retour prépayée sous 48h.
+          <strong className="text-text">2.</strong> Nous vous transmettons les
+          instructions de retour et, lorsque la destination le permet, une
+          étiquette prépayée sous 48 h.
         </p>
         <p>
           <strong className="text-text">3.</strong> Dès réception et
@@ -43,8 +50,10 @@ export default function ReturnsPage() {
           de paiement d’origine.
         </p>
         <p>
-          Les retours sont <strong className="text-text">gratuits</strong>{" "}
-          en France et en Afrique de l’Ouest.
+          Les retours sont pris en charge avec une{" "}
+          <strong className="text-text">étiquette prépayée</strong> en France et
+          en Afrique de l’Ouest. Depuis les autres destinations, les frais de
+          retour restent à votre charge.
         </p>
       </InfoCard>
 
@@ -53,6 +62,17 @@ export default function ReturnsPage() {
           Pour un échange de taille ou de coloris, indiquez-le lors de votre
           demande : la nouvelle pièce est expédiée dès la prise en charge du
           colis retour.
+        </p>
+        <p>
+          Une question sur une condition précise ? Retrouvez le détail dans notre{" "}
+          <Link href="/faq" className="text-gold-dark dark:text-gold underline underline-offset-2">
+            FAQ
+          </Link>{" "}
+          ou écrivez-nous depuis la page{" "}
+          <Link href="/contact" className="text-gold-dark dark:text-gold underline underline-offset-2">
+            Contact
+          </Link>
+          .
         </p>
       </InfoCard>
 

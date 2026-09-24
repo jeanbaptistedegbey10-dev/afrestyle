@@ -6,10 +6,14 @@ import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { IMAGES } from "@/constants/images";
 import SafeImage from "@/components/ui/SafeImage";
 
-const STATS = [
-  { num: "87+", label: "Créateurs" },
-  { num: "14", label: "Pays d'Afrique" },
-  { num: "2 400+", label: "Pièces uniques" },
+// Engagements de marque — volontairement NON chiffrés : aucune promesse de
+// volume invérifiable ne doit apparaître tant que le catalogue ne la justifie
+// pas (ex. « 87 créateurs », « 2 400 pièces »). Ces affirmations restent vraies
+// quel que soit l'état du catalogue.
+const ENGAGEMENTS = [
+  { num: "100 %", label: "Confection africaine" },
+  { num: "Fait main", label: "Savoir-faire d'héritage" },
+  { num: "Direct", label: "Du créateur à vous" },
 ];
 
 export default function HeroSection() {
@@ -53,7 +57,7 @@ export default function HeroSection() {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 text-xs tracking-widest uppercase px-4 py-2 rounded-sm bg-gold-soft text-gold-dark dark:text-gold border border-gold/40">
               <span className="w-5 h-px bg-gold inline-block" />
-              Nouvelle collection 2024
+              Nouvelle collection 2026
             </div>
 
             {/* Titre — Serif géant */}
@@ -93,9 +97,9 @@ export default function HeroSection() {
               </Link>
             </div>
 
-            {/* Stats */}
+            {/* Engagements — marqueurs qualitatifs, non chiffrés */}
             <div className="flex flex-wrap gap-8 pt-6 border-t border-line">
-              {STATS.map((s) => (
+              {ENGAGEMENTS.map((s) => (
                 <div key={s.label}>
                   <div className="font-serif text-3xl font-bold text-gold-dark dark:text-gold">
                     {s.num}
@@ -132,13 +136,13 @@ export default function HeroSection() {
                   </p>
                   <p className="mt-0.5 truncate font-serif text-base text-text">
                     Collection Kente{" "}
-                    <em className="text-gold-dark dark:text-gold">2024</em>
+                    <em className="text-gold-dark dark:text-gold">2026</em>
                   </p>
                 </div>
                 <Link
                   href="/lookbook"
                   aria-label="Voir le lookbook"
-                  className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-text text-bg transition-all duration-300 hover:bg-gold hover:text-white"
+                  className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-text text-bg transition-all duration-300 hover:bg-gold hover:text-gold-contrast"
                 >
                   <ArrowUpRight size={16} />
                 </Link>

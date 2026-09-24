@@ -4,10 +4,12 @@ import { ArrowRight } from "lucide-react";
 import { IMAGES } from "@/constants/images";
 import SafeImage from "@/components/ui/SafeImage";
 
+// Marqueurs qualitatifs — non chiffrés : aucune donnée de volume invérifiable
+// (« 87 créateurs », « 14 pays ») tant que le catalogue ne la justifie pas.
 const STORY_STATS = [
-  { num: "100%", label: "Fait en Afrique" },
-  { num: "87", label: "Créateurs soutenus" },
-  { num: "14", label: "Pays représentés" },
+  { num: "100 %", label: "Fait en Afrique" },
+  { num: "Fait main", label: "Savoir-faire d'héritage" },
+  { num: "Séries courtes", label: "Pièces en édition limitée" },
 ];
 
 export default function StorySection() {

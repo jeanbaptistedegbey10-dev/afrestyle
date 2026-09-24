@@ -58,8 +58,9 @@ export default async function LookbookPage() {
     data = await getLookbookProducts({ first: LOOKBOOK_PRODUCT_LIMIT });
   } catch (error) {
     console.error("[lookbook] Impossible de charger les produits Shopify :", error);
+    // Message client : vouvoiement, aucune fuite de détail technique interne.
     shopifyError =
-      "Impossible de charger les produits depuis Shopify. Veuillez vérifier la configuration de l'API.";
+      "Notre catalogue est momentanément indisponible. Merci de bien vouloir réessayer dans quelques instants.";
   }
 
   const { products, collection } = data;
@@ -96,11 +97,11 @@ export default async function LookbookPage() {
         <div className="py-24 px-6 text-center">
           <div className="mx-auto max-w-md rounded-sm border border-line bg-surface px-6 py-12 shadow-sm">
             <p className="font-serif text-2xl mb-4 text-gold-dark dark:text-gold">
-              Connexion impossible
+              Catalogue momentanément indisponible
             </p>
             <p className="text-sm text-text-2">{shopifyError}</p>
             <Link href="/collections" className="btn-outline mt-8">
-              Voir la collection
+              Découvrir la collection
             </Link>
           </div>
         </div>
@@ -111,12 +112,12 @@ export default async function LookbookPage() {
               Le lookbook se prépare
             </p>
             <p className="text-sm text-text-2">
-              Aucune pièce publiée pour le moment. Ajoute des produits dans
-              Shopify Admin — ou une collection « lookbook » — pour les voir
-              apparaître ici.
+              Nos créateurs finalisent leurs prochaines pièces. Le lookbook sera
+              révélé très bientôt — revenez nous voir, ou explorez la collection
+              déjà disponible.
             </p>
             <Link href="/collections" className="btn-outline mt-8">
-              Voir la collection
+              Découvrir la collection
             </Link>
           </div>
         </div>
@@ -165,7 +166,7 @@ export default async function LookbookPage() {
                         background: "linear-gradient(transparent 30%, rgba(0,0,0,0.85))",
                       }}
                     >
-                      <span className="inline-flex w-fit items-center gap-2 rounded-sm bg-gold px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.2em] text-white">
+                      <span className="inline-flex w-fit items-center gap-2 rounded-sm bg-gold px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.2em] text-gold-contrast">
                         Shopper la pièce →
                       </span>
                     </div>

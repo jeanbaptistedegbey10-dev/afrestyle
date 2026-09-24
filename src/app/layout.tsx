@@ -47,7 +47,7 @@ export const metadata: Metadata = {
     siteName: "AfroStyle",
     title: "AfroStyle — Haute Couture Africaine Contemporaine",
     description:
-      "La première destination premium pour la mode africaine contemporaine. 87 créateurs, 14 pays, des pièces d'exception.",
+      "La première destination premium pour la mode africaine contemporaine : créateurs d'exception, tissus d'héritage et pièces en séries limitées.",
   },
   twitter: {
     card: "summary_large_image",

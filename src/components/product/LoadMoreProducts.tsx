@@ -51,7 +51,9 @@ export default function LoadMoreProducts({
       setPageInfo(data.pageInfo);
       onAppend(data.products, data.pageInfo);
     } catch {
-      setError("La suite de la sélection n'a pas pu être chargée.");
+      setError(
+        "La suite de la sélection est momentanément indisponible — merci de réessayer dans un instant.",
+      );
     } finally {
       setLoading(false);
     }

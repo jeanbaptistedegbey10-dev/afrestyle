@@ -131,7 +131,7 @@ export default function ProductCard({
             className={cn(
               "w-full rounded-sm py-2 text-[11px] font-medium uppercase tracking-[0.2em] transition-all duration-300",
               isAdding
-                ? "bg-gold text-white"
+                ? "bg-gold text-gold-contrast"
                 : "bg-surface text-text border border-line hover:bg-text hover:text-bg hover:border-text",
               !product.availableForSale &&
                 "cursor-not-allowed bg-surface-2 text-text-3 border-line"

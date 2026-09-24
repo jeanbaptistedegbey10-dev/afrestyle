@@ -6,6 +6,8 @@ import ProductJsonLd from "@/components/seo/ProductJsonLd";
 import ProductImages from "@/components/product/ProductImages";
 import ProductForm from "@/components/product/ProductForm";
 import { FALLBACK_PRODUCT_IMAGE } from "@/lib/assets/images";
+import { SHIPPING_AND_RETURNS_RULE } from "@/constants/store";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
@@ -149,7 +151,8 @@ export default async function ProductPage({
               </p>
             </div>
 
-            {/* Infos livraison */}
+            {/* Réassurance — formulation CANONIQUE unique (src/constants/store.ts),
+                identique à l'accueil, la FAQ et le footer. */}
             <div
               className="rounded-sm p-4 text-sm space-y-2"
               style={{
@@ -158,9 +161,26 @@ export default async function ProductPage({
                 color: "var(--text-2)",
               }}
             >
-              <p>🚚 Livraison internationale 7-14 jours</p>
-              <p>↩️ Retours gratuits sous 30 jours</p>
-              <p>🔒 Paiement 100% sécurisé</p>
+              <p>✦ {SHIPPING_AND_RETURNS_RULE}</p>
+              <p>🚚 Expédition sous 2 à 5 jours ouvrés, suivi communiqué par e-mail</p>
+              <p>🔒 Paiement 100 % sécurisé</p>
+              <p className="text-xs">
+                <Link
+                  href="/returns"
+                  className="underline underline-offset-2"
+                  style={{ color: "var(--gold-dark)" }}
+                >
+                  Conditions de retour
+                </Link>
+                {" · "}
+                <Link
+                  href="/faq"
+                  className="underline underline-offset-2"
+                  style={{ color: "var(--gold-dark)" }}
+                >
+                  Foire aux questions
+                </Link>
+              </p>
             </div>
           </div>
         </div>

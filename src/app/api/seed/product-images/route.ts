@@ -6,6 +6,7 @@
 import { NextResponse } from "next/server";
 import { getShopifyStoreDomain } from "@/lib/shopify/version";
 import { hasValidAdminHeader } from "@/lib/auth/adminAuth";
+import { buildImageAlt, type ProductImageContext } from "@/lib/shopify/image-pipeline";
 
 // Elle utilise volontairement l'Admin API **REST legacy** (/products.json,
 // /images.json) : ces endpoints ne font pas partie de l'API supportée en
@@ -78,13 +79,23 @@ export async function GET(request: Request) {
       const svg = generateProductSVG(product.title, product.vendor, price, i);
       const fileName = `product-${product.id}.svg`;
 
+      // `alt` descriptif et factuel (brief éditorial) — jamais le seul titre.
+      const context: ProductImageContext = {
+        id: String(product.id),
+        title: product.title,
+        vendor: product.vendor ?? null,
+        productType: product.product_type ?? null,
+        tags: Array.isArray(product.tags) ? product.tags : String(product.tags ?? "").split(",").map((tag: string) => tag.trim()).filter(Boolean),
+      };
+      const alt = buildImageAlt(context, { kind: "generated", price });
+
       // Upload en base64
       const base64 = Buffer.from(svg).toString("base64");
       const imageRes = await fetch(`${ADMIN_REST_API}/products/${product.id}/images.json`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-Shopify-Access-Token": adminToken },
         body: JSON.stringify({
-          image: { attachment: base64, filename: fileName, alt: product.title },
+          image: { attachment: base64, filename: fileName, alt },
         }),
       });
 

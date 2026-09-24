@@ -19,6 +19,13 @@ import {
 const CUSTOMER_TOKEN_COOKIE = "shopify_customer_token";
 
 /**
+ * Message d'erreur générique côté serveur — vouvoiement élégant, jamais de
+ * détail technique (Shopify, endpoints, tokens) exposé au client.
+ */
+const SERVER_ERROR_MESSAGE =
+  "Une erreur est survenue de notre côté — merci de réessayer dans quelques instants.";
+
+/**
  * Inscription
  */
 export async function registerAction(formData: FormData) {
@@ -70,7 +77,7 @@ export async function registerAction(formData: FormData) {
 
     return { success: true, error: null };
   } catch {
-    return { success: false, error: "Erreur serveur — réessaie plus tard" };
+    return { success: false, error: SERVER_ERROR_MESSAGE };
   }
 }
 
@@ -110,7 +117,7 @@ export async function loginAction(formData: FormData) {
 
     return { success: true, error: null };
   } catch {
-    return { success: false, error: "Erreur serveur — réessaie plus tard" };
+    return { success: false, error: SERVER_ERROR_MESSAGE };
   }
 }
 
@@ -169,6 +176,6 @@ export async function forgotPasswordAction(formData: FormData) {
 
     return { success: true, error: null };
   } catch {
-    return { success: false, error: "Erreur serveur — réessaie plus tard" };
+    return { success: false, error: SERVER_ERROR_MESSAGE };
   }
 }

@@ -48,19 +48,19 @@ export default async function CollectionsPage({ searchParams }: SearchParams) {
     <div className="min-h-screen bg-bg text-text">
       <header className="border-b border-line px-6 py-14 text-center md:py-20">
         <p className="mb-3 text-[11px] font-medium uppercase tracking-[0.3em] text-text-3">
-          N 01 — Notre selection
+          N 01 — Notre sélection
         </p>
         <h1 className="font-serif text-4xl leading-tight md:text-6xl">
           {genderParam
             ? genderParam.charAt(0).toUpperCase() + genderParam.slice(1)
             : params.tissu ? `Collection ${params.tissu.charAt(0).toUpperCase() + params.tissu.slice(1)}`
-            : params.pays ? `Createurs du ${params.pays.charAt(0).toUpperCase() + params.pays.slice(1)}`
+            : params.pays ? `Créateurs du ${params.pays.charAt(0).toUpperCase() + params.pays.slice(1)}`
             : "La Collection"}
         </h1>
         <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-text-2">
           {products.length === 0
-            ? "Chaque creation raconte une histoire"
-            : `${products.length} piece${products.length > 1 ? "s" : ""} — Chaque creation raconte une histoire`}
+            ? "Chaque création raconte une histoire"
+            : `${products.length} pièce${products.length > 1 ? "s" : ""} — Chaque création raconte une histoire`}
         </p>
         {activeLabels.length > 0 && (
           <p className="mt-3 text-[11px] uppercase tracking-[0.25em] text-text-3">

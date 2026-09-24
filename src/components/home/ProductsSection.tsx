@@ -71,7 +71,7 @@ export default function ProductsSection({
               onClick={() => handleCategoryClick(i, cat.url)}
               className={`flex-shrink-0 text-xs tracking-wider uppercase px-4 py-2 rounded-sm border transition-all duration-200 ${
                 activeIndex === i
-                  ? "bg-gold border-gold text-white"
+                  ? "bg-gold border-gold text-gold-contrast"
                   : "bg-surface border-line text-text-2 hover:border-gold hover:text-gold-dark dark:hover:text-gold"
               }`}
             >
@@ -112,7 +112,7 @@ export default function ProductsSection({
             </p>
             <p className="max-w-sm text-sm text-text-2">
               La sélection se révélera dès que nos créateurs publieront leurs
-              nouveautés.
+              nouveautés — revenez très bientôt.
             </p>
             <Link href="/collections" className="btn-outline mt-2">
               Voir toutes les collections

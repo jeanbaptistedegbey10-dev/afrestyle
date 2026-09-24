@@ -3,25 +3,34 @@
 /* En Tailwind v4 : on importe tailwind ainsi */
 @import "tailwindcss";
 
+/* Les variantes `dark:` suivent la classe posée par next-themes (et non
+   directement `prefers-color-scheme`), afin que le choix manuel reste cohérent
+   avec toutes les classes utilitaires. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+
 /* ═══════════════════════════════════════════════════════════════════
    PALETTE DYNAMIQUE (DOUBLE THÈME ÉLÉGANT) — variables runtime
    MODE CLAIR  : Ivory & Gold Luxe   |  MODE SOMBRE : Obsidian & Champagne
    Ces variables changent selon la classe `.dark` posée par next-themes.
    ═══════════════════════════════════════════════════════════════════ */
 :root {
+  color-scheme: light;
+
   /* MODE CLAIR — Ivory & Gold Luxe : nuances warm/cream (jamais blanc pur plat) */
   --bg: #faf8f5;                            /* Ivoire doux */
   --bg-2: #f8f4ec;                          /* fond alterné / sections — crème */
   --surface: #ffffff;                       /* cartes & surfaces — blanc pur */
   --surface-2: #fdfbf7;                     /* surface secondaire — crème claire */
   --text: #0f0f0f;                          /* Ebène profond */
-  --text-2: #524d45;                        /* texte secondaire — gris chaud */
-  --text-3: #8a8479;                        /* texte tertiaire / meta */
+  --text-2: #403c35;                        /* texte secondaire — gris chaud AAA */
+  --text-3: #575249;                        /* métadonnées — AAA sur tous les fonds clairs */
   --line: rgba(13, 13, 13, 0.09);           /* bordures — subtilement marquées */
-  --gold: #c5a059;                          /* Or champagne */
-  --gold-light: #d4b878;
-  --gold-dark: #b8860b;                     /* Or soutenu (charte) */
-  --gold-soft: rgba(197, 160, 89, 0.14);
+  --gold: #694e21;                          /* bronze doré — ≥ 7:1 sur tous les fonds clairs */
+  --gold-light: #806329;                    /* or secondaire, usages décoratifs */
+  --gold-dark: #5e451c;                     /* or profond — 8,45:1 sur ivoire */
+  --gold-contrast: #ffffff;                /* texte sur les fonds dorés clairs */
+  --gold-soft: rgba(107, 80, 35, 0.13);
   --nav-bg: rgba(250, 248, 245, 0.94);      /* navbar translucide ivoire */
   --scrollbar-track: #f4efe6;
   --toast-surface: #ffffff;
@@ -33,22 +42,28 @@
   --band: #0a0a0a;
   --band-2: #141414;
   --band-text: #f5f5f5;
-  --band-text-2: #a0a0a0;
+  --band-text-2: #aba7a7;                  /* AAA sur la bande la plus claire */
+  --band-gold: #d4af37;                    /* or lisible sur la bande noire */
+  --band-gold-hover: #e5c76b;              /* survol, toujours en contraste AAA */
+  --band-gold-soft: rgba(212, 175, 55, 0.16);
 }
 
 .dark {
+  color-scheme: dark;
+
   /* MODE SOMBRE — Obsidian & Champagne Gold (charte AfroStyle) */
   --bg: #0d0d0d;                            /* Obsidienne profonde */
   --bg-2: #121212;                          /* fond alterné / sections */
   --surface: #161616;                       /* cartes — gris sombre texturé */
   --surface-2: #1a1a1a;                     /* surface secondaire */
   --text: #f5f3ef;                          /* Ivoire clair */
-  --text-2: #a8a29a;                        /* texte secondaire */
-  --text-3: #78716c;                        /* texte tertiaire / meta */
+  --text-2: #b8b2aa;                        /* texte secondaire — AAA */
+  --text-3: #aaa49c;                        /* métadonnées — AAA sur tous les fonds sombres */
   --line: rgba(255, 255, 255, 0.08);        /* bordures */
   --gold: #d4af37;                          /* Or étincelant */
   --gold-light: #e5c76b;
   --gold-dark: #c5a059;
+  --gold-contrast: #0d0d0d;                /* obsidienne sur les fonds dorés */
   --gold-soft: rgba(212, 175, 55, 0.16);
   --nav-bg: rgba(13, 13, 13, 0.93);
   --scrollbar-track: #1a1a1a;
@@ -71,6 +86,7 @@
   --color-gold-light: var(--gold-light);
   --color-gold-dark: var(--gold-dark);
   --color-gold-soft: var(--gold-soft);
+  --color-gold-contrast: var(--gold-contrast);
   --color-nav: var(--nav-bg);
 
   /* Bande d'impact Newsletter — sombre dans LES DEUX modes (rupture visuelle) */
@@ -78,6 +94,9 @@
   --color-band-2: var(--band-2);
   --color-band-text: var(--band-text);
   --color-band-text-2: var(--band-text-2);
+  --color-band-gold: var(--band-gold);
+  --color-band-gold-hover: var(--band-gold-hover);
+  --color-band-gold-soft: var(--band-gold-soft);
 
   /* Rétro-compatibilité : les tokens legacy pointent vers le thème actif */
   --color-ivory: var(--bg);
@@ -137,6 +156,11 @@
     transition: background-color 0.3s ease, color 0.3s ease;
   }
 
+  :where(a, button, input, select, textarea):focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 3px;
+  }
+
   ::placeholder {
     color: var(--text-3);
     opacity: 1;
@@ -175,7 +199,7 @@
 
   .btn-primary:hover {
     background-color: var(--gold);
-    color: #ffffff;
+    color: var(--gold-contrast);
     transform: translateY(-1px);
   }
 

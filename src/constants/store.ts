@@ -20,6 +20,19 @@ export const FREE_SHIPPING_THRESHOLD = 150;
 /** Forfait de livraison sous le seuil. */
 export const FLAT_SHIPPING_RATE = 9.9;
 
+/** Fenêtre de retour accordée au client, en jours (FAQ, retours, fiches produit). */
+export const RETURN_WINDOW_DAYS = 30;
+
+/**
+ * Règle de réassurance commerciale CANONIQUE.
+ *
+ * Formulation unique affichée à l'identique sur : la section Réassurance de
+ * l'accueil, les fiches produit, la FAQ, les pages Livraison / Retours et le
+ * footer. Toute évolution des conditions (délai de retour, disponibilité
+ * internationale) se fait ICI, jamais dans un composant.
+ */
+export const SHIPPING_AND_RETURNS_RULE = `Livraison internationale disponible | Retours sous ${RETURN_WINDOW_DAYS} jours (conditions dans nos FAQ)`;
+
 /** URL de production (fallback quand aucune variable d'environnement n'est définie). */
 export const PRODUCTION_APP_URL = "https://afrestyle.vercel.app";
 

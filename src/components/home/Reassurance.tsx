@@ -1,5 +1,12 @@
 // src/components/home/Reassurance.tsx — Bande de réassurance : 4 piliers, thème dynamique
+import Link from "next/link";
 import { Hammer, Truck, Leaf, Headset } from "lucide-react";
+import {
+  FREE_SHIPPING_THRESHOLD,
+  RETURN_WINDOW_DAYS,
+  SHIPPING_AND_RETURNS_RULE,
+  formatStoreAmount,
+} from "@/constants/store";
 
 const PILLARS = [
   {
@@ -11,8 +18,9 @@ const PILLARS = [
   {
     icon: Truck,
     num: "02",
-    title: "Livraison Internationale Sécurisée",
-    text: "Vos créations voyagent avec soin : emballage premium, suivi en temps réel et livraison assurée partout dans le monde.",
+    title: "Livraison Internationale",
+    // Conditions alignées sur /shipping et src/constants/store.ts (source unique).
+    text: `Vos créations voyagent avec soin : emballage premium, suivi en temps réel et livraison offerte dès ${formatStoreAmount(FREE_SHIPPING_THRESHOLD)} d'achat, partout dans le monde.`,
   },
   {
     icon: Leaf,
@@ -24,7 +32,8 @@ const PILLARS = [
     icon: Headset,
     num: "04",
     title: "Service Client Sur-mesure",
-    text: "Conseils de style personnalisés et accompagnement dédié avant, pendant et après chaque commande, 6 jours sur 7.",
+    // Horaires alignés sur la page /contact (du lundi au vendredi, 9h — 18h GMT).
+    text: "Conseils de style personnalisés et accompagnement dédié avant, pendant et après chaque commande — du lundi au vendredi, 9h à 18h (GMT).",
   },
 ];
 
@@ -45,7 +54,7 @@ export default function Reassurance() {
               >
                 {/* Icône — cercle fin, or discret, micro-interaction au survol */}
                 <div className="flex items-center justify-between w-full">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-full border border-gold/40 bg-gold-soft text-gold-dark dark:text-gold transition-all duration-300 group-hover:bg-gold group-hover:text-white group-hover:shadow-[0_6px_18px_var(--gold-soft)]">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-full border border-gold/40 bg-gold-soft text-gold-dark dark:text-gold transition-all duration-300 group-hover:bg-gold group-hover:text-gold-contrast group-hover:shadow-[0_6px_18px_var(--gold-soft)]">
                     <Icon size={18} strokeWidth={1.5} />
                   </span>
                   <span className="font-serif text-xs tracking-[0.3em] text-text-3">
@@ -65,6 +74,34 @@ export default function Reassurance() {
               </div>
             );
           })}
+        </div>
+
+        {/* Règle commerciale canonique — formulation UNIQUE, importée de
+            src/constants/store.ts (livraison + retours sur tous les supports). */}
+        <div className="mt-12 flex flex-col items-center gap-3 border-t border-line pt-8 text-center">
+          <p className="text-[11px] uppercase tracking-[0.2em] text-text-2">
+            {SHIPPING_AND_RETURNS_RULE}
+          </p>
+          <p className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[11px] uppercase tracking-[0.2em]">
+            <Link
+              href="/shipping"
+              className="text-text-3 transition-colors duration-300 hover:text-gold-dark dark:hover:text-gold"
+            >
+              Délais de livraison
+            </Link>
+            <Link
+              href="/returns"
+              className="text-text-3 transition-colors duration-300 hover:text-gold-dark dark:hover:text-gold"
+            >
+              Retours — {RETURN_WINDOW_DAYS} jours
+            </Link>
+            <Link
+              href="/faq"
+              className="text-text-3 transition-colors duration-300 hover:text-gold-dark dark:hover:text-gold"
+            >
+              Conditions dans nos FAQ
+            </Link>
+          </p>
         </div>
       </div>
     </section>

@@ -64,7 +64,7 @@ export default function CartDrawer() {
             {lines.length > 0 && (
               <span
                 className="text-xs font-medium px-2 py-0.5 rounded-full"
-                style={{ background: "var(--gold)", color: "var(--surface)" }}
+                style={{ background: "var(--gold)", color: "var(--gold-contrast)" }}
               >
                 {cart?.totalQuantity}
               </span>
@@ -81,14 +81,14 @@ export default function CartDrawer() {
             className="absolute inset-0 flex items-center justify-center z-10"
             style={{ background: "var(--nav-bg)" }}
           >
-            <Loader2 size={32} className="animate-spin" style={{ color: "var(--gold)" }} />
+            <Loader2 size={32} className="animate-spin" style={{ color: "var(--gold-dark)" }} />
           </div>
         )}
 
         {/* Contenu — rendu seulement après montage (persistance Zustand) */}
         {!isMounted || lines.length === 0 ? (
           <div className="flex-1 flex flex-col items-center justify-center gap-4 px-6">
-            <ShoppingBag size={48} style={{ color: "rgba(197,160,89,0.4)" }} />
+            <ShoppingBag size={48} style={{ color: "var(--gold)" }} />
             <p className="font-serif text-xl" style={{ color: "var(--text)" }}>
               Votre panier est vide
             </p>
@@ -124,7 +124,7 @@ export default function CartDrawer() {
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <ShoppingBag size={20} style={{ color: "rgba(197,160,89,0.5)" }} />
+                        <ShoppingBag size={20} style={{ color: "var(--gold)" }} />
                       </div>
                     )}
                   </div>

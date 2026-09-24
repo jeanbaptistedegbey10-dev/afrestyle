@@ -5,13 +5,15 @@ import InfoPage, { InfoCard, InfoCta } from "@/components/layout/InfoPage";
 import {
   FLAT_SHIPPING_RATE,
   FREE_SHIPPING_THRESHOLD,
+  RETURN_WINDOW_DAYS,
+  SHIPPING_AND_RETURNS_RULE,
   formatStoreAmount,
 } from "@/constants/store";
 
 export const metadata: Metadata = {
   title: "Livraison",
   description:
-    "Politique de livraison AfroStyle — expédition internationale depuis les ateliers de nos créateurs.",
+    "Politique de livraison AfroStyle — expédition internationale depuis les ateliers de nos créateurs, retours sous 30 jours.",
 };
 
 export default function ShippingPage() {
@@ -47,7 +49,8 @@ export default function ShippingPage() {
         </p>
         <p>
           En dessous de {formatStoreAmount(FREE_SHIPPING_THRESHOLD)} : forfait de{" "}
-          {formatStoreAmount(FLAT_SHIPPING_RATE)} worldwide.
+          {formatStoreAmount(FLAT_SHIPPING_RATE)} pour toute destination dans le
+          monde entier.
         </p>
         <p>
           Les éventuels droits de douane sont à la charge du destinataire selon
@@ -66,7 +69,25 @@ export default function ShippingPage() {
         </p>
       </InfoCard>
 
+      {/* Conditions de retour — formulation canonique unique (src/constants/store.ts) */}
+      <InfoCard title="Retours & échanges">
+        <p>{SHIPPING_AND_RETURNS_RULE}</p>
+        <p>
+          Vous disposez de {RETURN_WINDOW_DAYS} jours après réception pour
+          changer d’avis : conditions complètes sur la page{" "}
+          <Link href="/returns" className="text-gold-dark dark:text-gold underline underline-offset-2">
+            Retours &amp; Échanges
+          </Link>{" "}
+          et dans la{" "}
+          <Link href="/faq" className="text-gold-dark dark:text-gold underline underline-offset-2">
+            FAQ
+          </Link>
+          .
+        </p>
+      </InfoCard>
+
       <InfoCta />
     </InfoPage>
   );
 }
+

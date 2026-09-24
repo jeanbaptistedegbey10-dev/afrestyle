@@ -8,18 +8,41 @@ export const metadata: Metadata = {
   description: "L'histoire d'AfroStyle — la première destination premium pour la mode africaine contemporaine.",
 };
 
+// Parcours de la maison — dates alignées sur l'année en cours (2026).
+// Aucun volume invérifiable (« 847 commandes », « 87 créateurs », « 2 400 pièces ») :
+// seules des étapes factuelles et des engagements de marque sont affichés.
 const TIMELINE = [
-  { year: "2017", title: "La vision", text: "Jb Mawubevi, fondateur d'AfroStyle, observe un paradoxe : la mode africaine est admirée dans le monde entier mais ses créateurs restent invisibles. L'idée germe." },
-  { year: "2019", title: "Les premiers créateurs", text: "AfroStyle signe ses premiers partenariats avec 3 designers : Adaeze Okafor au Bénin, Aminata Diallo au Sénégal. La plateforme est encore une simple page Instagram." },
-  { year: "2021", title: "La boutique en ligne", text: "Lancement officiel de la boutique e-commerce. 847 commandes le premier mois. La presse africaine et de la diaspora s'emballe." },
-  { year: "2023", title: "L'expansion", text: "87 créateurs, 14 pays, 2 400+ pièces. AfroStyle devient la référence de la mode africaine contemporaine premium." },
-  { year: "2024", title: "Aujourd'hui", text: "Une nouvelle plateforme, une nouvelle ambition : faire d'AfroStyle le LVMH de la mode africaine." },
+  {
+    year: "2017",
+    title: "La vision",
+    text: "Jb Mawubevi, fondateur d'AfroStyle, observe un paradoxe : la mode africaine est admirée dans le monde entier, mais ses créateurs restent invisibles. L'idée germe.",
+  },
+  {
+    year: "2019",
+    title: "Les premiers créateurs",
+    text: "AfroStyle signe ses premiers partenariats avec des créateurs au Bénin et au Sénégal. La plateforme n'est encore qu'une page Instagram — la sélection, déjà exigeante.",
+  },
+  {
+    year: "2021",
+    title: "La boutique en ligne",
+    text: "Lancement officiel de la boutique : chaque pièce devient commandable et expédiée directement depuis l'atelier de son créateur.",
+  },
+  {
+    year: "2023",
+    title: "L'expansion",
+    text: "Les collections s'ouvrent à de nouveaux pays et à de nouveaux tissus d'héritage. AfroStyle s'impose comme une référence de la mode africaine contemporaine premium.",
+  },
+  {
+    year: "2026",
+    title: "Aujourd'hui",
+    text: "Une nouvelle plateforme, une nouvelle ambition : offrir à la mode africaine la scène internationale qu'elle mérite.",
+  },
 ];
 
 const VALUES = [
   { title: "Authenticité", icon: "✦", text: "Chaque pièce est créée par un designer africain avec des matières sourcées en Afrique. Zéro compromis sur l'origine." },
   { title: "Excellence", icon: "◆", text: "Nous ne référençons que des créateurs sélectionnés pour la qualité de leur travail, leur vision et leur éthique de production." },
-  { title: "Impact", icon: "●", text: "70% du prix de vente revient directement au créateur. Nous croyons que l'artiste doit vivre de son art." },
+  { title: "Impact", icon: "●", text: "70 % du prix de vente revient directement au créateur. Nous croyons que l'artiste doit vivre de son art." },
   { title: "Héritage", icon: "▲", text: "Nous documentons les techniques et les histoires derrière chaque tissu. La mode comme préservation culturelle." },
 ];
 
@@ -74,7 +97,7 @@ export default function AboutPage() {
       <div className="py-20 px-6">
         <div className="max-w-7xl mx-auto">
           <p className="text-xs tracking-widest uppercase mb-4 text-center" style={{ color: "var(--gold-dark)" }}>
-            Ce en quoi nous croyons
+            Nos convictions
           </p>
           <h2 className="font-serif text-4xl mb-12 text-center" style={{ color: "var(--text)" }}>
             Nos <em style={{ color: "var(--gold-dark)" }}>valeurs</em>
@@ -153,14 +176,14 @@ export default function AboutPage() {
         </div>
       </div>
 
-      {/* Stats */}
+      {/* Engagements — marqueurs qualitatifs et contractuels, non chiffrés */}
       <div className="py-20 px-6">
         <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
           {[
-            { num: "87+", label: "Créateurs partenaires" },
-            { num: "14",  label: "Pays représentés" },
-            { num: "2 400+", label: "Pièces uniques" },
-            { num: "70%", label: "Reversé aux créateurs" },
+            { num: "100 %", label: "Confection africaine" },
+            { num: "Fait main", label: "Savoir-faire d'héritage" },
+            { num: "Direct", label: "Sans intermédiaire" },
+            { num: "70 %", label: "Reversés aux créateurs" },
           ].map((stat) => (
             <div key={stat.label}>
               <div className="font-serif text-5xl font-bold mb-2" style={{ color: "var(--gold-dark)" }}>
@@ -180,18 +203,18 @@ export default function AboutPage() {
         style={{ background: "var(--surface)", borderTop: "1px solid var(--line)" }}
       >
         <h2 className="font-serif text-4xl mb-4" style={{ color: "var(--text)" }}>
-          Rejoins l’aventure
+          Rejoignez l’aventure
         </h2>
         <p className="text-sm mb-8 max-w-md mx-auto" style={{ color: "var(--text-2)" }}>
-          Que tu sois créateur, client ou passionné de mode africaine —
-          AfroStyle est ta maison.
+          Que vous soyez créateur, cliente ou amoureux de la mode africaine —
+          AfroStyle est votre maison.
         </p>
         <div className="flex gap-4 justify-center flex-wrap">
           <Link href="/collections" className="btn-primary inline-flex">
             Explorer la collection <ArrowRight size={14} />
           </Link>
-          <Link href="/collections" className="btn-outline inline-flex">
-            Découvrir la collection
+          <Link href="/lookbook" className="btn-outline inline-flex">
+            Parcourir le lookbook
           </Link>
         </div>
       </div>

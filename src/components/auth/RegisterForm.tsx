@@ -133,7 +133,7 @@ export default function RegisterForm() {
       <button
         type="submit"
         disabled={isPending}
-        className="w-full py-4 flex items-center justify-center gap-2 text-sm font-medium tracking-widest uppercase transition-all hover:bg-gold hover:text-white"
+        className="w-full py-4 flex items-center justify-center gap-2 text-sm font-medium tracking-widest uppercase transition-all hover:bg-gold hover:text-gold-contrast"
         style={{
           background: isPending ? "var(--gold)" : "var(--text)",
           color: "var(--bg)",

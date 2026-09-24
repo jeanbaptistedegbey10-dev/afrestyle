@@ -13,7 +13,7 @@ export default function ContactPage() {
     <InfoPage
       eyebrow="Nous écrire"
       title={<>Contact</>}
-      intro="Notre équipe vous répond sous 24 à 48h ouvrées."
+      intro="Notre équipe vous répond sous 24 à 48 h ouvrées."
     >
       <InfoCard title="Service client">
         <p>

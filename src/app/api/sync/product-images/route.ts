@@ -33,11 +33,27 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const dryRun =
-    request.nextUrl.searchParams.get("dryRun") === "true";
+  const params = request.nextUrl.searchParams;
+  const dryRun = params.get("dryRun") === "true";
+  // `?assignMissing=false` désactive l'attribution aux produits sans image.
+  const assignMissingImages = params.get("assignMissing") !== "false";
+  const maxAssignmentsParam = params.get("maxAssignments");
+  const parsedMaxAssignments = maxAssignmentsParam
+    ? Number.parseInt(maxAssignmentsParam, 10)
+    : undefined;
+  const maxAssignments =
+    parsedMaxAssignments !== undefined &&
+    Number.isFinite(parsedMaxAssignments) &&
+    parsedMaxAssignments > 0
+      ? parsedMaxAssignments
+      : undefined;
 
   try {
-    const result = await syncProductImages({ dryRun });
+    const result = await syncProductImages({
+      dryRun,
+      assignMissingImages,
+      maxAssignments,
+    });
     if (!dryRun && result.errors.length === 0) {
       try {
         revalidateTag("product-visuals", { expire: 0 });

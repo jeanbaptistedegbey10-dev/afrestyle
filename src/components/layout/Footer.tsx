@@ -2,6 +2,7 @@
 "use client";
 
 import Link from "next/link";
+import { SHIPPING_AND_RETURNS_RULE } from "@/constants/store";
 
 type FooterLink = { label: string; href: string };
 
@@ -72,8 +73,14 @@ export default function Footer() {
           <FooterCol title="Aide" links={HELP_LINKS} />
         </div>
 
+        {/* Conditions commerciales — formulation UNIQUE (src/constants/store.ts),
+            identique à l'accueil, aux fiches produit et à la FAQ. */}
+        <p className="pt-6 text-center text-[11px] uppercase tracking-[0.2em] text-text-3">
+          {SHIPPING_AND_RETURNS_RULE}
+        </p>
+
         {/* Bottom */}
-        <div className="flex flex-wrap items-center justify-between gap-4 pt-6">
+        <div className="flex flex-wrap items-center justify-between gap-4 pt-4">
           <p className="text-text-3 text-xs" suppressHydrationWarning>
             © {year} AfroStyle. Tous droits réservés.
           </p>
