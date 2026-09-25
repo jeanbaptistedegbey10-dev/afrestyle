@@ -65,6 +65,49 @@ export type GetProductsQuery = {
  * Pourquoi normaliser ? Les donnÃ©es Shopify sont "edges/node" partout
  * (structure de pagination Relay). On les simplifie pour l'UI.
  */
+const PRODUCT_IMAGE_ROLES = ["overview", "detail", "lifestyle"] as const;
+
+type ProductImageRole = (typeof PRODUCT_IMAGE_ROLES)[number];
+
+function plainText(value: string | null | undefined): string {
+  if (!value) return "";
+  return value
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function metafieldValue(
+  metafields: ShopifyProduct["metafields"],
+  keys: string[],
+): string | null {
+  for (const key of keys) {
+    const value = plainText(
+      metafields?.find((metafield) => metafield?.key === key)?.value,
+    );
+    if (value) return value;
+  }
+  return null;
+}
+
+function parseImageRoles(value: string | null): ProductImageRole[] {
+  if (!value) return [];
+  try {
+    const parsed: unknown = JSON.parse(value);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((role): role is ProductImageRole =>
+      PRODUCT_IMAGE_ROLES.includes(role as ProductImageRole),
+    );
+  } catch {
+    return [];
+  }
+}
+
+
 function normalizeProduct(shopifyProduct: ShopifyProduct): Product {
   const price = shopifyProduct.priceRange.minVariantPrice;
 
@@ -111,17 +154,36 @@ function normalizeProduct(shopifyProduct: ShopifyProduct): Product {
           }));
         })();
 
+  const description = plainText(shopifyProduct.description);
+  const shortDescription = metafieldValue(shopifyProduct.metafields, [
+    "short_description",
+    "description_short",
+  ]);
+  const imageRoles = parseImageRoles(
+    metafieldValue(shopifyProduct.metafields, ["image_roles"]),
+  );
+
   return {
     id: shopifyProduct.id,
     handle: shopifyProduct.handle,
     title: shopifyProduct.title,
-    description: shopifyProduct.description,
+    description,
     price: price.amount,
     priceFormatted,
     currencyCode: price.currencyCode,
     compareAtPrice:
       shopifyProduct.variants.edges[0]?.node.compareAtPrice?.amount ?? null,
-    images: shopifyProduct.images.edges.map((e) => e.node),
+    images: shopifyProduct.images.edges.map((edge, index) => ({
+      ...edge.node,
+      role: imageRoles[index] ?? null,
+    })),
+    shortDescription: shortDescription ?? (description ? `${description.slice(0, 180)}${description.length > 180 ? "…" : ""}` : null),
+    descriptionSections: {
+      materialOrigin: metafieldValue(shopifyProduct.metafields, ["material_origin"]),
+      cutAndMaking: metafieldValue(shopifyProduct.metafields, ["cut_and_making"]),
+      care: metafieldValue(shopifyProduct.metafields, ["care_instructions"]),
+      sizeAndDelivery: metafieldValue(shopifyProduct.metafields, ["size_and_delivery"]),
+    },
     variants: shopifyProduct.variants.edges.map((e) => e.node),
     options,
     vendor: shopifyProduct.vendor,

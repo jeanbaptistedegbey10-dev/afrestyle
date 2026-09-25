@@ -1,42 +1,29 @@
+
+
 // src/app/about/page.tsx
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import SafeImage from "@/components/ui/SafeImage";
+import { IMAGES } from "@/constants/images";
 
 export const metadata: Metadata = {
   title: "Notre Histoire",
   description: "L'histoire d'AfroStyle — la première destination premium pour la mode africaine contemporaine.",
 };
 
-// Parcours de la maison — dates alignées sur l'année en cours (2026).
-// Aucun volume invérifiable (« 847 commandes », « 87 créateurs », « 2 400 pièces ») :
-// seules des étapes factuelles et des engagements de marque sont affichés.
 const TIMELINE = [
-  {
-    year: "2017",
-    title: "La vision",
-    text: "Jb Mawubevi, fondateur d'AfroStyle, observe un paradoxe : la mode africaine est admirée dans le monde entier, mais ses créateurs restent invisibles. L'idée germe.",
-  },
-  {
-    year: "2019",
-    title: "Les premiers créateurs",
-    text: "AfroStyle signe ses premiers partenariats avec des créateurs au Bénin et au Sénégal. La plateforme n'est encore qu'une page Instagram — la sélection, déjà exigeante.",
-  },
-  {
-    year: "2021",
-    title: "La boutique en ligne",
-    text: "Lancement officiel de la boutique : chaque pièce devient commandable et expédiée directement depuis l'atelier de son créateur.",
-  },
-  {
-    year: "2023",
-    title: "L'expansion",
-    text: "Les collections s'ouvrent à de nouveaux pays et à de nouveaux tissus d'héritage. AfroStyle s'impose comme une référence de la mode africaine contemporaine premium.",
-  },
-  {
-    year: "2026",
-    title: "Aujourd'hui",
-    text: "Une nouvelle plateforme, une nouvelle ambition : offrir à la mode africaine la scène internationale qu'elle mérite.",
-  },
+  { year: "2017", title: "La vision", text: "Jb Mawubevi, fondateur d'AfroStyle, observe un paradoxe : la mode africaine est admirée dans le monde entier, mais ses créateurs restent invisibles. L'idée germe." },
+  { year: "2019", title: "Les premiers créateurs", text: "AfroStyle signe ses premiers partenariats avec des créateurs au Bénin et au Sénégal. La plateforme n'est encore qu'une page Instagram — la sélection, déjà exigeante." },
+  { year: "2021", title: "La boutique en ligne", text: "Lancement officiel de la boutique : chaque pièce devient commandable et expédiée directement depuis l'atelier de son créateur." },
+  { year: "2023", title: "L'expansion", text: "Les collections s'ouvrent à de nouveaux pays et à de nouveaux tissus d'héritage. AfroStyle s'impose comme une référence de la mode africaine contemporaine premium." },
+  { year: "2026", title: "Aujourd'hui", text: "Une nouvelle plateforme, une nouvelle ambition : offrir à la mode africaine la scène internationale qu'elle mérite." },
+];
+
+const EDITORIAL_VISUALS = [
+  { src: IMAGES.story, eyebrow: "Matières & palette", title: "Une histoire de matières", text: "Des images d’ambiance pour préserver la lecture ivoire, bleu nuit et champagne de la maison.", alt: "Ambiance éditoriale de mode africaine utilisée pour présenter la palette des matières AfroStyle." },
+  { src: IMAGES.lookbook[0], eyebrow: "Silhouettes", title: "Le dessin en mouvement", text: "Une direction artistique qui regarde la confection africaine avec une sensibilité contemporaine.", alt: "Silhouette africaine éditoriale présentée comme image d’ambiance, sans portrait de créateur associé." },
+  { src: IMAGES.lookbook[2], eyebrow: "Détails & héritage", title: "La parure comme signature", text: "Accessoires, textures et finitions donnent du relief au récit visuel de chaque création.", alt: "Parure et accessoires de mode africaine photographiés comme illustration éditoriale d’ambiance." },
 ];
 
 const VALUES = [
@@ -45,6 +32,7 @@ const VALUES = [
   { title: "Impact", icon: "●", text: "70 % du prix de vente revient directement au créateur. Nous croyons que l'artiste doit vivre de son art." },
   { title: "Héritage", icon: "▲", text: "Nous documentons les techniques et les histoires derrière chaque tissu. La mode comme préservation culturelle." },
 ];
+
 
 export default function AboutPage() {
   return (
@@ -92,6 +80,51 @@ export default function AboutPage() {
           </blockquote>
         </div>
       </div>
+
+      {/* Galerie éditoriale — images d’ambiance explicitement contextualisées. */}
+      <section className="border-b border-line bg-bg-2 px-6 py-20">
+        <div className="mx-auto max-w-7xl">
+          <div className="mx-auto mb-12 max-w-3xl text-center">
+            <p className="mb-4 text-xs font-medium uppercase tracking-[0.22em] text-gold-dark dark:text-gold">
+              Journal des matières
+            </p>
+            <h2 className="font-serif text-4xl md:text-5xl">
+              Matières, gestes <em className="font-normal text-gold-dark dark:text-gold">&amp; silhouettes</em>
+            </h2>
+            <p className="mt-5 text-sm leading-relaxed text-text-2">
+              Cette sélection met en scène l’univers de la maison. Les images d’ambiance ne sont pas présentées comme un reportage d’atelier ni comme le portrait d’un créateur sans source authentifiée.
+            </p>
+          </div>
+
+          <div className="grid gap-5 md:grid-cols-2">
+            {EDITORIAL_VISUALS.map((visual, index) => (
+              <figure
+                key={visual.title}
+                className={`group relative overflow-hidden rounded-sm border border-line bg-surface shadow-[0_14px_36px_rgba(16,27,42,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_48px_rgba(16,27,42,0.14)] ${index === 0 ? "md:col-span-2" : ""}`}
+              >
+                <div className={`relative overflow-hidden ${index === 0 ? "aspect-[16/9]" : "aspect-[4/5]"}`}>
+                  <SafeImage
+                    src={visual.src}
+                    alt={visual.alt}
+                    fill
+                    sizes={index === 0 ? "(max-width: 768px) 100vw, 100vw" : "(max-width: 768px) 100vw, 50vw"}
+                    className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                    fallbackAlt={visual.alt}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-band/90 via-band/15 to-transparent" aria-hidden="true" />
+                </div>
+                <figcaption className="absolute inset-x-0 bottom-0 p-5 text-white sm:p-7">
+                  <p className="text-[0.65rem] font-medium uppercase tracking-[0.2em] text-band-gold">
+                    {visual.eyebrow}
+                  </p>
+                  <h3 className="mt-2 font-serif text-2xl sm:text-3xl">{visual.title}</h3>
+                  <p className="mt-2 max-w-xl text-sm leading-relaxed text-band-text-2">{visual.text}</p>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Valeurs */}
       <div className="py-20 px-6">

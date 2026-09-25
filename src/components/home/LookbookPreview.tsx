@@ -119,8 +119,8 @@ export default function LookbookPreview({
               {/* Overlay bas — lisibilité de la légende */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
 
-              {/* Badge flèche — révélé au survol */}
-              <span className="absolute top-4 right-4 flex h-9 w-9 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm opacity-0 translate-y-1 transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0">
+              {/* Badge flèche — visible en permanence, renforcé au survol. */}
+              <span className="absolute top-4 right-4 flex h-11 w-11 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-sm opacity-100 transition-all duration-300 group-hover:bg-white/30">
                 <ArrowUpRight size={16} />
               </span>
 

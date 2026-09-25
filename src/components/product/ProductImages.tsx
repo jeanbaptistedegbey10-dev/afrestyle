@@ -11,20 +11,29 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { ShopifyImage } from "@/lib/shopify/types";
+import type { ProductGalleryImage } from "@/lib/shopify/types";
 import { VARIANT_IMAGE_EVENT, type VariantChangeDetail } from "./ProductForm";
 import { FALLBACK_IMAGE_ALT, getSvgPlaceholder } from "@/lib/assets/images";
 import SafeImage from "@/components/ui/SafeImage";
+
+const IMAGE_ROLE_LABELS = {
+  overview: "Vue générale",
+  detail: "Détail du tissu ou des finitions",
+  lifestyle: "Vue portée",
+} as const;
+
+const roleForImage = (role: ProductGalleryImage["role"]) =>
+  role ? IMAGE_ROLE_LABELS[role] : "Vue produit";
 
 export default function ProductImages({
   images,
   title,
 }: {
-  images: ShopifyImage[];
+  images: ProductGalleryImage[];
   title: string;
 }) {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [variantImage, setVariantImage] = useState<ShopifyImage | null>(null);
+  const [variantImage, setVariantImage] = useState<ProductGalleryImage | null>(null);
 
   // Quand ProductForm change de variante, bascule sur variant.image si elle
   // fait partie de la galerie ; sinon ajoute-la en tête (badge "Variante").
@@ -48,6 +57,7 @@ export default function ProductImages({
           altText: `${title} — variante sélectionnée`,
           width: variant?.width ?? 1200,
           height: variant?.height ?? 1600,
+          role: null,
         });
         setActiveIndex(0);
       }
@@ -81,7 +91,7 @@ export default function ProductImages({
   return (
     <div className="flex gap-4">
       {gallery.length > 1 && (
-        <div className="flex flex-col gap-3 w-20">
+        <div className="order-2 flex w-full shrink-0 grid grid-cols-4 gap-3 lg:order-1 lg:flex lg:w-20 lg:grid-cols-1">
           {gallery.map((img, i) => {
             const thumbnailAlt = img.altText ?? `${title} ${i + 1}`;
 
@@ -90,19 +100,24 @@ export default function ProductImages({
                 key={`${img.url}-${i}`}
                 onClick={() => setActiveIndex(i)}
                 aria-label={`Voir l'image ${i + 1}`}
-                className="relative aspect-square overflow-hidden rounded-sm transition-all"
+                className="relative aspect-square min-h-11 w-full overflow-hidden rounded-sm border border-line bg-surface transition-all focus-visible:border-gold focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2"
                 style={{
                   border: `1px solid ${i === activeIndex ? "var(--gold)" : "var(--line)"}`,
                 }}
               >
                 {/* SafeImage : 3 paliers d'erreur aussi sur les miniatures. */}
-                <SafeImage
-                  src={img.url}
-                  alt={thumbnailAlt}
-                  fill
-                  className="object-cover"
-                  sizes="80px"
-                />
+                <div
+                  className="relative min-h-11 w-full overflow-hidden rounded-sm"
+                  aria-label={thumbnailAlt}
+                >
+                  <SafeImage
+                    src={img.url}
+                    alt={thumbnailAlt}
+                    fill
+                    className="object-cover"
+                    sizes="80px"
+                  />
+                </div>
               </button>
             );
           })}
@@ -110,7 +125,7 @@ export default function ProductImages({
       )}
 
       <div
-        className="relative flex-1 aspect-[3/4] overflow-hidden rounded-sm"
+        className="relative order-1 aspect-[3/4] min-h-0 flex-1 overflow-hidden rounded-sm border border-line bg-surface shadow-sm"
         style={{ background: "var(--surface-2)" }}
       >
         {/* SafeImage : URL produit → visuel de marque → SVG officiel. */}
@@ -123,12 +138,9 @@ export default function ProductImages({
           className="object-cover"
           sizes="(max-width: 768px) 100vw, 50vw"
         />
-        {variantImage && activeIndex === 0 && (
-          <span
-            className="absolute left-3 top-3 text-[11px] uppercase tracking-widest px-2 py-1 rounded-sm"
-            style={{ background: "rgba(255,255,255,0.92)", color: "var(--text)" }}
-          >
-            Variante
+        {active.role && (
+          <span className="absolute bottom-3 left-3 rounded-sm border border-white/25 bg-[#101B2A]/90 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#F5F0E7] backdrop-blur-sm">
+            {roleForImage(active.role)}
           </span>
         )}
       </div>

@@ -1,3 +1,32 @@
+
+const DESCRIPTION_SECTIONS = [
+  {
+    key: "materialOrigin",
+    title: "Matière & origine",
+    fallback:
+      "La matière et l’origine sont communiquées par le créateur dans la fiche produit. Contactez-nous pour obtenir les détails de cette pièce.",
+  },
+  {
+    key: "cutAndMaking",
+    title: "Coupe & confection",
+    fallback:
+      "La coupe et les finitions sont décrites dans la description de la pièce. Une attention particulière est portée à l’assemblage et aux détails artisanaux.",
+  },
+  {
+    key: "care",
+    title: "Conseils d’entretien",
+    fallback:
+      "Suivez les recommandations de l’étiquette et privilégiez un entretien délicat pour préserver la matière et les finitions.",
+  },
+  {
+    key: "sizeAndDelivery",
+    title: "Guide des tailles & livraison",
+    fallback:
+      "Guide des tailles et délai de livraison communiqués avec le devis ou dans la fiche produit. Livraison suivie depuis l’atelier du créateur.",
+  },
+] as const;
+
+
 // src/app/products/[handle]/page.tsx
 // Phase 6 — ISR + JSON-LD Schema.org/Product + métadonnées haute couture.
 import { getProductByHandle, getProducts } from "@/lib/shopify/products";
@@ -27,6 +56,7 @@ export async function generateMetadata({
 
   const url = `${siteUrl}/products/${handle}`;
   const description =
+    product.shortDescription?.slice(0, 155) ||
     product.description?.slice(0, 155) ||
     `${product.title} — création AfroStyle par ${product.vendor}.`;
 
@@ -137,18 +167,58 @@ export default async function ProductPage({
             {/* Formulaire variantes + ajout panier (remonté par produit) */}
             <ProductForm key={product.id} product={product} />
 
-            {/* Description */}
+            {/* Description courte puis détails structurés, enrichis via Shopify. */}
             <div style={{ height: "1px", background: "var(--line)" }} />
-            <div>
-              <h3
-                className="text-xs tracking-widest uppercase mb-3"
-                style={{ color: "var(--gold-dark)" }}
-              >
-                Description
-              </h3>
-              <p className="text-sm leading-relaxed" style={{ color: "var(--text-2)" }}>
-                {product.description}
-              </p>
+            <div className="space-y-6">
+              <div>
+                <h3
+                  className="mb-3 text-xs uppercase tracking-[0.2em]"
+                  style={{ color: "var(--gold-dark)" }}
+                >
+                  Description
+                </h3>
+                {product.shortDescription && (
+                  <p
+                    className="text-base leading-relaxed"
+                    style={{ color: "var(--text)" }}
+                  >
+                    {product.shortDescription}
+                  </p>
+                )}
+                {product.description &&
+                  product.description !== product.shortDescription && (
+                    <p
+                      className="mt-3 text-sm leading-relaxed"
+                      style={{ color: "var(--text-2)" }}
+                    >
+                      {product.description}
+                    </p>
+                  )}
+              </div>
+
+              <div>
+                <h3
+                  className="mb-4 text-xs uppercase tracking-[0.2em]"
+                  style={{ color: "var(--gold-dark)" }}
+                >
+                  Les détails de la pièce
+                </h3>
+                <div className="space-y-4">
+                  {DESCRIPTION_SECTIONS.map((section) => (
+                    <section
+                      key={section.key}
+                      className="rounded-sm border border-line bg-surface p-4 shadow-sm"
+                    >
+                      <h4 className="font-serif text-lg text-text">
+                        {section.title}
+                      </h4>
+                      <p className="mt-2 text-sm leading-relaxed text-text-2">
+                        {product.descriptionSections[section.key] || section.fallback}
+                      </p>
+                    </section>
+                  ))}
+                </div>
+              </div>
             </div>
 
             {/* Réassurance — formulation CANONIQUE unique (src/constants/store.ts),

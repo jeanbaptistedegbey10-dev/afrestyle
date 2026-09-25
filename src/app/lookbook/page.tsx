@@ -159,15 +159,17 @@ export default async function LookbookPage() {
                       className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
                     />
 
-                    {/* Overlay au survol — appel à l'action explicite */}
+                    {/* Appel à l’action « Shop the look » : permanent, donc atteignable
+                        au toucher sur mobile, et renforcé au survol sur desktop. */}
                     <div
-                      className="absolute inset-0 flex flex-col justify-end p-4 md:p-6 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                      className="absolute inset-0 flex flex-col justify-end p-4 transition-opacity duration-300 md:p-6"
                       style={{
-                        background: "linear-gradient(transparent 30%, rgba(0,0,0,0.85))",
+                        background:
+                          "linear-gradient(transparent 40%, rgba(16, 27, 42, 0.92))",
                       }}
                     >
-                      <span className="inline-flex w-fit items-center gap-2 rounded-sm bg-gold px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.2em] text-gold-contrast">
-                        Shopper la pièce →
+                      <span className="inline-flex min-h-11 w-fit items-center gap-2 rounded-sm bg-gold px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#101B2A]">
+                        Shop the look →
                       </span>
                     </div>
 

@@ -33,8 +33,12 @@ export default function ProductCard({
   const [isAdding, setIsAdding] = useState(false);
   const { addItem } = useCart();
 
-  const mainImage = product.images[0];
-  const hoverImage = product.images[1];
+  const overviewImage = product.images.find((image) => image.role === "overview");
+  const mainImage = overviewImage ?? product.images[0];
+  const hoverImage =
+    product.images.find((image) => image.role === "detail" && image.url !== mainImage?.url) ??
+    product.images.find((image) => image.role === "lifestyle" && image.url !== mainImage?.url) ??
+    product.images.find((image) => image.url !== mainImage?.url);
   const showSecond = isHovered && Boolean(hoverImage);
   // SafeImage applique les 3 paliers d'erreur — plus de gestion manuelle onError.
   const displaySrc = mainImage?.url || effectiveFallback;
@@ -98,7 +102,7 @@ export default function ProductCard({
           </span>
         )}
         {product.compareAtPrice && (
-          <span className="absolute left-3 top-3 rounded-sm bg-[#8C1D2F] text-white px-2 py-1 text-[10px] font-medium uppercase tracking-[0.15em] shadow-sm">
+          <span className="absolute left-3 top-3 rounded-sm bg-accent text-white px-2 py-1 text-[10px] font-medium uppercase tracking-[0.15em] shadow-sm">
             Promo
           </span>
         )}
@@ -110,7 +114,7 @@ export default function ProductCard({
             setIsWishlisted(!isWishlisted);
           }}
           aria-label={isWishlisted ? "Retirer des favoris" : "Ajouter aux favoris"}
-          className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-sm bg-surface text-text border border-line shadow-sm opacity-0 transition-all duration-300 group-hover:opacity-100 hover:border-gold"
+          className="absolute right-3 top-3 flex h-11 w-11 items-center justify-center rounded-sm bg-surface text-text border border-line shadow-sm opacity-100 transition-all duration-300 hover:border-gold sm:opacity-0 sm:group-hover:opacity-100"
         >
           <Heart
             size={14}
@@ -118,18 +122,14 @@ export default function ProductCard({
           />
         </button>
 
-        {/* Quick add */}
-        <div
-          className={cn(
-            "absolute inset-x-0 bottom-0 p-3 transition-all duration-300",
-            isHovered ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"
-          )}
-        >
+        {/* Quick add — permanent sur mobile (donc atteignable au toucher),
+            révélé au survol uniquement à partir de sm. */}
+        <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/70 via-black/10 to-transparent p-4 opacity-100 transition-opacity duration-300 md:p-6 sm:opacity-0 sm:group-hover:opacity-100">
           <button
             onClick={handleQuickAdd}
             disabled={isAdding || !product.availableForSale}
             className={cn(
-              "w-full rounded-sm py-2 text-[11px] font-medium uppercase tracking-[0.2em] transition-all duration-300",
+              "w-full min-h-11 rounded-sm px-3 py-2 text-[11px] font-medium uppercase tracking-[0.2em] transition-all duration-300",
               isAdding
                 ? "bg-gold text-gold-contrast"
                 : "bg-surface text-text border border-line hover:bg-text hover:text-bg hover:border-text",
@@ -156,7 +156,12 @@ export default function ProductCard({
         <h3 className="font-serif text-base leading-snug text-text transition-colors duration-300 group-hover:text-gold-dark dark:group-hover:text-gold group-hover:decoration-1 group-hover:underline-offset-4">
           {product.title}
         </h3>
-        <div className="mt-1 flex items-center justify-between">
+        {product.shortDescription && (
+          <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-text-2">
+            {product.shortDescription}
+          </p>
+        )}
+        <div className="mt-2 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-text">
               {product.priceFormatted}

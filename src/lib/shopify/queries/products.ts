@@ -21,6 +21,19 @@ export const PRODUCT_FRAGMENT = `
         currencyCode
       }
     }
+    metafields(identifiers: [
+      { namespace: "custom", key: "short_description" }
+      { namespace: "custom", key: "description_short" }
+      { namespace: "custom", key: "material_origin" }
+      { namespace: "custom", key: "cut_and_making" }
+      { namespace: "custom", key: "care_instructions" }
+      { namespace: "custom", key: "size_and_delivery" }
+      { namespace: "custom", key: "image_roles" }
+    ]) {
+      key
+      value
+      type
+    }
     images(first: 6) {
       edges {
         node {

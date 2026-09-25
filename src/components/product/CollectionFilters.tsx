@@ -1,7 +1,7 @@
 // src/components/product/CollectionFilters.tsx — Phase 5 Luxe & Editorial
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { SlidersHorizontal, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -64,15 +64,22 @@ function FilterGroup({ title, options, active, onSelect }: {
       <div className="flex flex-wrap gap-2">
         {options.map((f) => {
           const isActive = active === f.value;
+
           return (
-            <button key={f.value} type="button" onClick={() => onSelect(f.value)}
+            <button
+              key={f.value}
+              type="button"
+              onClick={() => onSelect(f.value)}
               aria-pressed={isActive}
               className={cn(
-                "rounded-none border px-3 py-1.5 text-xs tracking-wide transition-colors duration-300",
+                "min-h-11 border px-3 py-2 text-xs tracking-wide transition-colors duration-300",
                 isActive
                   ? "border-text bg-text text-bg"
                   : "border-line bg-transparent text-text-2 hover:border-text hover:text-text",
-              )}>{f.label}</button>
+              )}
+            >
+              {f.label}
+            </button>
           );
         })}
       </div>
@@ -86,6 +93,50 @@ export default function CollectionFilters({ activeFilters }: { activeFilters: Ac
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  const closeDrawer = useCallback(() => setOpen(false), []);
+
+  useEffect(() => {
+    if (!open) return;
+    const previousActiveElement = document.activeElement as HTMLElement | null;
+    const { overflow } = document.body.style;
+    document.body.style.overflow = "hidden";
+    closeButtonRef.current?.focus();
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        closeDrawer();
+        return;
+      }
+      if (event.key !== "Tab") return;
+
+      const drawer = event.currentTarget as HTMLElement;
+      const focusable = drawer.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      );
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (!first || !last) return;
+
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+
+    const panel = document.getElementById("collection-filters-drawer");
+    panel?.addEventListener("keydown", onKeyDown);
+    return () => {
+      panel?.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = overflow;
+      previousActiveElement?.focus();
+    };
+  }, [closeDrawer, open]);
+
 
   const updateFilter = useCallback((key: FilterKey, value: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -149,24 +200,56 @@ export default function CollectionFilters({ activeFilters }: { activeFilters: Ac
 
   return (
     <>
-      <div className="mb-6 flex items-center justify-between lg:hidden">
-        <button type="button" onClick={() => setOpen(true)}
-          className="inline-flex items-center gap-2 border border-line px-4 py-2 text-[11px] font-medium uppercase tracking-[0.2em] text-text">
-          <SlidersHorizontal size={14} />Filtres{activeCount > 0 && <span>({activeCount})</span>}</button>
-        <p className="text-[11px] uppercase tracking-[0.2em] text-text-3">Trier : {sortLabel}</p>
+      <div className="mb-6 flex items-center justify-between gap-3 lg:hidden">
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="inline-flex min-h-11 items-center gap-2 border border-line bg-surface px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-text shadow-sm"
+        >
+          <SlidersHorizontal size={16} aria-hidden="true" />
+          Filtrer{activeCount > 0 && <span>({activeCount})</span>}
+        </button>
+        <p className="text-[11px] uppercase tracking-[0.18em] text-text-3">
+          Trier : {sortLabel}
+        </p>
       </div>
+
+      {/* Colonne de filtres — desktop */}
       <aside className="hidden w-60 shrink-0 lg:block">
         <div className="sticky top-24">{body}</div>
       </aside>
+
+      {/* Tiroir de filtres — mobile. Focus initial, piège de focus et fermeture
+          clavier (Échap) sont gérés par le useEffect d’ouverture. */}
       {open && (
-        <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setOpen(false)} />
-          <div className="absolute inset-y-0 left-0 flex w-[85%] max-w-sm flex-col bg-bg text-text px-6 py-6 shadow-xl">
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <div className="absolute inset-0 bg-black/60" onClick={closeDrawer} aria-hidden="true" />
+          <div
+            id="collection-filters-drawer"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="collection-filters-title"
+            tabIndex={-1}
+            className="absolute inset-y-0 left-0 flex w-[88%] max-w-sm flex-col bg-bg px-6 py-6 text-text shadow-2xl"
+          >
             <div className="mb-4 flex items-center justify-between border-b border-line pb-4">
-              <p className="text-[11px] font-medium uppercase tracking-[0.25em] text-text">Filtres</p>
-              <button type="button" onClick={() => setOpen(false)} aria-label="Fermer les filtres" className="text-text"><X size={18} /></button>
+              <p
+                id="collection-filters-title"
+                className="text-[11px] font-semibold uppercase tracking-[0.25em] text-text"
+              >
+                Filtrer la collection
+              </p>
+              <button
+                ref={closeButtonRef}
+                type="button"
+                onClick={closeDrawer}
+                aria-label="Fermer les filtres"
+                className="flex min-h-11 min-w-11 items-center justify-center text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+              >
+                <X size={20} aria-hidden="true" />
+              </button>
             </div>
-            <div className="flex-1 overflow-y-auto">{body}</div>
+            <div className="flex-1 overflow-y-auto overscroll-contain pb-6">{body}</div>
           </div>
         </div>
       )}

@@ -37,7 +37,7 @@ export default async function HomePage() {
         products={products}
         productVisuals={productVisuals}
       />
-      <StorySection />
+      <StorySection products={products} />
       <LookbookPreview products={products} />
       <NewsletterSection />
     </>

@@ -12,28 +12,46 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { FALLBACK_PRODUCT_IMAGE, getSvgPlaceholder } from "@/lib/assets/images";
+import {
+  FALLBACK_IMAGE_ALT,
+  FALLBACK_PRODUCT_IMAGE,
+  getSvgPlaceholder,
+} from "@/lib/assets/images";
 
 type SafeImageProps = Omit<React.ComponentProps<typeof Image>, "src"> & {
   src: string;
+  /** `alt` du visuel éditorial affiché lorsque la source produit échoue. */
+  fallbackAlt?: string;
 };
 
-export default function SafeImage({ src, alt, ...rest }: SafeImageProps) {
-  // 0 = URL d'origine · 1 = fallback Unsplash · 2 = SVG local (dernier rempart)
-  const [tier, setTier] = useState<0 | 1 | 2>(0);
+export default function SafeImage({
+  src,
+  alt,
+  fallbackAlt = FALLBACK_IMAGE_ALT,
+  ...rest
+}: SafeImageProps) {
+  // 0 = URL d'origine · 1 = image éditoriale de repli · 2 = SVG local.
+  const [state, setState] = useState<{ source: string; tier: 0 | 1 | 2 }>({
+    source: src,
+    tier: 0,
+  });
+  // Réinitialisation sans effet : évite un rendu intermédiaire avec l'ancienne
+  // source et respecte la règle react-hooks/set-state-in-effect.
+  const tier = state.source === src ? state.tier : 0;
 
   const resolvedSrc =
     tier === 2 ? getSvgPlaceholder() : tier === 1 ? FALLBACK_PRODUCT_IMAGE : src;
+  const resolvedAlt = tier === 0 ? alt : fallbackAlt;
 
   return (
     <Image
       {...rest}
       src={resolvedSrc}
-      alt={alt}
+      alt={resolvedAlt}
       onError={
         tier === 2
           ? undefined
-          : () => setTier((t) => (t === 0 ? 1 : 2))
+          : () => setState({ source: src, tier: tier === 0 ? 1 : 2 })
       }
     />
   );

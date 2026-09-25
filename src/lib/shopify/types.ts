@@ -19,10 +19,8 @@ export type ShopifyProduct = {
   };
   /** Options déclaratives Storefront API : [{ name: "Taille", values: ["S","M","L"] }] */
   options: ShopifyProductOption[];
-  // Métachamps custom qu'on créera dans Shopify
-  metafields: {
-    edges: { node: ShopifyMetafield }[];
-  };
+  // Shopify peut renvoyer une entrée null pour un identifiant absent.
+  metafields: (ShopifyMetafield | null)[];
   collections: {
     edges: { node: { title: string; handle: string } }[];
   };
@@ -67,6 +65,22 @@ export type ShopifyMetafield = {
   key: string;
   value: string;
   type: string;
+};
+
+
+/* Rôles de galerie structurés. Ils ne sont attribués que si Shopify fournit
+   explicitement `custom.image_roles` (JSON aligné sur l'ordre des médias). */
+export type ProductImageRole = "overview" | "detail" | "lifestyle";
+
+export type ProductGalleryImage = ShopifyImage & {
+  role: ProductImageRole | null;
+};
+
+export type ProductDescriptionSections = {
+  materialOrigin: string | null;
+  cutAndMaking: string | null;
+  care: string | null;
+  sizeAndDelivery: string | null;
 };
 
 export type ShopifyCart = {
@@ -120,7 +134,9 @@ export type Product = {
   /** Code devise ISO 4217 issu de `priceRange.minVariantPrice.currencyCode` (ex. "EUR"). */
   currencyCode: string;
   compareAtPrice: string | null;
-  images: ShopifyImage[];
+  images: ProductGalleryImage[];
+  shortDescription: string | null;
+  descriptionSections: ProductDescriptionSections;
   variants: ShopifyVariant[];
   /** Source de vérité pour le sélecteur. Jamais inféré à l'affichage seul. */
   options: ProductOption[];

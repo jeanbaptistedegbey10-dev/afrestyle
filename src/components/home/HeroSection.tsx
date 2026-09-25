@@ -49,6 +49,40 @@ export default function HeroSection() {
         }}
       />
 
+        {/* Mobile : un seul cadre visuel réunit image, texte et CTA. */}
+        <div className="relative z-10 mx-4 lg:hidden">
+          <article className="relative isolate min-h-[620px] overflow-hidden rounded-sm border border-line bg-band shadow-[0_20px_55px_rgba(16,27,42,0.22)]">
+            <SafeImage
+              src={IMAGES.hero}
+              alt="Silhouette de mode africaine contemporaine présentée comme image éditoriale AfroStyle"
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover object-center"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-band via-band/65 to-band/10" aria-hidden="true" />
+            <div className="relative z-10 flex min-h-[620px] flex-col justify-end gap-5 p-5 pb-6 text-band-text sm:min-h-[680px] sm:p-8 sm:pb-8">
+              <p className="w-fit border border-band-gold/50 bg-band/60 px-3 py-2 text-[0.65rem] font-medium uppercase tracking-[0.2em] text-band-gold backdrop-blur-sm">
+                Collection contemporaine
+              </p>
+              <h1 className="max-w-md font-serif text-[clamp(2.75rem,13vw,4.25rem)] leading-[0.92]">
+                L’Afrique réinvente <em className="font-normal text-band-gold-hover">le luxe</em>
+              </h1>
+              <p className="max-w-sm text-sm leading-relaxed text-band-text-2 sm:text-base">
+                Des créateurs d’exception, des matières d’héritage et une silhouette contemporaine.
+              </p>
+              <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:flex-wrap">
+                <Link href="/collections" className="btn-primary min-h-12 w-full justify-center bg-gold text-gold-contrast hover:bg-band-gold-hover sm:w-auto">
+                  Explorer la collection <ArrowRight size={15} aria-hidden="true" />
+                </Link>
+                <Link href="/lookbook" className="inline-flex min-h-12 w-full items-center justify-center border border-band-gold/70 px-6 text-xs font-medium uppercase tracking-[0.14em] text-band-text transition-colors duration-300 hover:bg-band-text hover:text-band sm:w-auto">
+                  Voir le lookbook
+                </Link>
+              </div>
+            </div>
+          </article>
+        </div>
+
       {/* Conteneur standardisé — grille éditoriale 2 colonnes */}
       <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
@@ -118,7 +152,7 @@ export default function HeroSection() {
               {/* Visuel — photo créateur vedette (Unsplash HD, fallback local) */}
               <SafeImage
                 src={IMAGES.hero}
-                alt="Mannequin portant une haute tenue africaine élégante — femme en ensemble Pagne/Wax"
+                alt="Silhouette de mode africaine contemporaine présentée comme image éditoriale AfroStyle"
                 fill
                 priority
                 sizes="(max-width: 1024px) 100vw, 58vw"
@@ -142,7 +176,7 @@ export default function HeroSection() {
                 <Link
                   href="/lookbook"
                   aria-label="Voir le lookbook"
-                  className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-text text-bg transition-all duration-300 hover:bg-gold hover:text-gold-contrast"
+                  className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-text text-bg transition-all duration-300 hover:bg-gold hover:text-gold-contrast"
                 >
                   <ArrowUpRight size={16} />
                 </Link>
