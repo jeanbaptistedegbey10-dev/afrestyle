@@ -16,7 +16,7 @@ import { getProductVisualsUrls } from "@/constants/images";
  *
  * Ordre de priorité :
  * 1. Visuels produits Shopify (via getAllProductsCatalog).
-  * 2. ProductsSection utilise IMAGES.products comme repli éditorial si le catalogue Shopify est vide.
+ * 2. ProductsSection utilise des placeholders SVG locaux si le catalogue Shopify est vide.
  */
 export async function getProductVisuals({
   catalogSize = 12,
@@ -25,3 +25,4 @@ export async function getProductVisuals({
 } = {}): Promise<string[]> {
   return getProductVisualsUrls({ catalogSize });
 }
+

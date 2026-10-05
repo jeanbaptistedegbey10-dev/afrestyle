@@ -146,6 +146,17 @@ export type Product = {
   fabric: string | null; // Extrait des tags: "wax"
   style: string | null; // Extrait des tags: "traditionnel"
   availableForSale: boolean;
+  /**
+   * Note affichée sous le titre de la fiche produit (étoiles + nombre d'avis).
+   * Renseignée par le catalogue éditorial (`mock-data.ts`) : à brancher sur un
+   * véritable service d'avis avant mise en production commerciale.
+   */
+  rating?: { value: number; count: number } | null;
+  /**
+   * Confection sur-mesure acceptée pour cette pièce (affichée en option ou
+   * signalée dans la fiche produit).
+   */
+  madeToMeasure?: boolean;
 };
 
 /** Ligne minimale renvoyée par `GET_SITEMAP_PRODUCTS_QUERY` (sitemap + revalidation). */

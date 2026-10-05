@@ -11,7 +11,16 @@
 // le bug d'origine (createProduct + productPublish visant l'endpoint public).
 
 import { adminFetch } from "./adminClient";
+import { LOOKBOOK_TAG } from "@/constants/catalog";
 import { formatPrice } from "@/lib/utils";
+import {
+  getMockCatalogProductByHandle,
+  getMockCatalogProducts,
+  getMockLookbookProducts,
+  getProductEnrichment,
+  filterMockCatalog,
+  type CatalogEnrichment,
+} from "./mock-data";
 import {
   formatUserErrors,
   toErrorMessage,
@@ -107,6 +116,65 @@ function parseImageRoles(value: string | null): ProductImageRole[] {
   }
 }
 
+/**
+ * Nettoie une valeur d'option telle qu'elle est saisie dans Shopify Admin.
+ *
+ * ⚠️ Bug de données constaté sur la boutique : l'échelle de tailles était
+ * saisie « XS, » (virgule collée). La puce s'affichait donc « XS, » et la
+ * correspondance exacte de variante restait introuvable — la taille XS
+ * apparaissait systématiquement épuisée. On retire ici les séparateurs
+ * résiduels et les espaces parasites.
+ */
+function normalizeOptionValue(value: string): string {
+  return value
+    .replace(/[,;|/]+$/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/** Valeurs d'option normalisées, dédoublonnées, sans entrée vide. */
+function normalizeOptionValues(values: readonly string[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const raw of values) {
+    const value = normalizeOptionValue(raw);
+    if (!value || seen.has(value)) continue;
+    seen.add(value);
+    out.push(value);
+  }
+  return out;
+}
+
+/** Fusionne deux listes d'URLs de visuels sans doublon (ordre préservé). */
+function uniqueImageUrls(urls: readonly string[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const url of urls) {
+    if (!url || seen.has(url)) continue;
+    seen.add(url);
+    out.push(url);
+  }
+  return out;
+}
+
+/** Tags dédoublonnés (comparaison insensible à la casse), ordre préservé. */
+function uniqueTags(tags: readonly string[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const tag of tags) {
+    const key = tag.trim().toLowerCase();
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    out.push(tag.trim());
+  }
+  return out;
+}
+
+/** Vrai si l'option décrit une taille de vêtement (variantes réelles exigées). */
+export function isSizeOption(name: string): boolean {
+  return /^(taille|size|tailles|sizes)$/i.test(name.trim());
+}
+
 
 function normalizeProduct(shopifyProduct: ShopifyProduct): Product {
   const price = shopifyProduct.priceRange.minVariantPrice;
@@ -131,37 +199,122 @@ function normalizeProduct(shopifyProduct: ShopifyProduct): Product {
       .find((t) => t.startsWith("style-"))
       ?.replace("style-", "") ?? null;
 
-  // Options : source de vÃ©ritÃ© = `product.options` (Storefront API).
-  // Fallback : reconstruction depuis les variantes (boutiques sans `options`,
-  // ou payloads mockÃ©s en dev). On filtre "Default Title" (produit sans option).
+  // Options : source de vérité = `product.options` (Storefront API).
+  // Fallback : reconstruction depuis les variantes (boutiques sans `options`).
+  // Dans les deux cas les valeurs sont normalisées (cf. « XS, » ci-dessus) et
+  // dédoublonnées : la sélection exacte de variante redevient fiable.
   const options =
     shopifyProduct.options && shopifyProduct.options.length > 0
       ? shopifyProduct.options
-          .filter((o) => !(o.values.length === 1 && o.values[0] === "Default Title"))
-          .map((o) => ({ name: o.name, values: [...o.values] }))
+          .filter(
+            (option) =>
+              !(option.values.length === 1 && option.values[0] === "Default Title"),
+          )
+          .map((option) => ({
+            name: option.name,
+            values: normalizeOptionValues(option.values),
+          }))
       : (() => {
-          const map = new Map<string, Set<string>>();
+          const map = new Map<string, string[]>();
           for (const edge of shopifyProduct.variants.edges) {
-            for (const o of edge.node.selectedOptions) {
-              if (o.value === "Default Title") continue;
-              if (!map.has(o.name)) map.set(o.name, new Set());
-              map.get(o.name)!.add(o.value);
+            for (const selected of edge.node.selectedOptions) {
+              if (selected.value === "Default Title") continue;
+              const current = map.get(selected.name) ?? [];
+              current.push(selected.value);
+              map.set(selected.name, current);
             }
           }
           return [...map.entries()].map(([name, values]) => ({
             name,
-            values: [...values],
+            values: normalizeOptionValues(values),
           }));
         })();
 
+  // ── Enrichissement éditorial du catalogue (mock-data.ts) ─────────────────
+  // La boutique reste la source de vérité du prix, des variantes et du stock ;
+  // le catalogue de référence ajoute la galerie Unsplash, la courte
+  // description, la longue description structurée, la catégorie et le tag
+  // `lookbook` qui alimente la section éponyme.
+  const enrichment: CatalogEnrichment = getProductEnrichment({
+    handle: shopifyProduct.handle,
+    tags: shopifyProduct.tags,
+  });
+
   const description = plainText(shopifyProduct.description);
-  const shortDescription = metafieldValue(shopifyProduct.metafields, [
+  const metafieldShort = metafieldValue(shopifyProduct.metafields, [
     "short_description",
     "description_short",
   ]);
+  const shortDescription =
+    metafieldShort ??
+    enrichment.shortDescription ??
+    (description
+      ? `${description.slice(0, 180)}${description.length > 180 ? "…" : ""}`
+      : null);
+
   const imageRoles = parseImageRoles(
     metafieldValue(shopifyProduct.metafields, ["image_roles"]),
   );
+
+  // Galerie : les visuels RÉELS publiés dans Shopify font foi. Les rôles
+  // `overview` / `detail` / `lifestyle` proviennent du metafield `image_roles`,
+  // aligné sur l'ordre des médias — c'est ce qui permet à <ProductCard /> de
+  // changer d'image au survol et à la fiche d'afficher un badge de vue.
+  //
+  // On filtre APRÈS le map : l'index de rôle doit rester aligné sur l'ordre
+  // des médias Shopify même si un média arrive sans URL exploitable.
+  const shopifyImages = shopifyProduct.images.edges
+    .map((edge, index) => ({
+      ...edge.node,
+      role: imageRoles[index] ?? null,
+    }))
+    .filter((image) => Boolean(image.url));
+
+  // ⚠️ La galerie éditoriale (placeholders SVG locaux) ne sert QUE de filet de
+  // sécurité quand la pièce ne publie AUCUN média. Elle ne complète JAMAIS une
+  // galerie existante : la concaténer gonflait la fiche produit jusqu'à 6
+  // vignettes (compteur « 1/6 ») et faisait basculer les cartes produit sur un
+  // placeholder SVG au survol. Shopify reste la seule source de vérité.
+  const galleryUrls =
+    shopifyImages.length > 0
+      ? uniqueImageUrls(shopifyImages.map((image) => image.url))
+      : uniqueImageUrls(enrichment.gallery);
+
+  const images = galleryUrls.map((url, index) => {
+    const existing = shopifyImages.find((image) => image.url === url);
+    if (existing) return existing;
+    return {
+      url,
+      altText: `${shopifyProduct.title} — vue ${index + 1} du catalogue AfroStyle.`,
+      width: 1000,
+      height: 1500,
+      role:
+        index === 0
+          ? ("overview" as const)
+          : index === 1
+            ? ("detail" as const)
+            : ("lifestyle" as const),
+    };
+  });
+
+  const descriptionSections = {
+    materialOrigin:
+      metafieldValue(shopifyProduct.metafields, ["material_origin"]) ??
+      enrichment.descriptionSections?.materialOrigin ??
+      null,
+    cutAndMaking:
+      metafieldValue(shopifyProduct.metafields, ["cut_and_making"]) ??
+      enrichment.descriptionSections?.cutAndMaking ??
+      null,
+    care:
+      metafieldValue(shopifyProduct.metafields, ["care_instructions"]) ??
+      enrichment.descriptionSections?.care ??
+      null,
+    sizeAndDelivery:
+      metafieldValue(shopifyProduct.metafields, ["size_and_delivery"]) ??
+      enrichment.descriptionSections?.sizeAndDelivery ??
+      null,
+  };
 
   return {
     id: shopifyProduct.id,
@@ -173,25 +326,20 @@ function normalizeProduct(shopifyProduct: ShopifyProduct): Product {
     currencyCode: price.currencyCode,
     compareAtPrice:
       shopifyProduct.variants.edges[0]?.node.compareAtPrice?.amount ?? null,
-    images: shopifyProduct.images.edges.map((edge, index) => ({
-      ...edge.node,
-      role: imageRoles[index] ?? null,
-    })),
-    shortDescription: shortDescription ?? (description ? `${description.slice(0, 180)}${description.length > 180 ? "…" : ""}` : null),
-    descriptionSections: {
-      materialOrigin: metafieldValue(shopifyProduct.metafields, ["material_origin"]),
-      cutAndMaking: metafieldValue(shopifyProduct.metafields, ["cut_and_making"]),
-      care: metafieldValue(shopifyProduct.metafields, ["care_instructions"]),
-      sizeAndDelivery: metafieldValue(shopifyProduct.metafields, ["size_and_delivery"]),
-    },
+    images,
+    shortDescription,
+    descriptionSections,
     variants: shopifyProduct.variants.edges.map((e) => e.node),
     options,
     vendor: shopifyProduct.vendor,
-    tags: shopifyProduct.tags,
+    // Tags Shopify + tags de catalogue (catégorie, `lookbook`).
+    tags: uniqueTags([...shopifyProduct.tags, ...enrichment.tags]),
     country,
     fabric,
     style,
     availableForSale: shopifyProduct.availableForSale,
+    rating: enrichment.rating,
+    madeToMeasure: enrichment.madeToMeasure ?? false,
   };
 }
 
@@ -216,41 +364,76 @@ export async function getProducts({
   products: Product[];
   pageInfo: { hasNextPage: boolean; endCursor: string | null };
 }> {
-  const data = await storefrontFetch<{
-    products: {
-      edges: { node: ShopifyProduct; cursor: string }[];
-      pageInfo: { hasNextPage: boolean; endCursor: string };
+  /**
+   * Catalogue de repli : servi UNIQUEMENT quand la boutique est injoignable
+   * (réseau, token, boutique hors ligne) ou qu'elle ne publie aucune pièce.
+   * Une requête filtrée légitimement vide (« aucun wax en XXL ») reste vide :
+   * afficher des pièces non concernées serait une information fausse.
+   */
+  const mockFallback = (reason: string) => {
+    console.warn(
+      `[shopify:products] ${reason} — catalogue de référence (mock-data.ts) servi en repli.`,
+    );
+    return {
+      products: filterMockCatalog({ query, first }),
+      pageInfo: { hasNextPage: false, endCursor: null },
     };
-  }>({
-    query: GET_PRODUCTS_QUERY,
-    variables: { first, after, sortKey, reverse, query },
-    tags: ["products"],
-    cache,
-    revalidate,
-  });
-
-  const products = data.data.products.edges.map((e) =>
-    normalizeProduct(e.node),
-  );
-
-  return {
-    products,
-    pageInfo: data.data.products.pageInfo,
   };
+
+  try {
+    const data = await storefrontFetch<{
+      products: {
+        edges: { node: ShopifyProduct; cursor: string }[];
+        pageInfo: { hasNextPage: boolean; endCursor: string };
+      };
+    }>({
+      query: GET_PRODUCTS_QUERY,
+      variables: { first, after, sortKey, reverse, query },
+      tags: ["products"],
+      cache,
+      revalidate,
+    });
+
+    const products = data.data.products.edges.map((e) =>
+      normalizeProduct(e.node),
+    );
+
+    if (products.length === 0 && !query) {
+      return mockFallback("la boutique ne publie aucune pièce");
+    }
+
+    return {
+      products,
+      pageInfo: data.data.products.pageInfo,
+    };
+  } catch (error) {
+    return mockFallback(`Storefront indisponible (${toErrorMessage(error)})`);
+  }
 }
 
 /**
- * RÃ©cupÃ¨re un produit par son handle (slug URL)
+ * Récupère un produit par son handle (slug URL).
+ *
+ * Repli : un handle absent de la boutique mais présent dans le catalogue de
+ * référence reste consultable — la fiche produit ne tombe jamais en 404 du
+ * seul fait d'une boutique muette.
  */
-export async function getProductByHandle(handle: string) {
-  const data = await storefrontFetch<{ product: ShopifyProduct | null }>({
-    query: GET_PRODUCT_BY_HANDLE_QUERY,
-    variables: { handle },
-    tags: [`product-${handle}`],
-  });
+export async function getProductByHandle(handle: string): Promise<Product | null> {
+  try {
+    const data = await storefrontFetch<{ product: ShopifyProduct | null }>({
+      query: GET_PRODUCT_BY_HANDLE_QUERY,
+      variables: { handle },
+      tags: [`product-${handle}`],
+    });
 
-  if (!data.data.product) return null;
-  return normalizeProduct(data.data.product);
+    if (data.data.product) return normalizeProduct(data.data.product);
+  } catch (error) {
+    console.warn(
+      `[shopify:product] ${handle} illisible (${toErrorMessage(error)}) — repli sur le catalogue de référence.`,
+    );
+  }
+
+  return getMockCatalogProductByHandle(handle);
 }
 
 /**
@@ -367,6 +550,19 @@ export async function getLookbookProducts({
 } = {}): Promise<LookbookData> {
   const handle = getLookbookCollectionHandle();
 
+  const merged: Product[] = [];
+  const seen = new Set<string>();
+  const push = (products: Product[]) => {
+    for (const product of products) {
+      if (merged.length >= first) return;
+      if (seen.has(product.id)) continue;
+      seen.add(product.id);
+      merged.push(product);
+    }
+  };
+
+  // 1. Collection éditoriale dédiée (« lookbook ») — première source.
+  let collection: LookbookCollection | null = null;
   try {
     const data = await getCollectionProducts({
       handle,
@@ -375,24 +571,43 @@ export async function getLookbookProducts({
     });
 
     if (data && data.products.length > 0) {
-      return {
-        products: data.products,
-        collection: {
-          handle,
-          title: data.collection.title,
-          description: data.collection.description,
-          image: data.collection.image,
-        },
+      collection = {
+        handle,
+        title: data.collection.title,
+        description: data.collection.description,
+        image: data.collection.image,
       };
+      push(data.products);
     }
   } catch (error) {
     console.warn(
-      `[shopify:lookbook] collection "${handle}" illisible (${toErrorMessage(error)}) — repli sur le catalogue publié.`,
+      `[shopify:lookbook] collection "${handle}" illisible (${toErrorMessage(error)}) — repli sur le tag.`,
     );
   }
 
-  const { products } = await getProducts({ first, cache: "no-store" });
-  return { products, collection: null };
+  // 2. Complète avec les pièces du catalogue portant le tag `lookbook`.
+  //    Ce tag est posé par le catalogue de référence (mock-data.ts) sur chaque
+  //    création : la sélection n'est donc jamais figée dans un composant.
+  if (merged.length < first) {
+    try {
+      const { products } = await getProducts({
+        first: Math.max(first * 2, 24),
+        cache: "no-store",
+      });
+      push(products.filter((product) => product.tags.includes(LOOKBOOK_TAG)));
+    } catch (error) {
+      console.warn(
+        `[shopify:lookbook] catalogue illisible (${toErrorMessage(error)}) — repli sur le catalogue de référence.`,
+      );
+    }
+  }
+
+  // 3. Dernier palier : le catalogue de référence (jamais d'écran vide).
+  if (merged.length === 0) {
+    return { products: getMockLookbookProducts(first), collection: null };
+  }
+
+  return { products: merged.slice(0, first), collection };
 }
 
 /**
@@ -504,7 +719,7 @@ export async function getCollectionHandles({
  * - export catalogue complet (handles, titres, vendor, images, tags)
  * - préparation des visuels de la page d'accueil / lookbook / sections
  */
-export async function getAllProductsCatalog({
+export async function fetchAllProductsCatalog({
   first = 250,
   after,
 }: {
@@ -564,7 +779,7 @@ export async function getAllProductsCatalog({
   const pageInfo = data.data.products.pageInfo;
 
   if (pageInfo.hasNextPage && pageInfo.endCursor) {
-    const rest = await getAllProductsCatalog({ first, after: pageInfo.endCursor });
+    const rest = await fetchAllProductsCatalog({ first, after: pageInfo.endCursor });
     return {
       products: [...products, ...rest.products],
       pageInfo: rest.pageInfo,
@@ -572,6 +787,66 @@ export async function getAllProductsCatalog({
   }
 
   return { products, pageInfo };
+}
+
+/**
+ * Catalogue complet consommé par la vitrine (visuels d'accueil, seed, routes
+ * d'API internes).
+ *
+ * Repli : si la Storefront API est injoignable, on renvoie le catalogue de
+ * référence (mock-data.ts) au même format — les pages restent consultables et
+ * aucun appelant n'a besoin de gérer une exception.
+ */
+export async function getAllProductsCatalog({
+  first = 250,
+  after,
+}: {
+  first?: number;
+  after?: string;
+} = {}): Promise<Awaited<ReturnType<typeof fetchAllProductsCatalog>>> {
+  try {
+    return await fetchAllProductsCatalog({ first, after });
+  } catch (error) {
+    console.warn(
+      `[shopify:catalog] extraction impossible (${toErrorMessage(error)}) — catalogue de référence servi en repli.`,
+    );
+    return getMockAllProductsCatalog(first);
+  }
+}
+
+/**
+ * Catalogue de secours (Shopify muet) — extraction au même format que
+ * `getAllProductsCatalog`, alimentée par le catalogue de référence.
+ *
+ * Utilisé par les routes d'API internes (`/api/product-visuals`, seed…) qui ne
+ * doivent jamais échouer sur une boutique injoignable.
+ */
+export function getMockAllProductsCatalog(first: number = 250) {
+  const products = getMockCatalogProducts().slice(0, first).map((product) => ({
+    id: product.id,
+    handle: product.handle,
+    title: product.title,
+    vendor: product.vendor,
+    tags: product.tags,
+    availableForSale: product.availableForSale,
+    images: product.images.map((image) => ({
+      url: image.url,
+      altText: image.altText,
+      width: image.width,
+      height: image.height,
+    })),
+    variants: product.variants.map((variant) => ({
+      id: variant.id,
+      title: variant.title,
+      availableForSale: variant.availableForSale,
+      image: variant.image,
+    })),
+  }));
+
+  return {
+    products,
+    pageInfo: { hasNextPage: false, endCursor: null as string | null },
+  };
 }
 
 

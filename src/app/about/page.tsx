@@ -5,12 +5,24 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import SafeImage from "@/components/ui/SafeImage";
-import { IMAGES } from "@/constants/images";
+import { withShopifyCdnWidth } from "@/lib/assets/images";
+import { getAboutEditorialCards } from "@/lib/shopify/about";
 
+/**
+ * Page /about — composante SERVEUR.
+ *
+ * La section « Journal des matières » est pilotée par les Metaobjects
+ * `editorial_card` (Storefront API) : titre, sur-libellé, paragraphe, visuel et
+ * ordre (`position`) sont lus dans Shopify Admin. Voir
+ * `lib/shopify/about.ts` pour le contrat de champs et les règles de repli.
+ */
 export const metadata: Metadata = {
   title: "Notre Histoire",
   description: "L'histoire d'AfroStyle — la première destination premium pour la mode africaine contemporaine.",
 };
+
+/** ISR : la page est régénérée toutes les 5 min (repli si le webhook est muet). */
+export const revalidate = 300;
 
 const TIMELINE = [
   { year: "2017", title: "La vision", text: "Jb Mawubevi, fondateur d'AfroStyle, observe un paradoxe : la mode africaine est admirée dans le monde entier, mais ses créateurs restent invisibles. L'idée germe." },
@@ -18,12 +30,6 @@ const TIMELINE = [
   { year: "2021", title: "La boutique en ligne", text: "Lancement officiel de la boutique : chaque pièce devient commandable et expédiée directement depuis l'atelier de son créateur." },
   { year: "2023", title: "L'expansion", text: "Les collections s'ouvrent à de nouveaux pays et à de nouveaux tissus d'héritage. AfroStyle s'impose comme une référence de la mode africaine contemporaine premium." },
   { year: "2026", title: "Aujourd'hui", text: "Une nouvelle plateforme, une nouvelle ambition : offrir à la mode africaine la scène internationale qu'elle mérite." },
-];
-
-const EDITORIAL_VISUALS = [
-  { src: IMAGES.story, eyebrow: "Matières & palette", title: "Une histoire de matières", text: "Des images d’ambiance pour préserver la lecture ivoire, bleu nuit et champagne de la maison.", alt: "Ambiance éditoriale de mode africaine utilisée pour présenter la palette des matières AfroStyle." },
-  { src: IMAGES.lookbook[0], eyebrow: "Silhouettes", title: "Le dessin en mouvement", text: "Une direction artistique qui regarde la confection africaine avec une sensibilité contemporaine.", alt: "Silhouette africaine éditoriale présentée comme image d’ambiance, sans portrait de créateur associé." },
-  { src: IMAGES.lookbook[2], eyebrow: "Détails & héritage", title: "La parure comme signature", text: "Accessoires, textures et finitions donnent du relief au récit visuel de chaque création.", alt: "Parure et accessoires de mode africaine photographiés comme illustration éditoriale d’ambiance." },
 ];
 
 const VALUES = [
@@ -34,7 +40,23 @@ const VALUES = [
 ];
 
 
-export default function AboutPage() {
+/**
+ * Largeurs demandées au CDN Shopify selon l'emplacement de la carte.
+ *
+ * Appliquées ici (et non dans la couche de données) car la largeur utile dépend
+ * de la mise en page : la 1ʳᵉ carte est pleine largeur, les suivantes sont en
+ * vis-à-vis. Le CDN sert alors la bonne variante, sans jamais transférer
+ * l'original.
+ */
+const FEATURED_CARD_IMAGE_WIDTH = 1920;
+const GRID_CARD_IMAGE_WIDTH = 900;
+
+export default async function AboutPage() {
+  // ⚠️ `getAboutEditorialCards()` ne lève jamais : en cas de type non exposé,
+  //    d'erreur réseau ou de boutique vide, elle renvoie les 3 cartes éditoriales
+  //    locales. La section « Journal des matières » ne peut donc pas disparaître.
+  const editorialCards = await getAboutEditorialCards();
+
   return (
     <div style={{ background: "var(--bg)", minHeight: "100vh", color: "var(--text)" }}>
 
@@ -81,7 +103,8 @@ export default function AboutPage() {
         </div>
       </div>
 
-      {/* Galerie éditoriale — images d’ambiance explicitement contextualisées. */}
+      {/* Galerie éditoriale — cartes pilotées par les Metaobjects `editorial_card`.
+          Le `key` est l'id de l'entrée : deux cartes peuvent porter le même titre. */}
       <section className="border-b border-line bg-bg-2 px-6 py-20">
         <div className="mx-auto max-w-7xl">
           <div className="mx-auto mb-12 max-w-3xl text-center">
@@ -97,31 +120,52 @@ export default function AboutPage() {
           </div>
 
           <div className="grid gap-5 md:grid-cols-2">
-            {EDITORIAL_VISUALS.map((visual, index) => (
-              <figure
-                key={visual.title}
-                className={`group relative overflow-hidden rounded-sm border border-line bg-surface shadow-[0_14px_36px_rgba(16,27,42,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_48px_rgba(16,27,42,0.14)] ${index === 0 ? "md:col-span-2" : ""}`}
-              >
-                <div className={`relative overflow-hidden ${index === 0 ? "aspect-[16/9]" : "aspect-[4/5]"}`}>
-                  <SafeImage
-                    src={visual.src}
-                    alt={visual.alt}
-                    fill
-                    sizes={index === 0 ? "(max-width: 768px) 100vw, 100vw" : "(max-width: 768px) 100vw, 50vw"}
-                    className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                    fallbackAlt={visual.alt}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-band/90 via-band/15 to-transparent" aria-hidden="true" />
-                </div>
-                <figcaption className="absolute inset-x-0 bottom-0 p-5 text-white sm:p-7">
-                  <p className="text-[0.65rem] font-medium uppercase tracking-[0.2em] text-band-gold">
-                    {visual.eyebrow}
-                  </p>
-                  <h3 className="mt-2 font-serif text-2xl sm:text-3xl">{visual.title}</h3>
-                  <p className="mt-2 max-w-xl text-sm leading-relaxed text-band-text-2">{visual.text}</p>
-                </figcaption>
-              </figure>
-            ))}
+            {editorialCards.map((card, index) => {
+              // La 1ʳᵉ carte occupe toute la largeur (cadrage 16/9) ; les suivantes
+              // se partagent une ligne en vis-à-vis (cadrage 4/5). Ce rythme
+              // éditorial est independant du nombre d'entrées publiées.
+              const isFeatured = index === 0;
+              return (
+                <figure
+                  key={card.id}
+                  className={`group relative overflow-hidden rounded-sm border border-line bg-surface shadow-[0_14px_36px_rgba(16,27,42,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_48px_rgba(16,27,42,0.14)] ${isFeatured ? "md:col-span-2" : ""}`}
+                >
+                  <div className={`relative overflow-hidden ${isFeatured ? "aspect-[16/9]" : "aspect-[4/5]"}`}>
+                    <SafeImage
+                      src={
+                        card.image
+                          ? withShopifyCdnWidth(
+                              card.image,
+                              isFeatured ? FEATURED_CARD_IMAGE_WIDTH : GRID_CARD_IMAGE_WIDTH,
+                            )
+                          : null
+                      }
+                      alt={card.imageAlt}
+                      fill
+                      sizes={isFeatured ? "(max-width: 768px) 100vw, 100vw" : "(max-width: 768px) 100vw, 50vw"}
+                      className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                      fallbackAlt={card.imageAlt}
+                      placeholderRatio={isFeatured ? "landscape" : "portrait"}
+                      placeholderLabel="Editorial AfroStyle"
+                    />
+                    {/* Voile dégradé : garantit le contraste du texte blanc (WCAG AAA)
+                        quelle que soit la luminance du visuel publié dans Shopify. */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-band/90 via-band/15 to-transparent" aria-hidden="true" />
+                  </div>
+                  <figcaption className="absolute inset-x-0 bottom-0 p-5 text-white sm:p-7">
+                    {card.eyebrow ? (
+                      <p className="text-[0.65rem] font-medium uppercase tracking-[0.2em] text-band-gold">
+                        {card.eyebrow}
+                      </p>
+                    ) : null}
+                    <h3 className="mt-2 font-serif text-2xl sm:text-3xl">{card.title}</h3>
+                    {card.text ? (
+                      <p className="mt-2 max-w-xl text-sm leading-relaxed text-band-text-2">{card.text}</p>
+                    ) : null}
+                  </figcaption>
+                </figure>
+              );
+            })}
           </div>
         </div>
       </section>

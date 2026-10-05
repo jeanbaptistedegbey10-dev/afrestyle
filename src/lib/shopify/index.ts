@@ -99,3 +99,30 @@ export type {
   ShopifySitemapProduct,
   ShopifyVariant,
 } from "./types";
+
+// ── Contenus éditoriaux pilotés par Shopify (Hero + bannières + sections) ────
+// Ces lectures utilisent UNIQUEMENT l'API Storefront : aucune clé d'admin,
+// donc aucune fuite de secret vers le bundle navigateur.
+export { HERO_CACHE_TAG, getHeroSlides } from "./hero";
+export type { HeroSlide, ShopifyMetaobjectField } from "./hero";
+export { BANNER_CACHE_TAGS, getCategoryBanners, getCollectionBanner } from "./collections";
+export type { CollectionBanner } from "./collections";
+
+// Sections éditoriales de l'accueil (Metaobjects `home_section`).
+export {
+  EDITORIAL_FALLBACK_SECTIONS,
+  HOME_SECTION_LAYOUTS,
+  SECTIONS_CACHE_TAG,
+  getHomeSections,
+  splitHomeSections,
+} from "./sections";
+export type { HomeSection, HomeSectionLayout } from "./sections";
+
+// Cartes éditoriales de /about (Metaobjects `editorial_card`).
+export {
+  ABOUT_CARDS_CACHE_TAG,
+  ABOUT_FALLBACK_CARDS,
+  MIN_ABOUT_CARDS,
+  getAboutEditorialCards,
+} from "./about";
+export type { AboutEditorialCard } from "./about";

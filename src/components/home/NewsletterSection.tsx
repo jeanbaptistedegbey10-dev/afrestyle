@@ -20,13 +20,13 @@ export default function NewsletterSection() {
   }
 
   return (
-    // Bande à fort impact : fond obsidienne contrasté dans LES DEUX modes,
-    // texte clair + accents or (rupture visuelle éditoriale) via tokens dédiés.
+    // Bande à fort impact : fond obsidienne (#0A0F17) contrasté dans LES DEUX
+    // modes, texte clair + accents or (rupture visuelle éditoriale) via tokens dédiés.
     <section className="relative overflow-hidden py-20 text-center text-band-text">
       {/* Fond obsidienne + dégradés or — indépendants du thème actif */}
       <div
         className="absolute inset-0"
-        style={{ background: "linear-gradient(135deg, var(--band) 0%, var(--band-2) 60%, var(--band-2) 100%)" }}
+        style={{ background: "linear-gradient(135deg, var(--section-obsidian) 0%, var(--section-obsidian-2) 55%, var(--section-obsidian) 100%)" }}
       />
       <div
         className="absolute -top-1/2 left-1/2 -translate-x-1/2 w-[70vw] h-[70vw] rounded-full pointer-events-none"
@@ -80,6 +80,13 @@ export default function NewsletterSection() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="votre@email.com"
               required
+              // L'extension navigateur Keeper injecte `data-keeper-lock-id`
+              // sur les champs de saisie APRÈS l'hydratation : React compare
+              // alors le DOM serveur au DOM client et signale un mismatch.
+              // On neutralise l'avertissement sur CE seul noeud. Le
+              // comportement du formulaire est strictement inchangé
+              // (l'attribut n'est ni lu ni modifié par le composant).
+              suppressHydrationWarning
               className="flex-1 bg-transparent px-5 py-3.5 text-sm outline-none text-band-text placeholder:text-band-text-2"
             />
             <button

@@ -61,7 +61,17 @@ export default function CartDrawer() {
             <h2 className="font-serif text-lg" style={{ color: "var(--text)" }}>
               Votre panier
             </h2>
-            {lines.length > 0 && (
+            {/* Pastille de quantité — UNIQUEMENT après montage.
+                ⚠️ Hydratation : `lines` vient du store Zustand persisté dans
+                localStorage. Le HTML rendu par le serveur ne connaît donc pas
+                le panier (0 ligne) alors que le premier rendu client, lui,
+                réhydrate localStorage et peut produire un badge. Sans le garde
+                `isMounted`, React signale « Hydration mismatch » (l'algorithme
+                compare le DOM serveur au DOM client avant d'appliquer le patch).
+                `useMounted()` (useSyncExternalStore) renvoie `false` au serveur
+                et au 1er rendu client, `true` ensuite : aucun setState en
+                effet, donc aucune erreur `react-hooks/set-state-in-effect`. */}
+            {isMounted && lines.length > 0 && (
               <span
                 className="text-xs font-medium px-2 py-0.5 rounded-full"
                 style={{ background: "var(--gold)", color: "var(--gold-contrast)" }}
@@ -269,6 +279,17 @@ export default function CartDrawer() {
               >
                 Continuer mes achats
               </button>
+
+              {/* Vue complète : quantités détaillées, suivi de commande et
+                  récupération du panier via l'API Storefront. */}
+              <Link
+                href="/cart"
+                onClick={closeCart}
+                className="w-full text-xs tracking-widest uppercase text-center py-2 transition-colors duration-200 hover:text-gold-dark"
+                style={{ color: "var(--gold-dark)" }}
+              >
+                Voir le panier
+              </Link>
             </div>
           </>
         )}

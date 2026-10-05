@@ -37,6 +37,17 @@ function planForTopic(topic: string): {
       paths: ["/", "/collections", "/lookbook"],
     };
   }
+  // Diaporama du Hero + sections éditoriales de l'accueil + cartes de /about :
+  // ce sont des Metaobjects (`hero_slide`, `home_section`, `editorial_card`).
+  // Sans ce topic, une slide, une section ou une carte publiée/ordonnée dans
+  // l'admin resterait invisible jusqu'à l'expiration de l'ISR (5 min).
+  if (t.startsWith("metaobjects/")) {
+    return {
+      tags: ["hero", "banners", "collections", "home-sections", "about-cards"],
+      // `/` consomme `hero` + `home-sections`, `/about` consomme `about-cards`.
+      paths: ["/", "/about"],
+    };
+  }
   return null;
 }
 

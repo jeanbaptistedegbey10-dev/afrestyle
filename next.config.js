@@ -27,11 +27,8 @@ const nextConfig = {
         protocol: "https",
         hostname: "**.myshopify.com",
       },
-      // Autorise les visuels Unsplash HD (hero, catégories, lookbook)
-      {
-        protocol: "https",
-        hostname: "images.unsplash.com",
-      },
+      // ⚠️ Aucun `images.unsplash.com` : les repli éditoriaux sont désormais des
+      // placeholders SVG locaux (data-URI) — cf. `src/lib/assets/images.ts`.
     ],
     // ⚠️ Next 16 met en cache une image optimisée pendant 4 h par défaut
     // (`minimumCacheTTL: 14400`). Or les visuels produits sont ré-uploadés

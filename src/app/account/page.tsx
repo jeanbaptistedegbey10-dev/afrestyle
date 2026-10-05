@@ -81,6 +81,52 @@ export default async function AccountPage() {
           ))}
         </div>
 
+        {/* Statut de suivi de la commande — envois fluides vérifiés par le client */}
+        <div>
+          <h2 className="font-serif text-2xl mb-2" style={{ color: "var(--text)" }}>
+            Suivi de ma commande
+          </h2>
+          <p
+            className="mb-6 text-sm leading-relaxed"
+            style={{ color: "var(--text-3)" }}
+          >
+            Chaque étape est mise à jour dès que nos ateliers prennent le relais.
+            Un email de suivi vous est envoyé à chaque changement de statut.
+          </p>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <TrackingStep
+              label="Commande confirmée"
+              description="Paiement validé, commande enregistrée"
+              done={customer.orders.length > 0}
+              active={customer.orders.some(
+                (order) => order.fulfillmentStatus === "UNFULFILLED",
+              )}
+            />
+            <TrackingStep
+              label="Préparation atelier"
+              description="Pièce en cours de confection ou de contrôle"
+              done={customer.orders.some(
+                (order) => order.fulfillmentStatus !== "UNFULFILLED",
+              )}
+            />
+            <TrackingStep
+              label="Expédiée"
+              description="Remise au transporteur, suivi transmis par email"
+              done={customer.orders.some(
+                (order) =>
+                  order.fulfillmentStatus === "IN_TRANSIT" ||
+                  order.fulfillmentStatus === "FULFILLED",
+              )}
+            />
+            <TrackingStep
+              label="Livrée"
+              description="Remise entre vos mains — enjoyez votre pièce"
+              done={customer.orders.some((order) => order.fulfillmentStatus === "FULFILLED")}
+            />
+          </div>
+        </div>
+
         {/* Commandes */}
         <div>
           <h2 className="font-serif text-2xl mb-6" style={{ color: "var(--text)" }}>
@@ -173,6 +219,57 @@ export default async function AccountPage() {
           )}
         </div>
 
+        {/* Mes informations */}
+        <div>
+          <h2 className="font-serif text-2xl mb-6" style={{ color: "var(--text)" }}>
+            Mes informations
+          </h2>
+          <dl
+            className="grid grid-cols-1 gap-px overflow-hidden sm:grid-cols-3"
+            style={{
+              background: "var(--line)",
+              border: "1px solid var(--line)",
+              borderRadius: "2px",
+            }}
+          >
+            {[
+              { label: "Prénom", value: customer.firstName },
+              { label: "Nom", value: customer.lastName },
+              { label: "E-mail", value: customer.email },
+              { label: "Téléphone", value: customer.phone },
+            ].map((field) => (
+              <div
+                key={field.label}
+                className="p-5"
+                style={{ background: "var(--surface)" }}
+              >
+                <dt
+                  className="text-[10px] uppercase tracking-[0.2em]"
+                  style={{ color: "var(--text-3)" }}
+                >
+                  {field.label}
+                </dt>
+                <dd
+                  className="mt-2 text-sm break-words"
+                  style={{ color: field.value ? "var(--text)" : "var(--text-3)" }}
+                >
+                  {field.value || "Non renseigné"}
+                </dd>
+              </div>
+            ))}
+          </dl>
+
+          {/* Raccourcis vers les autres pages de l'espace client */}
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link href="/wishlist" className="btn-outline">
+              Mes favoris
+            </Link>
+            <Link href="/cart" className="btn-outline">
+              Mon panier
+            </Link>
+          </div>
+        </div>
+
         {/* Adresse */}
         <div>
           <h2 className="font-serif text-2xl mb-6" style={{ color: "var(--text)" }}>
@@ -211,6 +308,69 @@ export default async function AccountPage() {
         </div>
 
       </div>
+    </div>
+  );
+}
+
+/**
+ * Une étape du parcours de suivi d'une commande.
+ *
+ * Trois états visuels, accessibles sans dépendre uniquement de la couleur :
+ *   • `done`   → coche or pleine (étape franchie)
+ *   • `active` → pulse or (étape en cours)
+ *   • sinon    → pastille neutralisée (étape à venir)
+ */
+function TrackingStep({
+  label,
+  description,
+  done,
+  active = false,
+}: {
+  label: string;
+  description: string;
+  done: boolean;
+  active?: boolean;
+}) {
+  const reached = done || active;
+
+  return (
+    <div
+      className="p-5 transition-all duration-300"
+      style={{
+        background: "var(--surface)",
+        border: `1px solid ${reached ? "rgba(197,160,89,0.45)" : "var(--line)"}`,
+        borderRadius: "2px",
+      }}
+    >
+      <div className="flex items-center gap-3">
+        <span
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold"
+          style={{
+            background: reached ? "var(--gold)" : "var(--surface-2)",
+            color: reached ? "var(--gold-contrast)" : "var(--text-3)",
+            boxShadow: active ? "0 0 0 4px var(--gold-soft)" : undefined,
+          }}
+          aria-hidden="true"
+        >
+          {done ? "✓" : active ? "•" : "–"}
+        </span>
+        <p
+          className="text-sm font-medium tracking-wide"
+          style={{ color: reached ? "var(--text)" : "var(--text-3)" }}
+        >
+          {label}
+        </p>
+      </div>
+      <p
+        className="mt-3 text-xs leading-relaxed"
+        style={{ color: "var(--text-3)" }}
+      >
+        {description}
+      </p>
+      {/* Statut textual — l'information ne repose jamais sur la seule couleur. */}
+      <span className="sr-only">
+        {done ? "Étape franchie" : active ? "Étape en cours" : "Étape à venir"}
+      </span>
     </div>
   );
 }

@@ -1,32 +1,4 @@
 
-const DESCRIPTION_SECTIONS = [
-  {
-    key: "materialOrigin",
-    title: "Matière & origine",
-    fallback:
-      "La matière et l’origine sont communiquées par le créateur dans la fiche produit. Contactez-nous pour obtenir les détails de cette pièce.",
-  },
-  {
-    key: "cutAndMaking",
-    title: "Coupe & confection",
-    fallback:
-      "La coupe et les finitions sont décrites dans la description de la pièce. Une attention particulière est portée à l’assemblage et aux détails artisanaux.",
-  },
-  {
-    key: "care",
-    title: "Conseils d’entretien",
-    fallback:
-      "Suivez les recommandations de l’étiquette et privilégiez un entretien délicat pour préserver la matière et les finitions.",
-  },
-  {
-    key: "sizeAndDelivery",
-    title: "Guide des tailles & livraison",
-    fallback:
-      "Guide des tailles et délai de livraison communiqués avec le devis ou dans la fiche produit. Livraison suivie depuis l’atelier du créateur.",
-  },
-] as const;
-
-
 // src/app/products/[handle]/page.tsx
 // Phase 6 — ISR + JSON-LD Schema.org/Product + métadonnées haute couture.
 import { getProductByHandle, getProducts } from "@/lib/shopify/products";
@@ -34,8 +6,10 @@ import { getSiteUrl } from "@/lib/seo";
 import ProductJsonLd from "@/components/seo/ProductJsonLd";
 import ProductImages from "@/components/product/ProductImages";
 import ProductForm from "@/components/product/ProductForm";
-import { FALLBACK_PRODUCT_IMAGE } from "@/lib/assets/images";
+import ProductDetails from "@/components/product/ProductDetails";
+import { isLocalPlaceholder } from "@/lib/assets/images";
 import { SHIPPING_AND_RETURNS_RULE } from "@/constants/store";
+import { Star } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -60,10 +34,13 @@ export async function generateMetadata({
     product.description?.slice(0, 155) ||
     `${product.title} — création AfroStyle par ${product.vendor}.`;
 
-  // Privilégie l'image produit, sinon fallback maison cohérent pour le partage.
-  const image =
-    product.images[0]?.url ||
-    (product.variants[0]?.image?.url ?? FALLBACK_PRODUCT_IMAGE);
+  // Visuel de partage : on privilégie un média RÉEL de la pièce. Un repli
+  // local (`data:`) n'est jamais publiable sur les réseaux sociaux — on ne
+  // déclare donc AUCUNE image Open Graph plutôt que d'y pousser un placeholder.
+  const shareImage =
+    product.images.find(
+      (image) => Boolean(image.url) && !isLocalPlaceholder(image.url),
+    )?.url ?? null;
 
   return {
     title: `${product.title} — ${product.vendor}`,
@@ -76,13 +53,13 @@ export async function generateMetadata({
       title: `${product.title} | AfroStyle — Haute Couture Africaine`,
       description,
       url,
-      images: image ? [{ url: image, alt: product.title }] : [],
+      images: shareImage ? [{ url: shareImage, alt: product.title }] : [],
     },
     twitter: {
       card: "summary_large_image",
       title: `${product.title} | AfroStyle`,
       description,
-      images: image ? [image] : [],
+      images: shareImage ? [shareImage] : [],
     },
   };
 }
@@ -147,16 +124,60 @@ export default async function ProductPage({
               {product.title}
             </h1>
 
-            {/* Créateur */}
-            <p className="text-sm" style={{ color: "var(--text-2)" }}>
-              par{" "}
-              <span
-                className="font-medium transition-colors"
-                style={{ color: "var(--gold-dark)" }}
-              >
-                {product.vendor}
+            {/* Note & Créateur */}
+            <div className="flex flex-wrap items-center gap-3 text-sm">
+              <span style={{ color: "var(--text-2)" }}>
+                par{" "}
+                <span
+                  className="font-medium"
+                  style={{ color: "var(--gold-dark)" }}
+                >
+                  {product.vendor}
+                </span>
               </span>
-            </p>
+
+              {product.rating && (
+                <>
+                  <span
+                    aria-hidden="true"
+                    style={{ color: "var(--line-strong, #D8D2C5)" }}
+                  >
+                    ·
+                  </span>
+                  <div
+                    className="flex items-center gap-1.5"
+                    aria-label={`Note de la pièce : ${product.rating.value} sur 5 (${product.rating.count} avis)`}
+                  >
+                    <div className="flex items-center text-gold">
+                      {[1, 2, 3, 4, 5].map((i) => (
+                        <Star
+                          key={i}
+                          size={14}
+                          className={
+                            i <= Math.round(product.rating?.value ?? 5)
+                              ? "fill-gold text-gold"
+                              : "text-line"
+                          }
+                          aria-hidden="true"
+                        />
+                      ))}
+                    </div>
+                    <span
+                      className="text-xs font-semibold"
+                      style={{ color: "var(--text)" }}
+                    >
+                      {product.rating.value.toFixed(1)}
+                    </span>
+                    <span
+                      className="text-xs"
+                      style={{ color: "var(--text-3)" }}
+                    >
+                      ({product.rating.count} avis)
+                    </span>
+                  </div>
+                </>
+              )}
+            </div>
 
             {/* Prix affiché dynamiquement par ProductForm (variante exacte).
                 Pas de prix statique ici pour éviter tout double affichage. */}
@@ -164,62 +185,20 @@ export default async function ProductPage({
             {/* Séparateur */}
             <div style={{ height: "1px", background: "var(--line)" }} />
 
-            {/* Formulaire variantes + ajout panier (remonté par produit) */}
-            <ProductForm key={product.id} product={product} />
+            {/* Formulaire variantes + courte description + ajout panier */}
+            <ProductForm
+              key={product.id}
+              product={product}
+              shortDescription={product.shortDescription}
+              madeToMeasure={product.madeToMeasure}
+            />
 
-            {/* Description courte puis détails structurés, enrichis via Shopify. */}
+            {/* Longue description en accordéon à 3 volets */}
             <div style={{ height: "1px", background: "var(--line)" }} />
-            <div className="space-y-6">
-              <div>
-                <h3
-                  className="mb-3 text-xs uppercase tracking-[0.2em]"
-                  style={{ color: "var(--gold-dark)" }}
-                >
-                  Description
-                </h3>
-                {product.shortDescription && (
-                  <p
-                    className="text-base leading-relaxed"
-                    style={{ color: "var(--text)" }}
-                  >
-                    {product.shortDescription}
-                  </p>
-                )}
-                {product.description &&
-                  product.description !== product.shortDescription && (
-                    <p
-                      className="mt-3 text-sm leading-relaxed"
-                      style={{ color: "var(--text-2)" }}
-                    >
-                      {product.description}
-                    </p>
-                  )}
-              </div>
-
-              <div>
-                <h3
-                  className="mb-4 text-xs uppercase tracking-[0.2em]"
-                  style={{ color: "var(--gold-dark)" }}
-                >
-                  Les détails de la pièce
-                </h3>
-                <div className="space-y-4">
-                  {DESCRIPTION_SECTIONS.map((section) => (
-                    <section
-                      key={section.key}
-                      className="rounded-sm border border-line bg-surface p-4 shadow-sm"
-                    >
-                      <h4 className="font-serif text-lg text-text">
-                        {section.title}
-                      </h4>
-                      <p className="mt-2 text-sm leading-relaxed text-text-2">
-                        {product.descriptionSections[section.key] || section.fallback}
-                      </p>
-                    </section>
-                  ))}
-                </div>
-              </div>
-            </div>
+            <ProductDetails
+              sections={product.descriptionSections}
+              madeToMeasure={product.madeToMeasure}
+            />
 
             {/* Réassurance — formulation CANONIQUE unique (src/constants/store.ts),
                 identique à l'accueil, la FAQ et le footer. */}

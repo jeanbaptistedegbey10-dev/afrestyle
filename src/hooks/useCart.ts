@@ -11,6 +11,7 @@ import {
   addToCart,
   updateCartLine,
   removeCartLine,
+  getCart,
 } from "@/lib/shopify/cart";
 import toast from "react-hot-toast";
 
@@ -121,6 +122,53 @@ export function useCart() {
   );
 
   /**
+   * Resynchronise le panier persisté avec la Storefront API.
+   *
+   * Trou d'audit (F8) : `getCart()` n'était jamais appelé. Un panier
+   * expiré ou supprimé côté Shopify restait donc affiché dans le tiroir, et la
+   * prochaine mutation (`cartLinesAdd`) échouait sur un `cartLinesAdd: null`
+   * sans message. `syncCart()` ferme ce trou :
+   *   • panier encore valide  → on rafraîchit prix / lignes / checkoutUrl ;
+   *   • panier introuvable     → on PURGE le store local et on previent l'utilisateur.
+   *
+   * Appelé au montage de la page `/cart` et à l'ouverture du tiroir.
+   */
+  const syncCart = useCallback(async () => {
+    const cartId = shopifyCart?.id;
+    if (!cartId) return null;
+
+    setLoading(true);
+    try {
+      const fresh = await getCart(cartId);
+
+      if (!fresh) {
+        // Panier expiré / supprimé chez Shopify : le local doit disparaître,
+        // sinon l'UI affiche un panier fantôme non modifiable.
+        clearCart();
+        toast("Votre panier a expiré — il a été réinitialisé.", {
+          icon: "✦",
+          style: {
+            background: "var(--toast-surface)",
+            color: "var(--text)",
+            border: "1px solid rgba(197,160,89,0.35)",
+          },
+        });
+        return null;
+      }
+
+      setShopifyCart(fresh);
+      return fresh;
+    } catch (error) {
+      console.error("syncCart error:", error);
+      // Panneau réseau : on garde l'état local plutôt que de perdre le panier
+      // d'un simple souci de connectivité.
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [shopifyCart, setShopifyCart, clearCart, setLoading]);
+
+  /**
    * Redirige vers le checkout Shopify
    */
   const goToCheckout = useCallback(() => {
@@ -147,5 +195,6 @@ export function useCart() {
     removeItem,
     goToCheckout,
     clearCart,
+    syncCart,
   };
 }

@@ -37,6 +37,11 @@
   --nav-bg: rgba(245, 240, 231, 0.95);
   --scrollbar-track: #eee7dc;
   --toast-surface: #ffffff;
+
+  /* Rythme des sections (accueil) — surfaces éditoriales d'alternance */
+  --section-cream: #faf8f5;               /* Section Produits — crème éditoriale */
+  --section-cream-2: #f1eae0;             /* Surfaces secondaires posées sur le crème */
+  --separator-gold: rgba(184, 154, 98, 0.2); /* Filets discrets (champagne 20 %) */
 }
 
 /* Surfaces fixes bleu nuit :Used par les sections de rupture dans les deux thèmes. */
@@ -54,6 +59,11 @@
   --band-gold: #d8bf8b;
   --band-gold-hover: #ead5ad;
   --band-gold-soft: rgba(216, 191, 139, 0.16);
+
+  /* Obsidienne — bande Newsletter + Footer, volontairement fixe dans les deux
+     modes (comme la bande bleu nuit ci-dessus) pour garder un socle profond. */
+  --section-obsidian: #0a0f17;
+  --section-obsidian-2: #141f30;
 }
 
 .dark {
@@ -79,6 +89,11 @@
   --nav-bg: rgba(11, 20, 32, 0.95);
   --scrollbar-track: #101b2a;
   --toast-surface: #182638;
+
+  /* Rythme des sections — version nuit du crème (jamais de bloc clair en mode sombre) */
+  --section-cream: #131f2e;
+  --section-cream-2: #1b2a3e;
+  --separator-gold: rgba(216, 191, 139, 0.2);
 }
 
 /* Mapping Tailwind — `inline` émet directement var(--...) dans les
@@ -111,6 +126,17 @@
   --color-band-gold: var(--band-gold);
   --color-band-gold-hover: var(--band-gold-hover);
   --color-band-gold-soft: var(--band-gold-soft);
+
+  /* Champagne FIXE (#B89A62, identique dans les deux modes) — filets et puces
+     posés sur les surfaces sombres invariantes (Footer obsidienne, diaporama). */
+  --color-champagne: var(--champagne);
+
+  /* Rythme des sections — fonds d'alternance + filets or discrets */
+  --color-section-cream: var(--section-cream);
+  --color-section-cream-2: var(--section-cream-2);
+  --color-section-obsidian: var(--section-obsidian);
+  --color-section-obsidian-2: var(--section-obsidian-2);
+  --color-separator-gold: var(--separator-gold);
 
   /* Rétro-compatibilité : les tokens legacy pointent vers le thème actif */
   --color-ivory: var(--bg);

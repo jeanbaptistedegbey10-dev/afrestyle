@@ -333,8 +333,6 @@ export function buildImageAlt(
     ? ` ${usefulDescription.charAt(0).toUpperCase()}${usefulDescription.slice(1).replace(/[.!?]+$/, "")}.`
     : "";
 
-
-
   return `${facts.title} — ${rank} : ${details.join(", ")}.${visual}`;
 }
 
@@ -1041,147 +1039,17 @@ export type CuratedImageEntry = {
   height: number;
 };
 
-/** URL CDN Unsplash (les paramètres de taille sont ajoutés par `toDisplayUrl`). */
-const U = (id: string) => `https://images.unsplash.com/${id}`;
-
 /**
- * Visuels éditoriaux Unsplash déjà utilisés par la mise en page AfroStyle
- * (hero, univers, lookbook) — reuse autorisé par la licence Unsplash.
+ * Visuels curatifs hors-ligne : fonds Wikimedia Commons uniquement.
+ *
+ * ⚠️ Le pool Unsplash code en dur a ete retire de ce module : plusieurs de ses
+ * identifiants repondent 404 (verifie sur le CDN), ce qui faisait echouer le
+ * seed/sync avec une image inexistante. Les fonds Wikimedia restent car ils
+ * sont stables, verifies et sous licence libre (attribution conservee).
+ *
+ * Pour revenir a l'ancien comportement : renseigner une cle
+ * `UNSPLASH_ACCESS_KEY` — la recherche live reste disponible en amont du pool.
  */
-const CURATED_UNSPLASH: CuratedImageEntry[] = [
-  {
-    url: U("photo-1614291129226-41dae34c2128"),
-    source: "unsplash",
-    keywords: ["editorial", "femme", "luxe"],
-    label: "silhouette éditoriale en tenue africaine contemporaine",
-    credit: "Unsplash",
-    license: "Unsplash License",
-    origin: "https://unsplash.com",
-    width: 1600,
-    height: 2000,
-  },
-  {
-    url: U("photo-1696962678565-bee84e6b9cb6"),
-    source: "unsplash",
-    keywords: ["editorial", "femme", "wax"],
-    label: "silhouette en pagne wax lors d'une séance éditoriale",
-    credit: "Unsplash",
-    license: "Unsplash License",
-    origin: "https://unsplash.com",
-    width: 1600,
-    height: 2000,
-  },
-  {
-    url: U("photo-1667366982563-dbeedf5281b9"),
-    source: "unsplash",
-    keywords: ["editorial", "homme", "kente"],
-    label: "silhouette masculine en tenue africaine contemporaine",
-    credit: "Unsplash",
-    license: "Unsplash License",
-    origin: "https://unsplash.com",
-    width: 1600,
-    height: 2000,
-  },
-  {
-    url: U("photo-1493655161922-ef98929de9d8"),
-    source: "unsplash",
-    keywords: ["editorial", "accessoire", "wax"],
-    label: "accessoires africains présentés en studio",
-    credit: "Unsplash",
-    license: "Unsplash License",
-    origin: "https://unsplash.com",
-    width: 1600,
-    height: 2000,
-  },
-  {
-    url: U("photo-1708170236295-20ab8fbadcef"),
-    source: "unsplash",
-    keywords: ["editorial", "femme", "bazin", "luxe", "sur-mesure"],
-    label: "grand boubou porté lors d'une séance éditoriale",
-    credit: "Unsplash",
-    license: "Unsplash License",
-    origin: "https://unsplash.com",
-    width: 1600,
-    height: 2000,
-  },
-  {
-    url: U("photo-1531123414780-f74242c2b052"),
-    source: "unsplash",
-    keywords: ["editorial", "kente", "femme"],
-    label: "silhouette en pagne sur fond sobre",
-    credit: "Unsplash",
-    license: "Unsplash License",
-    origin: "https://unsplash.com",
-    width: 1600,
-    height: 2000,
-  },
-  {
-    url: U("photo-1578509566163-068acd11b8e7"),
-    source: "unsplash",
-    keywords: ["editorial", "kente", "homme"],
-    label: "tenue en kente présentée en studio",
-    credit: "Unsplash",
-    license: "Unsplash License",
-    origin: "https://unsplash.com",
-    width: 1600,
-    height: 2000,
-  },
-  {
-    url: U("photo-1687052001151-316f9356dbc0"),
-    source: "unsplash",
-    keywords: ["editorial", "wax"],
-    label: "portrait éditorial d'une tenue en wax",
-    credit: "Unsplash",
-    license: "Unsplash License",
-    origin: "https://unsplash.com",
-    width: 1600,
-    height: 2000,
-  },
-  {
-    url: U("photo-1611853904829-6d0f4034ce2f"),
-    source: "unsplash",
-    keywords: ["editorial", "wax", "moderne", "cote-divoire"],
-    label: "tenue en wax contemporain portée en extérieur",
-    credit: "Unsplash",
-    license: "Unsplash License",
-    origin: "https://unsplash.com",
-    width: 1600,
-    height: 2000,
-  },
-  {
-    url: U("photo-1625646741211-711bdd65c570"),
-    source: "unsplash",
-    keywords: ["editorial", "soie", "accessoire"],
-    label: "étoffe de soie drapée, détail de matière",
-    credit: "Unsplash",
-    license: "Unsplash License",
-    origin: "https://unsplash.com",
-    width: 1600,
-    height: 2000,
-  },
-  {
-    url: U("photo-1515658323406-25d61c141a6e"),
-    source: "unsplash",
-    keywords: ["editorial", "accessoire", "femme", "mali"],
-    label: "parure de perles et coiffure tressée",
-    credit: "Unsplash",
-    license: "Unsplash License",
-    origin: "https://unsplash.com",
-    width: 1600,
-    height: 2000,
-  },
-  {
-    url: U("photo-1567401893414-76b7b1e5a7a5"),
-    source: "unsplash",
-    keywords: ["editorial", "wax", "femme", "traditionnel"],
-    label: "tenue traditionnelle en pagne imprimé portée par un mannequin",
-    credit: "Unsplash",
-    license: "Unsplash License",
-    origin: "https://unsplash.com",
-    width: 1600,
-    height: 2000,
-  },
-];
 
 /** Raccourci de déclaration d'un visuel Wikimedia Commons (licence + crédit). */
 function W(
@@ -1521,7 +1389,6 @@ const CURATED_WIKIMEDIA: CuratedImageEntry[] = [
 
 /** Pool curaté complet : visuels éditoriaux + fonds Wikimedia Commons. */
 export const CURATED_EDITORIAL_POOL: readonly CuratedImageEntry[] = [
-  ...CURATED_UNSPLASH,
   ...CURATED_WIKIMEDIA,
 ];
 
@@ -1621,13 +1488,4 @@ export function imageFileName(url: string): string {
   const parts = clean.split("/");
   return parts[parts.length - 1] || clean;
 }
-
-
-
-
-
-
-
-
-
 

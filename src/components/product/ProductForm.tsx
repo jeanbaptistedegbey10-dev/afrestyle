@@ -6,8 +6,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { Heart, Minus, Plus, ShoppingBag } from "lucide-react";
+import { isMockVariantId, MADE_TO_MEASURE_SIZE } from "@/constants/catalog";
 import { useCart } from "@/hooks/useCart";
+import { useWishlist } from "@/hooks/useWishlist";
 import { formatPrice } from "@/lib/utils";
 import {
   findExactVariant,
@@ -32,9 +35,21 @@ export type VariantChangeDetail = {
 type ProductFormProps = {
   product: Product;
   onVariantChange?: (variant: ShopifyVariant | undefined) => void;
+  /**
+   * Courte description éditoriale (matières, coupe, livraison) — affichée sous
+   * le prix pour respecter l'ordre de lecture : titre → note → prix → résumé.
+   */
+  shortDescription?: string | null;
+  /** La pièce accepte une commande aux mesures du client. */
+  madeToMeasure?: boolean;
 };
 
-export default function ProductForm({ product, onVariantChange }: ProductFormProps) {
+export default function ProductForm({
+  product,
+  onVariantChange,
+  shortDescription = null,
+  madeToMeasure = false,
+}: ProductFormProps) {
   const { addItem, isLoading: isCartLoading } = useCart();
 
   // NOTE : le parent remonte ce composant avec `key={product.id}` (voir
@@ -46,7 +61,10 @@ export default function ProductForm({ product, onVariantChange }: ProductFormPro
   const [quantity, setQuantity] = useState(1);
   const [isAdding, setIsAdding] = useState(false);
   const [justAdded, setJustAdded] = useState(false);
-  const [isWishlisted, setIsWishlisted] = useState(false);
+  // Wishlist PERSISTÉE (localStorage) — cohérente avec la carte produit et la
+  // page `/wishlist` : un favori ajouté ici est retrouvé après rechargement.
+  const { isWishlisted, toggleProduct } = useWishlist();
+  const wishlisted = isWishlisted(product.handle);
 
   const selectedVariant = useMemo(
     () => findExactVariant(product.variants, selectedOptions),
@@ -106,6 +124,10 @@ export default function ProductForm({ product, onVariantChange }: ProductFormPro
       ? Math.min(selectedVariant.quantityAvailable, 10)
       : 10;
 
+  // Variante issue du catalogue de référence (mode repli) : le panier Shopify
+  // ne peut pas la traiter — l'interface propose une commande par contact.
+  const isPlaceholderVariant = isMockVariantId(selectedVariant?.id);
+
   return (
     <div className="space-y-6">
       {/* Prix + dispo : synchronisés sur la variante exacte */}
@@ -141,7 +163,43 @@ export default function ProductForm({ product, onVariantChange }: ProductFormPro
         </p>
       </div>
 
+      {/* Courte description éditoriale — placée sous le titre, la note et le
+          prix, conformément à l'ordre de lecture de la fiche produit. */}
+      {shortDescription && (
+        <p
+          className="font-serif text-base leading-relaxed"
+          style={{ color: "var(--text-2)" }}
+        >
+          {shortDescription}
+        </p>
+      )}
+
       <div style={{ height: "1px", background: "var(--line)" }} />
+
+      {/* Pièce sans déclinaison réelle (bijou, étole, pagne…) : on l'annonce
+          explicitement au lieu de masquer le champ — le client sait ce qu'il
+          achète. */}
+      {isSingleVariant && (
+        <div className="flex items-center gap-3">
+          <span
+            className="text-xs uppercase tracking-widest"
+            style={{ color: "var(--gold-dark)" }}
+          >
+            Taille
+          </span>
+          <span
+            className="rounded-sm border px-4 py-2 text-sm"
+            style={{
+              borderColor: "var(--gold)",
+              color: "var(--text)",
+              background:
+                "color-mix(in srgb, var(--gold) 12%, var(--surface))",
+            }}
+          >
+            Taille unique
+          </span>
+        </div>
+      )}
 
       {!isSingleVariant &&
         product.options.map((option) => {
@@ -173,10 +231,31 @@ export default function ProductForm({ product, onVariantChange }: ProductFormPro
                       className="min-w-[3rem] px-4 py-2 text-sm border rounded-sm transition-all duration-200 disabled:cursor-not-allowed"
                       style={
                         isSelected
-                          ? { background: "var(--text)", color: "var(--bg)", borderColor: "var(--text)", fontWeight: 600 }
+                          ? {
+                              // État actif : contour OR (#B89A62 → var(--gold))
+                              // renforcé par un liseré intérieur, fond teinté.
+                              background:
+                                "color-mix(in srgb, var(--gold) 18%, var(--surface))",
+                              color: "var(--text)",
+                              borderColor: "var(--gold)",
+                              boxShadow: "inset 0 0 0 1px var(--gold)",
+                              fontWeight: 600,
+                            }
                           : disabled
-                            ? { background: "var(--surface-2)", color: "var(--text-3)", borderColor: "var(--line)", opacity: 0.7 }
-                            : { background: "var(--surface)", color: "var(--text)", borderColor: "var(--line)" }
+                            ? {
+                                background: "var(--surface-2)",
+                                color: "var(--text-3)",
+                                borderColor: "var(--line)",
+                                opacity: 0.7,
+                                textDecoration: soldOut
+                                  ? "line-through"
+                                  : undefined,
+                              }
+                            : {
+                                background: "var(--surface)",
+                                color: "var(--text)",
+                                borderColor: "var(--line)",
+                              }
                       }
                     >
                       {value}
@@ -191,6 +270,22 @@ export default function ProductForm({ product, onVariantChange }: ProductFormPro
       {selectedVariant && !isSingleVariant && (
         <p className="text-xs" style={{ color: "var(--text-3)" }} aria-live="polite">
           Sélection : {selectedVariant.selectedOptions.map((o) => o.value).join(" · ")}
+        </p>
+      )}
+
+      {/* Confection sur-mesure — service distinct, jamais présenté comme une
+          variante épuisée : la pièce est taillée aux mesures du client. */}
+      {madeToMeasure && (
+        <p className="text-xs leading-relaxed" style={{ color: "var(--text-2)" }}>
+          <Link
+            href="/contact"
+            className="underline underline-offset-2"
+            style={{ color: "var(--gold-dark)" }}
+          >
+            {MADE_TO_MEASURE_SIZE}
+          </Link>{" "}
+          — pièce confectionnée à vos mesures : transmettez-nous vos mensurations,
+          nous revenons vers vous avec le délai d&apos;atelier.
         </p>
       )}
 
@@ -228,46 +323,71 @@ export default function ProductForm({ product, onVariantChange }: ProductFormPro
 
       {/* Boutons action : variante exacte + quantité */}
       <div className="flex gap-3 pt-2">
-        <button
-          type="button"
-          onClick={handleAddToCart}
-          disabled={!canAddToCart}
-          className="flex-1 flex items-center justify-center gap-2 py-4 text-sm font-medium tracking-widest uppercase rounded-sm transition-all duration-200 disabled:cursor-not-allowed"
-          style={
-            !selectedVariant || !inStock
-              ? { background: "var(--surface-2)", color: "var(--text-3)" }
-              : justAdded
-                ? { background: "#16a34a", color: "white" }
-                : { background: "var(--text)", color: "var(--bg)" }
-          }
-        >
-          <ShoppingBag size={16} />
-          {!selectedVariant
-            ? "Sélection indisponible"
-            : !inStock
-              ? "Épuisé"
-              : isAdding || isCartLoading
-                ? "Ajout en cours…"
+        {isPlaceholderVariant ? (
+          // Catalogue de référence (boutique injoignable) : les identifiants de
+          // variante ne viennent pas de Shopify et ne peuvent pas être envoyés
+          // au panier. On propose donc une commande accompagnée plutôt qu'un
+          // bouton qui échouerait à l'ajout.
+          <Link
+            href="/contact"
+            className="btn-primary flex-1 justify-center py-4 text-sm tracking-widest uppercase"
+          >
+            <ShoppingBag size={16} aria-hidden="true" />
+            Commander — nous contacter
+          </Link>
+        ) : (
+          <button
+            type="button"
+            onClick={handleAddToCart}
+            disabled={!canAddToCart}
+            className="flex-1 flex items-center justify-center gap-2 py-4 text-sm font-medium tracking-widest uppercase rounded-sm transition-all duration-200 disabled:cursor-not-allowed"
+            style={
+              !selectedVariant || !inStock
+                ? { background: "var(--surface-2)", color: "var(--text-3)" }
                 : justAdded
-                  ? "✓ Ajouté au panier !"
-                  : `Ajouter au panier — ${priceLabel}`}
-        </button>
+                  ? { background: "#16a34a", color: "white" }
+                  : { background: "var(--text)", color: "var(--bg)" }
+            }
+          >
+            <ShoppingBag size={16} />
+            {!selectedVariant
+              ? "Sélection indisponible"
+              : !inStock
+                ? "Épuisé"
+                : isAdding || isCartLoading
+                  ? "Ajout en cours…"
+                  : justAdded
+                    ? "✓ Ajouté au panier !"
+                    : `Ajouter au panier — ${priceLabel}`}
+          </button>
+        )}
 
         <button
           type="button"
-          onClick={() => setIsWishlisted((w) => !w)}
-          aria-label="Ajouter aux favoris"
-          aria-pressed={isWishlisted}
+          onClick={() => toggleProduct(product)}
+          aria-label={
+            wishlisted
+              ? `Retirer ${product.title} des favoris`
+              : `Ajouter ${product.title} aux favoris`
+          }
+          aria-pressed={wishlisted}
           className="w-14 flex items-center justify-center border rounded-sm transition-all duration-200"
           style={{
-            borderColor: isWishlisted ? "var(--gold)" : "var(--line)",
-            color: isWishlisted ? "var(--gold)" : "var(--text-2)",
+            borderColor: wishlisted ? "var(--gold)" : "var(--line)",
+            color: wishlisted ? "var(--gold)" : "var(--text-2)",
             background: "var(--surface)",
           }}
         >
-          <Heart size={18} fill={isWishlisted ? "var(--gold)" : "none"} />
+          <Heart size={18} fill={wishlisted ? "var(--gold)" : "none"} />
         </button>
       </div>
+
+      {isPlaceholderVariant && (
+        <p className="text-xs" style={{ color: "var(--text-3)" }}>
+          Boutique momentanément injoignable : votre commande est prise en charge
+          par notre équipe, au prix affiché ci-dessus.
+        </p>
+      )}
 
       {!selectedVariant && (
         <p className="text-xs" role="alert" style={{ color: "#B45309" }}>

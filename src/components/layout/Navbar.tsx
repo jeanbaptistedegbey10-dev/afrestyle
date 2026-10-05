@@ -3,21 +3,39 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { ShoppingBag, Search, Menu, X } from "lucide-react";
+import { ShoppingBag, Search, Menu, X, User, Heart } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
+import { useWishlist } from "@/hooks/useWishlist";
 import { useMounted } from "@/hooks/useMounted";
 import { cn } from "@/lib/utils";
 import { FREE_SHIPPING_THRESHOLD, formatStoreAmount } from "@/constants/store";
 import ThemeToggle from "@/components/theme/ThemeToggle";
 
+/** Bouton icône circulaire partagé (recherche / compte / favoris). */
+const iconButtonClass =
+  "relative flex h-9 w-9 items-center justify-center rounded-full border border-line bg-surface text-text-2 transition-all duration-200 hover:border-gold hover:text-gold-dark dark:hover:text-gold";
+
+/** Pastille de compteur superposée à une icône. */
+function IconBadge({ count, label }: { count: number; label: string }) {
+  return (
+    <span
+      className="absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full border border-line bg-gold px-1 text-[10px] font-bold leading-none text-gold-contrast shadow-sm"
+      aria-label={label}
+    >
+      {count > 99 ? "99+" : count}
+    </span>
+  );
+}
+
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  // Le panier vient de Zustand persisté dans localStorage : le rendu SSR
-  // donne toujours 0. On n'affiche le badge qu'après montage côté client
-  // pour éviter le mismatch d'hydratation.
+  // Le panier et les favoris viennent de Zustand persisté dans localStorage : le
+  // rendu SSR donne toujours 0. On n'affiche les badges qu'après montage côté
+  // client pour éviter le mismatch d'hydratation.
   const mounted = useMounted();
   const { totalItems, openCart } = useCart();
+  const { count: wishlistCount } = useWishlist();
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -29,6 +47,24 @@ export default function Navbar() {
     { href: "/collections", label: "Shop" },
     { href: "/lookbook", label: "Lookbook" },
     { href: "/about", label: "Notre Histoire" },
+  ];
+
+  // Accès rapide — visibles sur mobile ET desktop (les anciens liens compte /
+  // favoris étaient masqués sur mobile, donc inaccessibles).
+  // `count` vaut 0 pour un lien sans compteur : l'union de types reste stable.
+  const accountLinks: {
+    href: string;
+    label: string;
+    icon: typeof User;
+    count: number;
+  }[] = [
+    { href: "/account", label: "Mon compte", icon: User, count: 0 },
+    {
+      href: "/wishlist",
+      label: "Mes favoris",
+      icon: Heart,
+      count: wishlistCount,
+    },
   ];
 
   return (
@@ -72,20 +108,30 @@ export default function Navbar() {
 
             <button
               aria-label="Rechercher"
-              className="hidden md:flex w-9 h-9 items-center justify-center rounded-full border border-line bg-surface text-text-2 transition-all duration-200 hover:border-gold hover:text-gold-dark dark:hover:text-gold"
+              className={cn(iconButtonClass, "hidden md:flex")}
             >
               <Search size={15} />
             </button>
 
+            {/* Mon compte — icône Utilisateur */}
+            <Link href="/account" aria-label="Mon compte" className={iconButtonClass}>
+              <User size={15} />
+            </Link>
+
+            {/* Favoris — icône Cœur + compteur (mounted : badge jamais en SSR) */}
             <Link
-              href="/account"
-              aria-label="Mon compte"
-              className="hidden md:flex w-9 h-9 items-center justify-center rounded-full border border-line bg-surface text-text-2 transition-all duration-200 hover:border-gold hover:text-gold-dark dark:hover:text-gold"
+              href="/wishlist"
+              aria-label={
+                wishlistCount > 0
+                  ? `Mes favoris (${wishlistCount})`
+                  : "Mes favoris"
+              }
+              className={iconButtonClass}
             >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
+              <Heart size={15} />
+              {mounted && wishlistCount > 0 && (
+                <IconBadge count={wishlistCount} label="Favoris enregistrés" />
+              )}
             </Link>
 
             <button
@@ -126,6 +172,59 @@ export default function Navbar() {
                   </Link>
                 </li>
               ))}
+
+              {/* Accès client — même parcours que la barre desktop, mais avec
+                  libellé complet (plus de cibles de 9 px sur mobile). */}
+              <li className="border-t border-separator-gold pt-4">
+                <ul className="flex flex-col gap-3">
+                  {accountLinks.map(({ href, label, icon: Icon, count }) => (
+                    <li key={href}>
+                      <Link
+                        href={href}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="flex items-center gap-3 py-1 text-sm text-text-2 transition-colors hover:text-gold-dark dark:hover:text-gold"
+                      >
+                        <Icon size={15} aria-hidden="true" />
+                        {label}
+                        {mounted && count > 0 ? (
+                          <span className="ml-auto text-[10px] text-text-3">{count}</span>
+                        ) : null}
+                      </Link>
+                    </li>
+                  ))}
+
+                  {/* Le panier s'ouvre via le tiroir ; la page /cart donne le
+                      récapitulatif complet et reste utile sur mobile. */}
+                  <li>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        openCart();
+                      }}
+                      className="flex w-full items-center gap-3 py-1 text-sm text-text-2 transition-colors hover:text-gold-dark dark:hover:text-gold"
+                    >
+                      <ShoppingBag size={15} aria-hidden="true" />
+                      Panier
+                      {mounted && totalItems > 0 ? (
+                        <span className="ml-auto text-[10px] text-text-3">
+                          {totalItems}
+                        </span>
+                      ) : null}
+                    </button>
+                  </li>
+                  <li>
+                    <Link
+                      href="/cart"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center gap-3 py-1 text-sm text-text-2 transition-colors hover:text-gold-dark dark:hover:text-gold"
+                    >
+                      <ShoppingBag size={15} aria-hidden="true" />
+                      Voir le panier
+                    </Link>
+                  </li>
+                </ul>
+              </li>
             </ul>
           </div>
         )}

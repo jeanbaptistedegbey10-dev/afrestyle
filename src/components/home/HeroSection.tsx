@@ -1,190 +1,25 @@
-// src/components/home/HeroSection.tsx — Éditorial Luxe, double thème Ivory/Obsidian
-"use client";
+﻿// src/components/home/HeroSection.tsx â€” Hero Ã©ditorial pilotÃ© par Shopify
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Ce fichier est dÃ©sormais un simple PASSERELLE serveur :
+//   la donnÃ©e (Metaobjects `hero_slide`) arrive dÃ©jÃ  normalisÃ©e par la page,
+//   l'interactivitÃ© vit dans `HeroCarousel.tsx` (client, Embla).
+//
+//  Avant : le diaporama vivait entiÃ¨rement ici, alimentÃ© par `IMAGES.heroSlides`
+//  (constantes codÃ©es en dur). Les visuels comme les textes ne sont dÃ©sormais
+//  plus modifiables qu depuis Shopify Admin.
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-import Link from "next/link";
-import { ArrowRight, ArrowUpRight } from "lucide-react";
-import { IMAGES } from "@/constants/images";
-import SafeImage from "@/components/ui/SafeImage";
+import HeroCarousel from "@/components/home/HeroCarousel";
+import type { HeroSlide } from "@/lib/shopify/hero";
 
-// Engagements de marque — volontairement NON chiffrés : aucune promesse de
-// volume invérifiable ne doit apparaître tant que le catalogue ne la justifie
-// pas (ex. « 87 créateurs », « 2 400 pièces »). Ces affirmations restent vraies
-// quel que soit l'état du catalogue.
-const ENGAGEMENTS = [
-  { num: "100 %", label: "Confection africaine" },
-  { num: "Fait main", label: "Savoir-faire d'héritage" },
-  { num: "Direct", label: "Du créateur à vous" },
-];
+type HeroSectionProps = {
+  slides: HeroSlide[];
+};
 
-export default function HeroSection() {
-  return (
-    <section className="relative overflow-hidden bg-bg-2 py-16 sm:py-20 lg:py-24">
-      {/* Fond — dégradé thématique subtil (ivoire → sable clair / obsidienne → anthracite) */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            "linear-gradient(135deg, var(--bg) 0%, var(--bg-2) 45%, var(--surface-2) 100%)",
-        }}
-      />
+export default function HeroSection({ slides }: HeroSectionProps) {
+  // `getHeroSlides()` garantit toujours au moins une slide : un Hero vide
+  // laisserait la page sans titre ni LCP, on ne rend donc rien dans ce cas.
+  if (!slides || slides.length === 0) return null;
 
-      {/* Halo doré — profondeur */}
-      <div
-        className="absolute -top-1/4 -right-1/4 w-[60vw] h-[60vw] rounded-full pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(circle, var(--gold-soft) 0%, transparent 65%)",
-        }}
-      />
-
-      {/* Motif grille subtil */}
-      <div
-        className="absolute inset-0"
-        style={{
-          opacity: 0.05,
-          backgroundImage: `
-            repeating-linear-gradient(0deg, transparent, transparent 30px, var(--gold) 30px, var(--gold) 31px),
-            repeating-linear-gradient(90deg, transparent, transparent 30px, var(--gold) 30px, var(--gold) 31px)
-          `,
-        }}
-      />
-
-        {/* Mobile : un seul cadre visuel réunit image, texte et CTA. */}
-        <div className="relative z-10 mx-4 lg:hidden">
-          <article className="relative isolate min-h-[620px] overflow-hidden rounded-sm border border-line bg-band shadow-[0_20px_55px_rgba(16,27,42,0.22)]">
-            <SafeImage
-              src={IMAGES.hero}
-              alt="Silhouette de mode africaine contemporaine présentée comme image éditoriale AfroStyle"
-              fill
-              priority
-              sizes="100vw"
-              className="object-cover object-center"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-band via-band/65 to-band/10" aria-hidden="true" />
-            <div className="relative z-10 flex min-h-[620px] flex-col justify-end gap-5 p-5 pb-6 text-band-text sm:min-h-[680px] sm:p-8 sm:pb-8">
-              <p className="w-fit border border-band-gold/50 bg-band/60 px-3 py-2 text-[0.65rem] font-medium uppercase tracking-[0.2em] text-band-gold backdrop-blur-sm">
-                Collection contemporaine
-              </p>
-              <h1 className="max-w-md font-serif text-[clamp(2.75rem,13vw,4.25rem)] leading-[0.92]">
-                L’Afrique réinvente <em className="font-normal text-band-gold-hover">le luxe</em>
-              </h1>
-              <p className="max-w-sm text-sm leading-relaxed text-band-text-2 sm:text-base">
-                Des créateurs d’exception, des matières d’héritage et une silhouette contemporaine.
-              </p>
-              <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:flex-wrap">
-                <Link href="/collections" className="btn-primary min-h-12 w-full justify-center bg-gold text-gold-contrast hover:bg-band-gold-hover sm:w-auto">
-                  Explorer la collection <ArrowRight size={15} aria-hidden="true" />
-                </Link>
-                <Link href="/lookbook" className="inline-flex min-h-12 w-full items-center justify-center border border-band-gold/70 px-6 text-xs font-medium uppercase tracking-[0.14em] text-band-text transition-colors duration-300 hover:bg-band-text hover:text-band sm:w-auto">
-                  Voir le lookbook
-                </Link>
-              </div>
-            </div>
-          </article>
-        </div>
-
-      {/* Conteneur standardisé — grille éditoriale 2 colonnes */}
-      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-          {/* Colonne texte */}
-          <div className="lg:col-span-5 space-y-6 animate-fade-in">
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 text-xs tracking-widest uppercase px-4 py-2 rounded-sm bg-gold-soft text-gold-dark dark:text-gold border border-gold/40">
-              <span className="w-5 h-px bg-gold inline-block" />
-              Nouvelle collection 2026
-            </div>
-
-            {/* Titre — Serif géant */}
-            <h1
-              className="font-serif leading-[0.95] text-text"
-              style={{ fontSize: "clamp(2.75rem, 5vw, 4.5rem)" }}
-            >
-              L&apos;Afrique
-              <br />
-              réinvente
-              <br />
-              <em className="text-gold-dark dark:text-gold">le luxe</em>
-            </h1>
-
-            <p className="text-text-2 text-base md:text-lg leading-relaxed max-w-[440px]">
-              Des créateurs d&apos;exception. Des tissus d&apos;héritage. Une mode
-              contemporaine qui honore ses racines.
-            </p>
-
-            {/* CTA — micro-interactions */}
-            <div className="flex items-center gap-4 flex-wrap pt-2">
-              <Link
-                href="/collections"
-                className="group btn-primary hover:shadow-[0_8px_24px_var(--gold-soft)] hover:-translate-y-0.5"
-              >
-                Explorer la collection
-                <ArrowRight
-                  size={14}
-                  className="transition-transform duration-300 group-hover:translate-x-1"
-                />
-              </Link>
-              <Link
-                href="/lookbook"
-                className="btn-outline hover:-translate-y-0.5 hover:shadow-[0_6px_18px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_6px_18px_rgba(0,0,0,0.5)]"
-              >
-                Voir le lookbook
-              </Link>
-            </div>
-
-            {/* Engagements — marqueurs qualitatifs, non chiffrés */}
-            <div className="flex flex-wrap gap-8 pt-6 border-t border-line">
-              {ENGAGEMENTS.map((s) => (
-                <div key={s.label}>
-                  <div className="font-serif text-3xl font-bold text-gold-dark dark:text-gold">
-                    {s.num}
-                  </div>
-                  <div className="text-text-2 text-xs tracking-widest uppercase mt-1">
-                    {s.label}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Colonne visuelle — média hero */}
-          <div className="lg:col-span-7">
-            <div className="relative w-full aspect-[4/5] lg:aspect-square rounded-2xl overflow-hidden border border-line shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.5)]">
-              {/* Visuel — photo créateur vedette (Unsplash HD, fallback local) */}
-              <SafeImage
-                src={IMAGES.hero}
-                alt="Silhouette de mode africaine contemporaine présentée comme image éditoriale AfroStyle"
-                fill
-                priority
-                sizes="(max-width: 1024px) 100vw, 58vw"
-                className="object-cover"
-              />
-
-              {/* Voile dégradé — profondeur dorée + lisibilité de la carte flottante */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
-
-              {/* Carte flottante — info collection */}
-              <div className="absolute inset-x-4 bottom-4 sm:inset-x-6 sm:bottom-6 rounded-xl border border-line bg-nav backdrop-blur-md px-5 py-4 flex items-center justify-between shadow-sm">
-                <div className="min-w-0">
-                  <p className="text-[0.65rem] tracking-[0.2em] uppercase text-text-3">
-                    En vedette
-                  </p>
-                  <p className="mt-0.5 truncate font-serif text-base text-text">
-                    Collection Kente{" "}
-                    <em className="text-gold-dark dark:text-gold">2026</em>
-                  </p>
-                </div>
-                <Link
-                  href="/lookbook"
-                  aria-label="Voir le lookbook"
-                  className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-text text-bg transition-all duration-300 hover:bg-gold hover:text-gold-contrast"
-                >
-                  <ArrowUpRight size={16} />
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
+  return <HeroCarousel slides={slides} />;
 }
